@@ -1,0 +1,75 @@
+This is manual.info, produced by makeinfo version 4.13 from manual.texi.
+
+This file documents the STELLA programming language.
+
+   Copyright (C) 2006 University of Southern California, Information
+Sciences Institute 4676 Admiralty Way Marina Del Rey, CA 90292
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+
+Indirect:
+manual.info-1: 427
+manual.info-2: 181972
+
+Tag Table:
+(Indirect)
+Node: Top427
+Node: Overview1342
+Node: Credits and History5553
+Node: Installation6952
+Node: System Requirements7251
+Node: Unpacking the Sources10643
+Node: Lisp Installation11224
+Node: C++ Installation13161
+Node: Java Installation14667
+Node: X/Emacs Setup15862
+Node: Removing Unneeded Files16753
+Node: The STELLA Language17545
+Node: Language Overview17836
+Node: Basic Data Types22213
+Node: Control Structure22408
+Node: Conditionals22626
+Node: Functions29552
+Node: Classes29716
+Node: Methods29866
+Node: Macros30013
+Node: Modules30158
+Node: Programming in STELLA30289
+Node: Hello World in STELLA30550
+Node: Hello World in Lisp32826
+Node: Hello World in C++36763
+Node: Hello World in Java41147
+Node: Incrementally Developing STELLA Code44636
+Node: Performance Hints55360
+Node: Lisp Performance Hints60799
+Node: Library Classes64267
+Node: Library Functions64443
+Node: Basic Constants and Predicates64937
+Node: Numbers68845
+Node: Characters74392
+Node: Strings76508
+Node: CONS Lists and Trees87148
+Node: CONS Lists as Sets98815
+Node: Lists100778
+Node: Lists as Sets107856
+Node: Property and Key-Value Lists111812
+Node: Vectors118237
+Node: Hash Tables122418
+Node: Key Value Maps131794
+Node: Hash Sets135694
+Node: Iterators141086
+Node: Symbols142730
+Node: Contexts and Modules149518
+Node: Input and Output158619
+Node: Files160646
+Node: Dates and Times167567
+Node: XML Support174400
+Node: Miscellaneous181972
+Node: Function Index315940
+Node: Variable Index403853
+Node: Concept Index407352
+
+End Tag Table
