@@ -1,0 +1,1202 @@
+; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;; BEGIN LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                            ;
+; Version: MPL 1.1/GPL 2.0/LGPL 2.1                                          ;
+;                                                                            ;
+; The contents of this file are subject to the Mozilla Public License        ;
+; Version 1.1 (the "License"); you may not use this file except in           ;
+; compliance with the License. You may obtain a copy of the License at       ;
+; http://www.mozilla.org/MPL/                                                ;
+;                                                                            ;
+; Software distributed under the License is distributed on an "AS IS" basis, ;
+; WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License   ;
+; for the specific language governing rights and limitations under the       ;
+; License.                                                                   ;
+;                                                                            ;
+; The Original Code is the PowerLoom KR&R System.                            ;
+;                                                                            ;
+; The Initial Developer of the Original Code is                              ;
+; UNIVERSITY OF SOUTHERN CALIFORNIA, INFORMATION SCIENCES INSTITUTE          ;
+; 4676 Admiralty Way, Marina Del Rey, California 90292, U.S.A.               ;
+;                                                                            ;
+; Portions created by the Initial Developer are Copyright (C) 1997-2010      ;
+; the Initial Developer. All Rights Reserved.                                ;
+;                                                                            ;
+; Contributor(s):                                                            ;
+;                                                                            ;
+; Alternatively, the contents of this file may be used under the terms of    ;
+; either the GNU General Public License Version 2 or later (the "GPL"), or   ;
+; the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),   ;
+; in which case the provisions of the GPL or the LGPL are applicable instead ;
+; of those above. If you wish to allow use of your version of this file only ;
+; under the terms of either the GPL or the LGPL, and not to allow others to  ;
+; use your version of this file under the terms of the MPL, indicate your    ;
+; decision by deleting the provisions above and replace them with the notice ;
+; and other provisions required by the GPL or the LGPL. If you do not delete ;
+; the provisions above, a recipient may use your version of this file under  ;
+; the terms of any one of the MPL, the GPL or the LGPL.                      ;
+;                                                                            ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;; END LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;; Version: justifications.ste,v 1.39 2010/09/09 23:27:01 hans Exp
+
+;;; Support for recording justifications in backward and forward reasoning
+
+(in-package "STELLA")
+
+(in-module "LOGIC")
+
+
+;;; TO DO:
+
+;;; - Handle :DISJUNCTIVE-IMPLICATION-INTRODUCTION
+;;; - Handle :ITERATIVE-FORALL
+;;; - Handle subset queries that use :CONTAINED-BY, subsumption, or
+;;;   simple computation.
+;;; - Handle recording of multiple justifications if
+;;;   `*generate-all-proofs?*' is true.
+;;; - Handle reference to a defined class for member/isa propositions that are
+;;;   derived from a `setof' definition of a class (e.g., COLOR).
+;;; - Handle subsumption relationships that look like primitive assertions,
+;;;   e.g., in recursion demo, `has-ancestor' subsumes `has-parent', hence, the
+;;;   explicit `has-parent' assertions are always recorded as `has-ancestor'
+;;;   assertions.
+;;; - Handle propositions derived via forward inference.  A first-cut solution
+;;;   would be to record the inference context and say
+;;;   "holds via forward inference" if the proposition holds in a strict
+;;;   inference cache of the query context.
+;;; - Disable justifications when the old caching scheme is used (see `move-up')
+;;; - Handle OR in partial-match-mode similar to multiple rules.
+
+
+  ;;
+;;;;;; Representing Justifications:
+  ;; 
+
+(defclass JUSTIFICATION (STANDARD-OBJECT)
+  :slots ((inference-rule
+           :type KEYWORD
+           :documentation
+           "Keyword describing the inference rule used to conclude the
+proposition of this justification.")
+          (proposition
+           :type PROPOSITION
+           :documentation
+           "The proposition supported by this justification.")
+          (antecedents
+           :type (CONS OF JUSTIFICATION)
+           :initially NIL
+           :documentation
+           "Antecedents justifications of this justification.")
+          (pattern-justification
+           :type JUSTIFICATION
+           :documentation
+           "Backpointer to the closest parent :PATTERN justification containing
+the variable substitutions from the associated pattern control frame.  If this
+is a :PATTERN justification, the slot points to the parent pattern.")
+          (substitution
+           :type (ENTITY-MAPPING OF PATTERN-VARIABLE OBJECT)
+           :documentation
+           "List of variable bindings recorded for :PATTERN justifications.")
+          (reverse-polarity?
+           :type BOOLEAN
+           :documentation
+           "True if proposition was derived in reverse polarity.")
+          (truth-value
+           :type TRUTH-VALUE
+           :documentation
+           "Truth value of the derived proposition.")
+          (positive-score
+           :type PARTIAL-MATCH-SCORE
+           :documentation
+           "Positive partial match score of the derived proposition.")
+          (negative-score
+           :type PARTIAL-MATCH-SCORE
+           :documentation
+           "Negative partial match score of the derived proposition."))
+  :methods ((inference-strategy ((self JUSTIFICATION)) :type KEYWORD
+              (return NULL))
+	    (inference-direction ((self JUSTIFICATION)) :type KEYWORD
+	      (return :backward))))
+
+(defclass PRIMITIVE-STRATEGY (JUSTIFICATION)
+  :slots ((inference-rule :type KEYWORD :initially :PRIMITIVE-STRATEGY)
+          (strategy :type KEYWORD))
+  :methods ((inference-strategy ((self PRIMITIVE-STRATEGY)) :type KEYWORD
+              (return (strategy self)))))
+
+
+  ;;
+;;;;;; Variable lookup, equality, utilities
+  ;;
+
+(defun (justification-argument-bound-to OBJECT)
+    ((argument OBJECT) (justification JUSTIFICATION))
+  ;; Analogue to `argument-bound-to' for justification proposition args.
+  ;; Return the binding of `argument' relative to `justification', or
+  ;;    `*currentJustification*' if `justification' is NULL (used
+  ;;    to support printing of justification propositions).
+  (typecase argument
+    (PATTERN-VARIABLE
+     (when (null? justification)
+       (setq justification *currentJustification*))
+     (when (defined? justification)
+       ;; Simply run up the pattern justification chain until we find a
+       ;;    matching binding:
+       (let ((pattern
+              (choose (eql? (inference-rule justification) :PATTERN)
+                      justification
+                      (pattern-justification justification)))
+             (substitution
+              (choose (defined? pattern)
+                      (substitution pattern)
+                      NULL))
+             (value OBJECT NULL))
+         (when (defined? substitution)
+           (setq value (lookup substitution argument)))
+         (when (and (null? value)
+                    (defined? pattern))
+           (setq pattern (pattern-justification pattern))
+           (when (defined? pattern)
+             (setq value (justification-argument-bound-to argument pattern))))
+         (return value))))
+    (otherwise
+     (return argument)))
+  (return NULL))
+
+(defun (yield-justification-substitution ENTITY-MAPPING)
+    ((justification JUSTIFICATION)
+     (substitution ENTITY-MAPPING)
+     (argument PROPOSITION))
+  ;; Find free variables in `justification's proposition and record their
+  ;;    bindings relative to `justification' in `substitution'.
+  ;; Return the generated substitution (which will remain NULL if no
+  ;;    free variables were found).
+  ;; `argument' is used for compound propositions and can be NULL for
+  ;;    top-level calls.
+  ;; Not (yet) used anywhere, since most cases can be handled directly
+  ;;    via `justification-argument-bound-to'.
+  (let ((top (proposition justification))
+        (proposition (choose (null? argument) top argument)))
+    (foreach arg in (arguments proposition)
+        do (typecase arg
+             (PATTERN-VARIABLE
+              (when (free-variable? arg top)
+                (when (null? substitution)
+                  (setq substitution (new ENTITY-MAPPING)))
+                (insert-at substitution arg
+                           (justification-argument-bound-to
+                            arg justification))))
+             (PROPOSITION
+              (setq substitution
+                (yield-justification-substitution
+                 justification substitution arg)))
+             (otherwise NULL)))
+    (return substitution)))
+
+(defun (justification-eql? BOOLEAN) ((just1 JUSTIFICATION) (just2 JUSTIFICATION))
+  ;; Return TRUE if `just1' and `just2' are equivalent justifications
+  ;;    for equivalent propositions.
+  ;; Note, that this will not recursively compare antecedents, since that
+  ;;    would compare complete proof trees and be quite expensive.
+  ;; This function is needed by the explanation generation mechanism to avoid
+  ;;    multiple explanations of equivalent inference steps which were recorded
+  ;;    with different but equivalent justifications.
+  (return
+    (or (eql? just1 just2)
+        (and (eql? (inference-rule just1) (inference-rule just2))
+             (eql? (reverse-polarity? just1) (reverse-polarity? just2))
+             (or (and (not (eql? (inference-rule just1) :PRIMITIVE-STRATEGY))
+                      (not (eql? (inference-rule just2) :PRIMITIVE-STRATEGY)))
+                 (eql? (strategy (cast just1 PRIMITIVE-STRATEGY))
+                       (strategy (cast just2 PRIMITIVE-STRATEGY))))
+             ;; eventually, this must also compare truth values:
+             (justification-propositions-eql?
+              (proposition just1) just1
+              (proposition just2) just2)))))
+
+(defun (justification-propositions-eql? BOOLEAN)
+    ((proposition1 PROPOSITION) (just1 JUSTIFICATION)
+     (proposition2 PROPOSITION) (just2 JUSTIFICATION))
+  ;; Return TRUE if `proposition1' is equivalent to `proposition2' relative
+  ;;    to `just1' and `just2'.
+  (when (and (eql? (operator proposition1) (operator proposition2))
+             (= (length (arguments proposition1))
+                (length (arguments proposition2))))
+    (foreach arg1 in (arguments proposition1)
+        as arg2 in (arguments proposition2)
+        where (or (not (eql? arg1 arg2))
+                  (variable? arg1))
+        do (typecase arg1
+             (PROPOSITION
+              (when (not (and (isa? arg2 @PROPOSITION)
+                              (justification-propositions-eql?
+                               arg1 just1
+                               arg2 just2)))
+                (return FALSE)))
+             (PATTERN-VARIABLE
+              (typecase arg2
+                (PATTERN-VARIABLE
+                 (let ((value1 (justification-argument-bound-to arg1 just1))
+                       (value2 (justification-argument-bound-to arg2 just2)))
+                   (when (or (null? value1) ;; don't equate unbound variables
+                             (null? value2)
+                             (not (eql? value1 value2)))
+                     (return FALSE))))
+                (otherwise
+                 (when (not (eql? (justification-argument-bound-to arg1 just1)
+                                  arg2))
+                   (return FALSE)))))
+             (otherwise
+              (typecase arg2
+                (PATTERN-VARIABLE
+                 (when (not (eql? (justification-argument-bound-to arg2 just2)
+                                  arg1))
+                   (return FALSE)))
+                (otherwise
+                 (return FALSE))))))
+    (return TRUE))
+  (return FALSE))
+
+(defmethod (copy (LIKE self)) ((self JUSTIFICATION))
+  :documentation "Return a copy of the proof starting at `self'.  Allocates
+all new justification objects, but structure-shares other information such
+as propositions and substitutions."
+  :public? TRUE
+  (let ((copy JUSTIFICATION NULL)
+        (antecedents NIL))
+    (typecase self
+      (PRIMITIVE-STRATEGY
+       (setq copy (new PRIMITIVE-STRATEGY :strategy (strategy self))))
+      (otherwise
+       (setq copy (new JUSTIFICATION))))
+    (setf (inference-rule copy) (inference-rule self))
+    (setf (proposition copy) (proposition self))
+    (setf (substitution copy) (substitution self))
+    (setf (reverse-polarity? copy) (reverse-polarity? self))
+    (setf (truth-value copy) (truth-value self))
+    (setf (positive-score copy) (positive-score self))
+    (setf (negative-score copy) (negative-score self))
+    (foreach antecedent in (antecedents self)
+        collect (copy antecedent) into antecedents)
+    (setf (antecedents copy) antecedents)
+    (when (eql? (inference-rule self) :PATTERN)
+      (foreach antecedent in (antecedents copy)
+          do (backlink-to-pattern-justification antecedent copy)))
+    (return copy)))
+
+
+  ;;
+;;;;;; Recording Justifications:
+  ;; 
+
+(defspecial *record-justifications?* BOOLEAN FALSE
+  :documentation "If TRUE every query records justifications to enable
+the explanation of concluded results.")
+
+(defun (record-justifications? BOOLEAN) ()
+  :documentation "Return TRUE if every query records justifications to enable
+the explanation of concluded results."
+  :globally-inline? TRUE
+  (return *record-justifications?*))
+
+(defun record-goal-justification ((goal CONTROL-FRAME)
+                                  (justification JUSTIFICATION))
+  ;; Record `justification' for the failed or succeeded `goal'
+  ;;    and fill in truth value information from `goal'.
+  ;; IMPORTANT: must be called after `goal's truth value has been computed.
+  (when (null? (proposition justification))
+    (setf (proposition justification) (proposition goal)))
+  (setf (reverse-polarity? justification) (reverse-polarity? goal))
+  (setf (truth-value justification) (truth-value goal))
+  (when (partial-match-mode?)
+    (set-justification-partial-truth goal justification))
+  (setf (justification goal) justification))
+
+(defun record-primitive-justification ((frame CONTROL-FRAME)
+                                       (lastMove KEYWORD))
+  ;; Record the justification for a primitive strategy `frame'.
+  (case lastMove
+    ((:UP-TRUE :UP-FAIL)
+     (let ((strategy (choose (eql? lastMove :UP-FAIL) :FAILURE (current-strategy frame)))
+           (justification JUSTIFICATION NULL))
+       ;; (cl:break "record primitive justification")
+       (cond ((and (defined? (justifications frame))
+                   (not (empty? (justifications frame))))
+              ;;; TO DO: RECONSIDER THIS, since `justifications' isn't really intended to
+              ;;;        store justification objects and we really want to eliminate the slot,
+              ;;;        but it is now used in `try-scan-propositions-proof':
+              (safety 2 (= (length (justifications frame)) 1) "More than 1 forward justification?")
+	      (setq justification (first (justifications frame))))
+             ((defined? (result frame))
+              (cond ((defined? (justification (result frame)))
+                     (setq justification
+                           (new PRIMITIVE-STRATEGY
+                                :strategy strategy
+                                :antecedents (cons (justification (result frame)) NIL))))
+                    ((and (defined? (proposition (result frame)))
+                          (has-forward-justifications? (proposition (result frame))))
+                     (setq justification 
+                           (first (get-forward-justifications (proposition (result frame))))))))
+             ((and (defined? (proposition frame))
+                   (has-forward-justifications? (proposition frame)))
+              (inform "RECORD-PRIMITIVE-JUSTIFICATION:  Test to see if clause needed.")
+              (setq justification
+                    (first (get-forward-justifications (proposition frame)))))
+             (otherwise NULL))
+       (when (null? justification)
+         ;; Just a simple assertion.
+         (setq justification (new PRIMITIVE-STRATEGY :strategy strategy)))
+       (record-goal-justification frame justification)))
+    (otherwise NULL)))
+
+(startup-time-progn
+  (define-explanation-phrase :scan-collection :technical
+    "by explicit assertion")
+  (define-explanation-phrase :scan-propositions :technical
+    "by explicit assertion")
+  (define-explanation-phrase :lookup-assertions :technical
+    "by explicit assertion")
+  (define-explanation-phrase :scan-collection :lay
+    "because the system was told this fact")
+  (define-explanation-phrase :scan-propositions :lay
+    "because the system was told this fact")
+  (define-explanation-phrase :lookup-assertions :lay
+    "because the system was told this fact")
+  (define-explanation-phrase :specialist :technical
+    "because it was proven by an inference specialist")
+  (define-explanation-phrase :specialist :lay
+    "because of a specialized reasoning procedure")
+  (define-explanation-phrase :computed-predicate :technical
+    "because of a computation")
+  (define-explanation-phrase :computed-predicate :lay
+    "because of a computation")
+  (define-explanation-phrase :goal-complement :technical
+    "because its argument was proven false")
+  (define-explanation-phrase :goal-complement :lay
+    "because its argument is false")
+  (define-explanation-phrase :equivalence :technical
+    "from equivalence")
+  (define-explanation-phrase :equivalence :lay
+    "because its arguments are equivalent")
+  (define-explanation-phrase :subsumption-test :technical
+    "because of a successful subsumption test")
+  (define-explanation-phrase :subsumption-test :lay
+    "because of a successful subsumption test")
+  (define-explanation-phrase :subsumption-reasoning :technical
+    "because a subsumed relation is true")
+  (define-explanation-phrase :subsumption-reasoning :lay
+    "because of it is true of a relation that is a subset of the one we want")
+ (define-explanation-phrase :failure :technical
+    "could not be proven")
+  (define-explanation-phrase :failure :lay
+    "could not be proven"))
+
+(defun record-PATTERN-justification ((frame CONTROL-FRAME)
+                                     (lastMove KEYWORD))
+  ;; Record a justification for a :PATTERN record whose main purpose it is
+  ;;    to collect the current set of variable bindings.
+  ;; Only pattern justifications have values for the `substitution' slot,
+  ;;    and their `pattern-justification' slot points to the parent pattern.
+  ;; Conceivably, all this information could be recorded directly on the
+  ;;    pattern antecedent, but for now we use a separate justification,
+  ;;    since we might need to stick more information on it in the future.
+  (let ((argument (result frame))
+        (justification (justification frame)))
+    (case lastMove
+      ((:UP-TRUE :UP-FAIL)
+       (when (null? (justification argument))
+         ;; we must have had a failure without a failure justification:
+         (return))
+       (when (null? justification)
+         (record-goal-justification frame (new JUSTIFICATION :inference-rule :PATTERN))
+         (setq justification (justification frame)))
+
+       ;; Record all current variable bindings:
+       (let ((substitution (new ENTITY-MAPPING))
+             (patternRecord (pattern-record frame))
+             (description DESCRIPTION NULL)
+             (collectionFrame? FALSE))
+         (when (defined? patternRecord)
+           (setq collectionFrame? (defined? (collection-list patternRecord)))
+           (setq description (optimal-pattern patternRecord))
+           (when (defined? description)
+             ;; this also records unbound variables which is important
+             ;;    for shadowing variables higher up:            
+             (foreach vbl in (io-variables description)
+                 do (insert-at substitution vbl (bound-to vbl)))
+             (foreach vbl in (internal-variables description)
+                 do (insert-at substitution vbl (bound-to vbl)))))
+         (when (isa? substitution @KEY-VALUE-LIST)
+           ;; Preserve the order of occurrence coming from the rule
+           ;; (only possible if ENTITY-MAPPING=KEY-VALUE-LIST):
+           (let ((oldSubstitution substitution))
+             ;; this is equivalent to a `reverse' but avoids type problems:
+             (setq substitution (new ENTITY-MAPPING))
+             (foreach (key val) in oldSubstitution
+                 do (insert-at substitution key val))))
+         (setf (substitution justification) substitution)
+
+         ;; handle antecedents and collection frames:
+         (let ((antecedent (justification argument)))
+           (when collectionFrame?
+             ;; if we have a collection frame (collect-into-list and friends), we turn the
+             ;; pattern frame into an AND and record a pattern and substitution for each result:
+             (setf (inference-rule justification) :AND-INTRODUCTION)
+             (let ((patternCopy JUSTIFICATION NULL))
+               (record-goal-justification frame (new JUSTIFICATION
+                                                     :inference-rule :PATTERN
+                                                     :antecedents (cons antecedent NIL)))
+               (setq patternCopy (justification frame))
+               (setf (justification frame) justification)
+               (backlink-to-pattern-justification antecedent patternCopy)
+               (backlink-to-pattern-justification patternCopy justification)
+               (setf (substitution patternCopy) substitution)
+               (setf (substitution justification) NULL)
+               (setq antecedent patternCopy)))
+           (setf (antecedents justification) (cons antecedent (antecedents justification)))
+
+           (unless collectionFrame?
+             ;; Establish links from antecedents to the new pattern justification
+             ;;    to allow us to generate proper variable bindings:
+             (backlink-to-pattern-justification antecedent justification)))))
+      (otherwise NULL))))
+
+(defun backlink-to-pattern-justification ((justification JUSTIFICATION)
+                                          (pattern JUSTIFICATION))
+  ;; Backlink `justification' and all its antecedents that don't yet point
+  ;;    to a pattern justification to `pattern'.
+  (when (null? (pattern-justification justification))
+    (setf (pattern-justification justification) pattern)
+    (foreach antecedent in (antecedents justification)
+        do (backlink-to-pattern-justification antecedent pattern))))
+
+(defun record-MODUS-PONENS-justification ((frame CONTROL-FRAME)
+                                          (lastMove KEYWORD))
+  ;; Record the justification for a :FULL-SUBQUERY strategy, where `frame'
+  ;;    was derived with Modus Ponens or Modus Tollens.
+  (let ((antecedent (result frame)))
+    (case lastMove
+      (:UP-TRUE
+       (safety 3 (defined? (justification antecedent))
+               "INTERNAL ERROR: Missing subgoal justification")
+       (let ((goal (extract-subgoal-of-frame frame))
+             (reversePolarity? (reverse-polarity? frame))
+             (inferenceRule (choose reversePolarity?
+                                    :MODUS-TOLLENS
+                                    :MODUS-PONENS))
+             (rule (antecedents-rule frame))
+             (ruleConsequent
+              (proposition
+               (cast (choose (eql? inferenceRule :MODUS-PONENS)
+                             (second (arguments rule))
+                             (first (arguments rule)))
+                     DESCRIPTION)))
+             (inverted? (eql? (kind ruleConsequent) :NOT))
+             (justification
+              (new JUSTIFICATION
+               :inference-rule inferenceRule
+               :proposition goal
+               :antecedents
+               ;; avoid `cons-list' because of STELLA bug:
+               (cons (new PRIMITIVE-STRATEGY
+                          :strategy :SCAN-PROPOSITIONS
+                          :proposition rule
+                          :truth-value (truth-value rule)
+                          :positive-score (positive-score (truth-value rule)))
+                     (cons (justification antecedent) NIL)))))
+         (record-goal-justification frame justification)
+         ;; fixup polarity, since in this case frame polarity is not
+         ;;    synonymous with a negated goal:
+         (setf (reverse-polarity? justification)
+           (choose reversePolarity? (not inverted?) inverted?))))
+      (otherwise NULL))))
+
+(startup-time-progn
+  (define-explanation-phrase
+    :modus-ponens :technical "by Modus Ponens")
+  (define-explanation-phrase
+    :modus-ponens :lay "because an if-then rule applies")
+  (define-explanation-phrase
+    :modus-tollens :technical "by Modus Tollens")
+  (define-explanation-phrase
+    :modus-tollens :technical "(p => q, ~q |= ~p)" :amplification)
+  (define-explanation-phrase
+    :modus-tollens :lay "because an if-then rule was used backwards")
+  (define-explanation-phrase
+    :modus-tollens :lay
+    "(if P then Q with Q false allows us to conclude P)"
+    :amplification))
+    
+(defun record-AND-INTRODUCTION-justification ((frame CONTROL-FRAME)
+                                              (lastMove KEYWORD))
+  ;; Record argument justifications for a succeeded :AND `frame'.
+  ;; IMPORTANT: must be called after `frame's truth value has been computed.
+  (let ((conjuncts (arguments frame))
+        (antecedents (CONS OF JUSTIFICATION) NIL))
+    (case lastMove
+      (:UP-TRUE
+       (foreach conjunct in conjuncts
+           do (progn ;; work around STELLA bug - I thought we had fixed that
+                (safety 3 (defined? (justification conjunct))
+                        "INTERNAL ERROR: Missing subgoal justification"))
+           collect (choose
+                    ;; if we backtracked into a later conjunct, we have to
+                    ;; copy earlier conjunct justifications, since they won't
+                    ;; get regenerated by a subsequent down move and, hence,
+                    ;; would otherwise be structure-shared with the next proof
+                    ;; which causes problems with variable substitutions, etc.:
+                    (eql? (state conjunct) :POPPED)
+                    (copy (justification conjunct))
+                    (justification conjunct))
+           into antecedents)
+       (record-goal-justification
+        frame
+        (new JUSTIFICATION
+             :inference-rule :AND-INTRODUCTION
+             :antecedents antecedents)))
+      (otherwise NULL))))
+
+(startup-time-progn
+  (define-explanation-phrase :and-introduction :technical
+    "by And-Introduction")
+  (define-explanation-phrase :and-introduction :lay
+    "because all parts of an AND expression were true")
+  (define-explanation-phrase :and-introduction :lay
+    "because parts of an AND expression were true" :partial)
+  (define-explanation-phrase :and-introduction :technical
+    "by Not-Or-Introduction" :reverse)
+  (define-explanation-phrase :and-introduction :lay
+    "because all parts of an OR expression were false" :reverse)
+  (define-explanation-phrase :and-introduction :technical
+    "(~p, ~q |= ~(p v q))" :reverse :amplification)
+  (define-explanation-phrase :and-introduction :lay
+    "(therefore the OR is also false)" :reverse :amplification))
+
+(defun record-OR-INTRODUCTION-justification ((frame CONTROL-FRAME)
+                                             (lastMove KEYWORD))
+  ;; Record a justification for a succeeded :OR `frame'.
+  ;; TO DO: HANDLE :DISJUNCTIVE-IMPLICATION-INTRODUCTION STRATEGY.
+  ;; TO DO: HANDLE THIS ONE LIKE MULTIPLE RULES FOR PARTIAL MATCH!!!
+  ;; IMPORTANT: must be called after `frame's truth value has been computed.
+  (let ((disjunct (result frame)))
+    (case lastMove
+      (:UP-TRUE
+       (safety 3 (defined? (justification disjunct))
+               "INTERNAL ERROR: Missing subgoal justification")
+       (record-goal-justification
+        frame
+        (new JUSTIFICATION
+             :inference-rule :OR-INTRODUCTION
+             :antecedents (cons (justification disjunct) NIL))))
+      (otherwise NULL))))
+
+(startup-time-progn
+  (define-explanation-phrase :or-introduction :technical
+    "by Or-Introduction")
+  (define-explanation-phrase :or-introduction :lay
+    "because at least one part of an OR expression was true")
+  (define-explanation-phrase :or-introduction :technical
+    "by Not-And-Introduction" :reverse)
+  (define-explanation-phrase :or-introduction :lay
+    "because at least one part of an AND expression was false" :reverse)
+  (define-explanation-phrase :or-introduction :technical
+    "(~p |= ~(p & q))" :reverse :amplification)
+  (define-explanation-phrase :or-introduction :lay
+    "(therefore the AND is also false)" :reverse :amplification))
+
+(defun record-DISPROOF-justification ((frame CONTROL-FRAME)
+                                      (lastMove KEYWORD))
+  ;; Record a justification for a succeeded :NOT `frame'.
+  ;; IMPORTANT: must be called after `frame's truth value has been computed.
+  (let ((argument (result frame)))
+    (case lastMove
+      ((:UP-TRUE :UP-FAIL)
+       (safety 3 (defined? (justification argument))
+               "INTERNAL ERROR: Missing subgoal justification")
+       (record-goal-justification
+        frame
+        (new JUSTIFICATION
+             :inference-rule :DISPROOF
+             :antecedents (cons (justification argument) NIL))))
+      (otherwise NULL))))
+
+(startup-time-progn
+  (define-explanation-phrase :disproof :technical
+    "by disproof")
+  (define-explanation-phrase :disproof :lay
+    "by proving the negation")
+  (define-explanation-phrase :disproof :technical
+    "by Double-Negation-Introduction" :reverse)
+  (define-explanation-phrase :disproof :lay
+    "by negating a negation" :reverse))
+
+(defun record-FAIL-justification ((frame CONTROL-FRAME)
+                                  (lastMove KEYWORD))
+  ;; Record a justification for a succeeded :FAIL `frame'.
+  ;; IMPORTANT: must be called after `frame's truth value has been computed.
+  ;; NOTE: THIS DOES NOT ATTEMPT TO RECORD WHY THE DERIVATION OF
+  ;;    THE ARGUMENT PROPOSITION FAILED.
+  (case lastMove
+    (:UP-FAIL
+     (record-goal-justification
+      frame
+      (new JUSTIFICATION
+           :inference-rule :FAIL-INTRODUCTION)))
+    (otherwise NULL)))
+
+(startup-time-progn
+  (define-explanation-phrase :closed-not-introduction :technical
+    "because the argument proposition was not derivable and it uses closed-world semantics")
+  (define-explanation-phrase :closed-not-introduction :lay
+    "because the argument proposition could not be proven and it is a closed-world proposition"))
+
+(defun record-CLOSED-NOT-justification ((frame CONTROL-FRAME)
+                                        (lastMove KEYWORD))
+  ;; Record a justification for a succeeded :FAIL `frame' introduced
+  ;;    for proving negation on a closed proposition.
+  ;; IMPORTANT: must be called after `frame's truth value has been computed.
+  ;; NOTE: THIS DOES NOT ATTEMPT TO RECORD WHY THE DERIVATION OF
+  ;;    THE ARGUMENT PROPOSITION FAILED.
+  (case lastMove
+    (:UP-FAIL
+     (record-goal-justification
+      frame
+      (new JUSTIFICATION
+           :inference-rule :CLOSED-NOT-INTRODUCTION
+           ;; May need to get past introduced FAIL frames as part of the proof.
+           :proposition (choose (eq? (kind (proposition frame)) :FAIL)
+                                (proposition (up frame))
+                                (proposition frame)))))
+    (otherwise NULL)))
+
+(startup-time-progn
+  (define-explanation-phrase :fail-introduction :technical
+    "because the argument proposition was not derivable")
+  (define-explanation-phrase :fail-introduction :lay
+    "because the argument proposition could not be proven"))
+
+(defun record-EXISTENTIAL-INTRODUCTION-justification ((frame CONTROL-FRAME)
+                                                      (lastMove KEYWORD))
+  ;; Record a justification for a succeeded :EXISTS `frame'.
+  ;; IMPORTANT: must be called after `frame's truth value has been computed.
+  (let ((argument (result frame)))
+    (case lastMove
+      (:UP-TRUE
+       (record-goal-justification
+        frame
+        (new JUSTIFICATION
+             :inference-rule :EXISTENTIAL-INTRODUCTION
+             :antecedents
+             (choose (defined? (justification argument))
+                     (cons (justification argument) NIL)
+                     NIL))))
+      (otherwise NULL))))
+
+(startup-time-progn
+  (define-explanation-phrase :existential-introduction :technical
+    "by Existential Introduction")
+  (define-explanation-phrase :existential-introduction :lay
+    "because it was true for at least one case"))
+
+;;; Handling of failed goals to support partial match and `whynot':
+
+(defun (failed-goal-justification? BOOLEAN) ((self JUSTIFICATION))
+  ;; Return TRUE if `self' is the justification of a failed atomic goal
+  ;;    (those are only generated in partial match mode).
+  (case (inference-rule self)
+    ((:PRIMITIVE-STRATEGY :TIMEOUT :DEPTH-CUTOFF)
+     (case (strategy (cast self PRIMITIVE-STRATEGY))
+       (:FAILURE
+        (return TRUE))
+       (otherwise NULL)))
+    (otherwise NULL))
+  (return FALSE))
+
+(defun (cutoff-goal-justification? BOOLEAN) ((self JUSTIFICATION))
+  ;; Return TRUE if `self' failed due to an inference cutoff.
+  (case (inference-rule self)
+    ((:TIMEOUT :DEPTH-CUTOFF)
+     (return TRUE))
+    (otherwise NULL))
+  (return FALSE))
+
+
+  ;;
+;;;;;; Justifications API (not much yet)
+  ;;
+
+(defmethod (consify CONS) ((self JUSTIFICATION))
+  :documentation "Return a CONS tree representation of the proof `self'.
+Each proof step is represented as a CONS tree of the form
+  (<proposition> (<key> <value>...) <antecedent>...)
+where each <antecedent> is a CONS tree representing a subproof.  The
+consification follows the original proof structure literally, i.e., no
+uninteresting nodes such as patterns or AND-introductions are suppressed."
+  :public? TRUE
+  (return (consify-justification self :RAW)))
+
+(defun (consify-justification CONS) ((self JUSTIFICATION) (style KEYWORD))
+  :documentation "Return a CONS tree representation of the proof `self'.
+Each proof step is represented as a CONS tree of the form
+  (<proposition> (<key> <value>...) <antecedent>...)
+where each <antecedent> is a CONS tree representing a subproof.
+`style' indicates what nodes in the proof tree should be suppressed.
+:RAW preserves the original structure literally, :VERBOSE keeps AND-
+introductions but suppresses all auxiliary (non-logical) nodes such as
+pattern nodes, and :BRIEF additionally suppresses AND-introduction nodes."
+  :public? TRUE
+  (special ((*explanation-style* style))
+    (unless (eql? style :RAW)
+      (setq self (visible-justification self)))
+    (let ((antecedents (choose (eql? style :RAW)
+                               (antecedents self)
+                               (the-cons-list (visible-antecedents self))))
+          (proposition OBJECT NULL)
+          (keys (new PROPERTY-LIST))
+          (substitution NIL)
+          (consifiedSelf NIL))
+      (when (defined? (inference-rule self))
+        (insert-at keys :INFERENCE-RULE (inference-rule self))
+        (when (isa? self @PRIMITIVE-STRATEGY)
+          (insert-at keys :STRATEGY (strategy (cast self PRIMITIVE-STRATEGY)))))
+      ;; insert the actual truth value object here, not a symbol:
+      (if (defined? (truth-value self))
+          (insert-at keys :TRUTH-VALUE (truth-value self))
+        (insert-at keys :TRUTH-VALUE UNKNOWN-TRUTH-VALUE))
+      (when (defined? (positive-score self))
+        (insert-at keys :POSITIVE-SCORE (positive-score self)))
+      ;; doesn't mean anything yet:
+      ;(when (defined? (negative-score self))
+      ;  (insert-at keys :NEGATIVE-SCORE (negative-score self)))
+      (let ((theSubstitution (substitution self)))
+        (when (null? theSubstitution)
+          (foreach ant in (antecedents self)
+              where (eql? (inference-rule ant) :PATTERN)
+              do (setq theSubstitution (substitution ant))
+                 (break)))
+        (when (defined? theSubstitution)
+          (foreach (var binding) in theSubstitution
+              do (pushq substitution (generate-term var))
+                 (pushq substitution (generate-term binding)))
+          (insert-at keys :SUBSTITUTION (reverse substitution))))
+      (special ((*currentJustification* self))
+        (setq proposition (generate-proposition (proposition self)))
+        (when (reverse-polarity? self)
+          (setq proposition (bquote (PL-KERNEL/NOT & proposition)))))
+      (setq consifiedSelf
+        (cons-list proposition
+                   ;; store the disembodied property list for now:
+                   (the-plist keys)))
+      (foreach antecedent in antecedents
+          collect (consify-justification antecedent style) into consifiedSelf)
+      (return consifiedSelf))))
+
+(defun (get-query-justifications (LIST OF JUSTIFICATION))
+    ((query QUERY-ITERATOR)
+     (solutionIndex INTEGER)
+     (maxJustifications INTEGER)
+     (create? BOOLEAN))
+  ;; Assume that `query' was run and has generated 0 or more solutions.
+  ;; Access the justifications of the `query' solution identified by
+  ;;    `solutionIndex' (0-based) and return the result.  A NULL
+  ;;    `solutionIndex' accesses the most recent result.  For TRUE/FALSE
+  ;;    queries `solutionIndex' is ignored.
+  ;; If there are multiple justifications available (possible for certain
+  ;;    partial match modes), return at most `maxJustifications' or all
+  ;;    if that is NULL.
+  ;; If `query' was run without justifications enabled and `create?' is
+  ;;    true, derive the justifications by re-running the query for the
+  ;;    indicated solution.
+  ;; If no justifications could be found or derived, return the empty list.
+  (let ((askQuery? (query-is-true-false? query))
+        (solutions (solutions query))
+        (solution QUERY-SOLUTION NULL)
+        (nofSolutions (length solutions))
+        (justifications LIST NULL))
+    (when (empty? solutions)
+      ;; the query failed completely:
+      (return NIL-LIST))
+    (when (or askQuery?
+              (null? solutionIndex)
+              (< solutionIndex 0))
+      ;; by default, we get the justification for the most recent solution:
+      (setq solutionIndex (1- nofSolutions)))
+    (when (>= solutionIndex nofSolutions)
+      (signal EXPLAIN-EXCEPTION "There were only " nofSolutions " solutions"))
+    (setq solution (nth solutions solutionIndex))
+    (cond
+     ((null? (justification solution))
+      (cond (create?
+             (setq justifications
+               (derive-query-justifications
+                query NULL solutionIndex maxJustifications))
+             ;; cache the justification in case we ask for it again:
+             (setf (justification solution) (first justifications))
+             (setf (all-justifications solution) justifications)
+             (return justifications))
+            (otherwise
+             (return NIL-LIST))))
+     (otherwise
+      ;; we have a justification:
+      (when (and (defined? (all-justifications solution))
+                 (non-empty? (all-justifications solution)))
+        (setq justifications (list))
+        (foreach just in (all-justifications solution)
+            as ignore in (interval 1 maxJustifications)
+            collect just into justifications))
+      (if (defined? justifications)
+          (return justifications)
+        (return (list (justification solution))))))))
+
+(defun (derive-query-justifications (LIST OF JUSTIFICATION))
+    ((query QUERY-ITERATOR)
+     (options OBJECT)
+     (solutionIndex INTEGER)
+     (maxJustifications INTEGER))
+  ;; Helper function for `get-query-justifications'.
+  ;; Rerun a derived query for `query's solution identified by `solutionIndex'
+  ;;    record its justifications and retun the result.
+  ;; If `maxJustifications' is non-NULL, return at most that many
+  ;;    justifications.
+  ;; If `options' is non-NULL they will be used as the options of the
+  ;;    derived query.  Otherwise, options of `query' will be used.
+  (special ((*queryIterator* query)
+            (*context* (query-context query))
+            (*inferenceLevel* (current-inference-level))
+            (*reversePolarity?* FALSE)
+            (*generate-all-proofs?* FALSE)
+            (*record-justifications?* TRUE))
+    ;; we create an identical copy of the query and rerun it with
+    ;;    justifications enabled; if it was a retrieve query, we
+    ;;    instantiate the query variables with the particular solution:
+    (let ((askQuery (allocate-query-iterator))
+          (queryOptions (options query)))
+      (when (null? options)
+        (setq queryOptions (copy queryOptions))
+        (remove-at queryOptions :HOW-MANY)
+        (setq options queryOptions))
+      (process-query-options askQuery options)
+      (special ((*type-check-strategy* :NONE))
+        (initialize-query-iterator
+         askQuery
+         (query-description query)
+         (bindings (nth (solutions query) solutionIndex))))
+      (if (query-is-partial? query)
+          (call-ask-partial askQuery)
+        (call-ask askQuery))
+      (return
+        (get-query-justifications
+         askQuery NULL maxJustifications FALSE)))))
+
+
+  ;;
+;;;;;; Forward-chaining Justifications
+  ;;
+
+;;; TO DO:
+;;; - store context within justifications
+;;; - handle retraction by removing relevant justifications
+
+(defclass FORWARD-GOAL-RECORD (STANDARD-OBJECT)
+  :slots ((forward-goal :type PROPOSITION)
+          (forward-rule :type PROPOSITION)))
+
+(defslot PROPOSITION forward-chaining-goals 
+  :type (LIST OF FORWARD-GOAL-RECORD))
+
+(defmethod (deleted? BOOLEAN) ((self FORWARD-GOAL-RECORD))
+  ;; Return TRUE if `self' points to any deleted propositions.
+  (let ((goal (forward-goal self))
+        (rule (forward-rule self)))
+    (return (or (null? goal)
+                (null? rule)
+                (deleted-proposition? goal)
+                (deleted-proposition? rule)))))
+
+(defmethod (deleted?-setter BOOLEAN)
+    ((self FORWARD-GOAL-RECORD) (value BOOLEAN))
+  ;; If 'value' is TRUE, mark 'self' as deleted (for good).
+  (when value
+    (setf (forward-goal self) NULL)
+    (setf (forward-rule self) NULL))
+  (return value))
+
+(defun record-forward-goal
+       ((forwardRule PROPOSITION) (arguments ARGUMENTS-VECTOR)
+        (consequentProposition PROPOSITION))
+  ;; Attach a forward goal record to 'consequentProposition' that
+  ;;    records the goal and bindings that triggered the use of
+  ;;    the rule 'forwardRule' to prove 'consequentProposition'.
+  ;; This information is sufficient to support backward chaining.
+  (foreach fwdGoalRec in (forward-chaining-goals consequentProposition)
+      where (not (deleted? fwdGoalRec))
+      do (let ((fwdGoal (forward-goal fwdGoalRec)))
+           (when (and (eql? (forward-rule fwdGoalRec) forwardRule)
+                      (forall arg in arguments
+                          as i in (interval 1 NULL)
+                          always (eql? (nth (arguments fwdGoal) i) arg)))
+             (return))))
+  (when (elaboration-rule? consequentProposition forwardRule arguments)
+    ;; very tricky: Don't cache a forward rule that
+    ;;    we find using elaboration.  This is intended to significantly
+    ;;    reduce the number of rules that the backchainer can
+    ;;    backchain on:
+    (return))
+  (let ((forwardGoal 
+         (create-proposition (quote PREDICATE) (1+ (length arguments))))
+        (fwdGoalRec (new FORWARD-GOAL-RECORD
+                         :forward-goal forwardGoal
+                         :forward-rule forwardRule)))
+    (setf (relationRef forwardGoal) PL-KERNEL/@HOLDS)
+    (setf (nth (arguments forwardGoal) 0) (nth (arguments forwardRule) 0))
+    (foreach arg in arguments
+             as i in (interval 1 NULL)
+             do (setf (nth (arguments forwardGoal) i) arg))
+    (if (empty? (forward-chaining-goals consequentProposition))
+      (setf (forward-chaining-goals consequentProposition)
+            (list fwdGoalRec))
+      (insert-new (forward-chaining-goals consequentProposition) fwdGoalRec))) )
+
+(defun (predication? BOOLEAN) ((proposition PROPOSITION))
+  (return (member? (quote (:PREDICATE :FUNCTION :ISA :EQUIVALENT)) 
+                   (kind proposition))) )
+
+(defun (asserted-as-true? BOOLEAN) ((proposition PROPOSITION))
+  ;; Return TRUE if 'proposition' is true by assertion (not inference).
+  (within-module (base-module *context*)
+                 (return (true-proposition? proposition))) )
+
+(defun (elaboration-rule? BOOLEAN)
+       ((consequentProposition PROPOSITION) (forwardRule PROPOSITION)
+        (arguments ARGUMENTS-VECTOR))
+  ;; Return TRUE if elaboration can find and execute this
+  ;;    particular forward inference (so there is no need to
+  ;;    backchain on its justification).
+  (return
+   (and (predication? consequentProposition)
+        (asserted-as-true? forwardRule)
+        (forall arg in (arguments consequentProposition)
+                always (member? arguments arg)))) )
+
+(defun (get-forward-goals (LIST OF FORWARD-GOAL-RECORD))
+       ((proposition PROPOSITION))
+  ;; Return a list of forward goals attached to 'proposition'.
+  (let ((goals (remove-deleted-members (forward-chaining-goals proposition))))
+    (when (and (empty? goals)
+               (defined? (master-proposition proposition)))
+      (setq goals
+        (remove-deleted-members
+         (forward-chaining-goals (master-proposition proposition)))))
+    (return goals) ))
+
+;------------------------------------------------------------------------
+
+(defclass FORWARD-JUSTIFICATION (JUSTIFICATION)
+  :methods ((inference-direction ((self FORWARD-JUSTIFICATION)) :type KEYWORD
+	      (return :forward))))
+
+(defslot PROPOSITION forward-justifications :type (LIST OF JUSTIFICATION))
+
+(startup-time-progn
+  (define-explanation-phrase :forward-inference :technical
+    "by Forward Inference")
+  (define-explanation-phrase :forward-inference :lay
+    "by forward rule reasoning"))
+
+(defun (has-forward-justifications? BOOLEAN) ((proposition PROPOSITION))
+  :documentation "Return TRUE if `proposition' has any forward justifications."
+  :public? TRUE :globally-inline? TRUE
+  (return (non-empty? (forward-justifications proposition))))
+
+(defun (get-forward-justifications (LIST OF JUSTIFICATION)) ((proposition PROPOSITION))
+  :documentation "Return `proposition's forward justifications."
+  :public? TRUE :globally-inline? TRUE
+  (return (forward-justifications proposition)))
+
+(defun add-forward-justifications ((proposition PROPOSITION) (justification JUSTIFICATION))
+  ;; Add `justification' to `proposition's forward justifications
+  ;; unless an equivalent justification already exists.
+  (let ((justifications (forward-justifications proposition)))
+    ;; cheap test to exclude trivially identical justifications,
+    ;; however this does not yet compare complete antecedent trees:
+    (when (exists just in justifications
+            where (justification-eql? just justification))
+      (return))
+    (when (eql? justifications NIL-LIST)
+      (setq justifications (list))
+      (setf (forward-justifications proposition) justifications))
+    (push justifications justification)))
+
+(defun (get-rule-io-variables VARIABLES-VECTOR) ((rule PROPOSITION))
+  (let ((vars (io-variables rule))
+        (master PROPOSITION NULL))
+    (when (defined? vars)
+      (return vars))
+    (setq master (master-proposition rule))
+    (when (defined? master)
+      (setq vars (io-variables master))
+      (when (defined? vars)
+        (return vars)))
+    (when (eql? (kind rule) :IMPLIES)
+      (let ((arguments (arguments rule))
+            (ant DESCRIPTION (first arguments))
+            (cq DESCRIPTION (second arguments)))
+        (if (named-description? ant)
+            (return (io-variables cq))
+          (return (io-variables ant)))))
+    (error "get-rule-io-variables: don't know how to access IO-vars of rule: " rule)))
+
+(defun (create-forward-justification FORWARD-JUSTIFICATION) ((antecedents (CONS OF PROPOSITION))
+                                                             (forwardRule PROPOSITION)
+                                                             (arguments ARGUMENTS-VECTOR)
+                                                             (consequentProposition PROPOSITION)
+                                                             (bc-justification JUSTIFICATION))
+  ;;
+  (let ((fj (new FORWARD-JUSTIFICATION :inference-rule :modus-ponens))
+        (rule-variables (get-rule-io-variables forwardRule))
+        (substitution ENTITY-MAPPING NULL)
+        (antecedent-justifications NIL))
+
+    (if (defined? bc-justification)
+      (progn 
+        (setq substitution (substitution bc-justification))
+        (pushq antecedent-justifications bc-justification))
+      (progn
+        (setq substitution (new ENTITY-MAPPING))
+        (foreach arg in arguments
+             as var in rule-variables
+             do (insert-at substitution var arg))))
+    (foreach aprop in antecedents
+             do (pushq antecedent-justifications 
+                       (get-forward-antecedent-justification aprop)))
+    (pushq antecedent-justifications 
+           (get-forward-antecedent-justification forwardRule))
+
+    (setf (substitution fj) substitution)
+    (setf (proposition fj) consequentProposition)
+    (setf (truth-value fj) (truth-value consequentProposition))
+    (setf (antecedents fj) antecedent-justifications)
+
+    ;; TO DO: Partial match scores.
+    (return fj)) )
+
+(defun (get-forward-antecedent-justification JUSTIFICATION) ((antecedent PROPOSITION))
+  (if (and (defined? (forward-justifications antecedent))
+           (not (empty? (forward-justifications antecedent))))
+    ;; TODO: How to handle multiple ones?
+    (return (first (forward-justifications antecedent)))
+    (return (new PRIMITIVE-STRATEGY
+                 :proposition antecedent
+                 :strategy :LOOKUP-ASSERTIONS))))
+
+;; QUESTION: THIS IS CALLED EVEN IF THE HEAD IS ALREADY TRUE.  SHOULD
+;;    WE RECORD JUSTIFICATIONS ONLY WHEN SOMETHING GOES TRUE/FALSE?
+;; FOLLOW-ON QUESTION: SHOULD RECORDING OF 'forward-chaining-goals' AND
+;;    'forward-justifications' BE TRIGGERED FROM THE SAME POINT OR NOT?
+;; TO DO: THIS PROBABLY INCORRECT FOR :FUNCTION PROPOSITIONS.  FIGURE
+;;    OUT WHAT A FWD JUSTIFICATION WITH A FUNCTION IN ITS HEAD LOOKS LIKE:
+
+(defun record-forward-justification
+       ((antecedents (CONS OF PROPOSITION))
+        (forwardRule PROPOSITION)
+        (arguments ARGUMENTS-VECTOR)
+        (consequentProposition PROPOSITION)
+        (bc-justification JUSTIFICATION))
+  ;; Add a new forward justification to 'consequentProposition' or update
+  ;;    an old one with the most recent 'antecedents'.
+  (when (not (record-justifications?))
+    (return))
+  (let ((justifications (forward-justifications consequentProposition))
+        (new-fj (create-forward-justification
+                 antecedents forwardRule arguments consequentProposition bc-justification)))
+    ;; This loop relies on the fact that the rule is the first of the
+    ;; antecedents of the forward justification.
+    (foreach fj in justifications
+             where (eql? (proposition (first (antecedents fj))) forwardRule)
+             do ;; Update substitution and antecedents
+                (setf (substitution fj) (substitution new-fj))
+                (setf (antecedents fj)  (antecedents new-fj))
+                (return))
+    (add-forward-justifications consequentProposition new-fj)))
+
+
+
+
+;------------------------------------------------------------------------
+; SUBSET inference justification.  
+; Works with relations, but not concepts.
+
+(defun (create-subset-justification JUSTIFICATION) ((main-proposition PROPOSITION)
+						    (matching-proposition PROPOSITION))
+  ;; Creates a justification based on subset-of resaoning.
+  ;; Situation:  Found `subset-proposition' to be true while looking for a proof
+  ;;             of `main-proposition' as a result of calling `all-matching-propositions'
+  ;;             `all-matching-propositions' does subset-of reasoning internally, so
+  ;;             we will check here to see if subset-proposition is something that was
+  ;;             an assertion that serves to justify `main-proposition' via subset reasoning.
+  ;; Returns a justification for this subset-of reasoning or NULL if this doesn't
+  ;;         seem like a subset-of situation.  In particular, this tests to see
+  ;;         if the two propositions have the same predicate.
+  ;;
+  (let ((main-operator (relationRef main-proposition))
+	(matching-operator (relationRef matching-proposition)))
+    (unless (or (null? main-operator)
+		(null? matching-operator)
+		(eq? main-operator matching-operator))
+      ;; General query-based solution.  This may be too expensive for general use
+      ;; so we use the alternate solution.  Leaving it in here in case we ever
+      ;; end up with more ways to prove subsumption.  -tar
+      #|
+      (mv-bind (bindings truth-values subset-justifications)
+	       (apply-cached-retrieve (QUOTE (?sub ?sup))
+				      (QUOTE (/PL-KERNEL-KB/SUBSET-OF ?sub ?sup))
+				      (CONS-LIST (surrogate-value matching-operator)
+						 (surrogate-value main-operator))
+				      NIL
+				      (QUOTE SUBSET-SUBQUERY))
+        (ignore bindings)
+	(when (true-truth-value? (first truth-values))
+	  (pushq subset-justifications
+		 (new PRIMITIVE-STRATEGY
+		      :proposition matching-proposition
+		      :strategy :LOOKUP-ASSERTIONS))	; (current-strategy frame)?
+	  (return 
+	    (new JUSTIFICATION
+		 :inference-rule :subsumption-reasoning
+		 :proposition main-proposition
+		 :antecedents subset-justifications))))
+      |#
+      ;; Alternate, more targeted solution, which mimics the 
+      ;; reasoning in the subset-of query but without the query 
+      ;; machinery.
+      (when (relationref-specializes-relationref? matching-operator main-operator)
+        (let ((subset-proposition PROPOSITION NULL)
+              (subset-justifications NIL))
+          (special ((*evaluationMode* :DESCRIPTION))
+              ;; Hack:  Build proposition in description mode to get a prettier printed
+              ;; representation as (SUBSET-OF match main) instead of the rule form
+              ;; (FORALL (?x) (<= (main ?x) (match ?x)))
+             (setq subset-proposition
+                   (conceive-formula (cons-list (quote /PL-KERNEL-KB/SUBSET-OF)
+                                                matching-operator
+                                                main-operator))))
+          (pushq subset-justifications
+                 (new PRIMITIVE-STRATEGY
+                      :proposition subset-proposition
+                      :truth-value TRUE-TRUTH-VALUE
+                      :strategy :SPECIALIST))
+          (pushq subset-justifications
+                  (new PRIMITIVE-STRATEGY 
+                       :proposition matching-proposition
+                       :strategy :LOOKUP-ASSERTIONS))
+        (return 
+         (new JUSTIFICATION
+              :inference-rule :subsumption-reasoning
+              :proposition main-proposition
+              :antecedents subset-justifications))))
+      )
+      (return NULL)))
+
