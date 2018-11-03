@@ -1,0 +1,79 @@
+This is manual.info, produced by makeinfo version 4.2 from manual.texi.
+
+   This file documents the STELLA programming language.
+
+   Copyright (C) 2003 University of Southern California, Information
+Sciences Institute 4676 Admiralty Way Marina Del Rey, CA 90292
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+
+Indirect:
+manual.info-1: 429
+manual.info-2: 43900
+manual.info-3: 86093
+manual.info-4: 132410
+manual.info-5: 167344
+manual.info-6: 235166
+
+Tag Table:
+(Indirect)
+Node: Top429
+Node: Overview1343
+Node: Credits and History5553
+Node: Installation6947
+Node: System Requirements7242
+Node: Unpacking the Sources10522
+Node: Lisp Installation11098
+Node: C++ Installation13030
+Node: Java Installation14209
+Node: X/Emacs Setup15371
+Node: Removing Unneeded Files16257
+Node: The STELLA Language17044
+Node: Language Overview17331
+Node: Basic Data Types21702
+Node: Control Structure21892
+Node: Conditionals22105
+Node: Functions29015
+Node: Classes29174
+Node: Methods29319
+Node: Macros29461
+Node: Modules29601
+Node: Programming in STELLA29727
+Node: Hello World in STELLA29984
+Node: Hello World in Lisp32255
+Node: Hello World in C++36121
+Node: Hello World in Java40458
+Node: Incrementally Developing STELLA Code43900
+Node: Performance Hints54553
+Node: Lisp Performance Hints59990
+Node: Library Classes63449
+Node: Library Functions63624
+Node: Basic Constants and Predicates64114
+Node: Numbers68040
+Node: Characters74305
+Node: Strings76400
+Node: CONS Lists and Trees86093
+Node: CONS Lists as Sets94813
+Node: Lists96752
+Node: Lists as Sets103109
+Node: Property and Key-Value Lists106898
+Node: Vectors112309
+Node: Hash Tables115633
+Node: Key Value Maps123008
+Node: Hash Sets126036
+Node: Iterators130802
+Node: Symbols132410
+Node: Contexts and Modules139160
+Node: Input and Output147958
+Node: Files149700
+Node: Dates and Times152890
+Node: XML Support159808
+Node: Miscellaneous167344
+Node: Function Index235166
+Node: Variable Index274713
+Node: Concept Index275349
+
+End Tag Table
