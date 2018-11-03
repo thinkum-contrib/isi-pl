@@ -1,0 +1,82 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                          ;
+;  COPYRIGHT (C) UNIVERSITY OF SOUTHERN CALIFORNIA, 1996                   ; 
+;  University of Southern California, Information Sciences Institute       ;
+;  4676 Admiralty Way                                                      ;
+;  Marina Del Rey, California 90292                                        ;
+;                                                                          ;
+;  This software was developed under the terms and conditions of Contract  ;
+;  No. N00014-94-C-0245 between the Defense Advanced Research Projects     ;
+;  Agency and the University of Southern California, Information Sciences  ; 
+;  Institute.  Use and distribution of this software is further subject    ;
+;  to the provisions of that contract and any other agreements developed   ;
+;  between the user of the software and the University of Southern         ;
+;  California, Information Sciences Institute.  It is supplied "AS IS",    ;
+;  without any warranties of any kind.  It is furnished only on the basis  ;
+;  that any party who receives it indemnifies and holds harmless the       ;
+;  parties who furnish and originate it against any claims, demands, or    ;
+;  liabilities connected with using it, furnishing it to others or         ;
+;  providing it to a third party.  THIS NOTICE MUST NOT BE REMOVED FROM    ;
+;  THE SOFTWARE, AND IN THE EVENT THAT THE SOFTWARE IS DIVIDED, IT SHOULD  ;
+;  BE ATTACHED TO EVERY PART.                                              ;
+;                                                                          ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;; Version: make-manual.ste,v 1.3 1997/11/07 00:08:24 hans Exp
+
+;;; PowerLoom manual specification
+
+(in-package "STELLA")
+
+(in-module "LOGIC")
+
+
+(defglobal *powerloom-manual-specification* CONS
+   (bquote (("PL:sources;logic;doc;commands.texi"
+             /LOGIC/ALL-FACTS-OF
+             ;;/LOGIC/ALL-FACTS-OF-OBJECT
+             /LOGIC/ASK
+             /LOGIC/ASSERT
+             /LOGIC/CC
+             /LOGIC/CLEAR-INSTANCES
+             /LOGIC/CLEAR-MODULE
+             /LOGIC/CONCEIVE
+             /LOGIC/COPYRIGHT
+             /LOGIC/CREATE
+             /LOGIC/DEFCLASS
+             /LOGIC/DEFCONCEPT
+             /LOGIC/DEFFUNCTION
+             /LOGIC/DEFMODULE
+             /LOGIC/DEFRELATION
+             /LOGIC/DEFRULE
+             /LOGIC/DEMO
+             /LOGIC/DENY
+             /LOGIC/HELP
+             /LOGIC/IN-DIALECT
+             /LOGIC/IN-MODULE
+             /LOGIC/LOAD
+             /LOGIC/PRINT-FEATURES
+             /LOGIC/PROPAGATE-CONSTRAINTS
+             /LOGIC/RESET-FEATURES
+             /LOGIC/RETRACT
+             /LOGIC/RETRACT-FACTS-OF
+             ;;/LOGIC/RETRACT-FACTS-OF-OBJECT
+             /LOGIC/RETRIEVE
+             ;;/LOGIC/SATISFIES?
+             /LOGIC/SAVE-MODULE
+             /LOGIC/SET-FEATURE
+             ;;/LOGIC/SPECIALIZES?
+             /LOGIC/UNASSERT
+             /LOGIC/UNSET-FEATURE
+             )
+            ("PL:sources;logic;doc;evaluator.texi"
+             /STELLA/EVALUATE
+             /STELLA/EVALUATE-STRING
+             )
+            )))
+
+(defun make-powerloom-manual ()
+  (generate-manual *powerloom-manual-specification* NULL))

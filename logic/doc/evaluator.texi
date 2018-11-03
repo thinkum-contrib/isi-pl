@@ -1,0 +1,13 @@
+@deffn Function evaluate (@w{(expression @sc{object})}) : @sc{object} @sc{type-spec} @sc{boolean} 
+Evaluate the expression @var{expression} and return the result.
+Currently, only the evaluation of (possibly nested) commands and global
+variables is supported.  The second return value indicates the actual type 
+of the result (which might have been wrapped), and the third return value
+indicates whether an error occurred during the evaluation.
+@end deffn
+
+@deffn Function evaluate-string (@w{(expression @sc{string})}) : @sc{object} @sc{type-spec} @sc{boolean} 
+Evaluate the expression represented by @var{expression} and return the result.
+This is equivalent to @code{(evaluate (unstringify expression))}.
+@end deffn
+

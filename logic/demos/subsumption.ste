@@ -1,0 +1,62 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Version: subsumption.ste,v 1.3 1997/10/17 23:52:53 hans Exp
+
+;;; Testing Subsumption
+;;; ===================
+
+;;; Under construction.
+
+(in-package "STELLA")
+
+(defmodule "/PL-USER/SUBSUMPTION")
+
+(in-module "/PL-USER/SUBSUMPTION")
+
+(clear-module "/PL-USER/SUBSUMPTION")
+(reset-features)
+
+(in-dialect :KIF)
+
+(defclass PERSON (STANDARD-OBJECT)
+  :slots ((friends :type (LIST OF PERSON))))
+
+(defrelation has-parent ((?x PERSON) (?y PERSON)))
+(defrelation male ((?p PERSON)))
+(defrelation has-father ((?p PERSON) (?f PERSON))
+  :definition (kappa ((?p PERSON) (?f PERSON))
+                 (and (has-parent ?p ?f) (male ?p))))
+
+(ask (subset PERSON.has-father PERSON.has-parent))
+
+;;; Harder problems for the subsumption test:
+
+(defmethod (cardinality INTEGER) ((self COLLECTION))
+  (return (length (collection-members self :CLOSED))) )
+
+(assert (forall ((?x NUMBER) (?y NUMBER)) (<= (>= ?x ?y) (> ?x ?y))))
+
+(defclass Person-with-Friends (PERSON)
+  :definition (kappa ((?x PERSON)) (>= (cardinality (friends ?x)) 1)))
+
+(defclass Person-with-Atleast-2-Friends (PERSON)
+  :definition (kappa ((?x PERSON)) (>= (cardinality (friends ?x)) 2)))
+
+(defclass Person-with-Exactly-2-Friends (PERSON)
+  :definition (kappa ((?x PERSON)) (= (cardinality (friends ?x)) 2)))
+(defclass Person-with-More-Than-2-Friends (PERSON)
+  :definition (kappa ((?x PERSON)) (> (cardinality (friends ?x)) 2)))
+
+(ask (subset Person-with-Exactly-2-Friends Person-with-Atleast-2-Friends))
+(ask (subset Person-with-Atleast-2-Friends Person-with-Exactly-2-Friends))
+(ask (subset Person-with-More-Than-2-Friends Person-with-Atleast-2-Friends))
+(ask (subset Person-with-Atleast-2-Friends Person-with-More-Than-2-Friends))
+(ask (subset Person-with-Atleast-2-Friends Person-with-Friends))
+
+(assert
+  (forall ((?x INTEGER) (?z INTEGER))
+	   (<= (> ?x ?z)
+	       (exists ((?y INTEGER))
+		 (and (>= ?x ?y) (>= ?y ?z))))))
+
+(ask (subset Person-with-Atleast-2-Friends Person-with-Friends))

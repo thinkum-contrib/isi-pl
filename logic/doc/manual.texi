@@ -1,0 +1,310 @@
+\input /nfs/image2/hans/Util/src/gnu/texinfo-3.9/texinfo.tex @c -*-texinfo-*-
+@c \input /local/tex/lib/tex/macros/texinfo.tex    @c -*-texinfo-*-
+@c \input /nfs/image2/hans/Util/src/gnu/emacs/19.34/man/texinfo.tex    @c -*-texinfo-*-
+
+@c Version: manual.texi,v 1.1.1.1 1997/09/22 22:04:37 hans Exp
+
+@setfilename manual.info
+
+@settitle PowerLoom Manual
+
+@iftex
+@finalout
+@end iftex
+
+@ifinfo
+This file documents the PowerLoom knowledge representation and reasoning
+system.
+
+Copyright (C) 1997 
+University of Southern California, Information Sciences Institute,
+4676 Admiralty Way,
+Marina Del Rey, CA 90292, USA
+
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+@ignore
+Permission is granted to process this file through TeX and print the
+results, provided the printed document carries copying permission notice
+identical to this one except for the removal of this paragraph (this
+paragraph not being relevant to the printed manual).
+
+@end ignore
+@end ifinfo
+
+@titlepage
+@sp 6
+@center @titlefont{PowerLoom Manual}
+@sp 1
+@center Powerful knowledge representation and reasoning with
+@center delivery in Common-Lisp, C++, (and, eventually, Java)
+@sp 3
+@center This manual describes
+@center PowerLoom 1.0.alpha or later.
+@sp 2
+@center @today{}
+@sp 2
+@center @strong{The PowerLoom development team}
+@ifhtml
+<br>
+<blockquote>
+@end ifhtml
+@center Robert M. MacGregor
+@ifhtml
+<br>
+@end ifhtml
+@center Hans Chalupsky
+@ifhtml
+<br>
+@end ifhtml
+@center Eric R. Melz
+@ifhtml
+<br>
+@end ifhtml
+@center @{macgregor,hans,melz@}@@isi.edu
+@ifhtml
+</blockquote>
+@end ifhtml
+@page
+
+@vskip 0pt plus 1fill
+Copyright (C) 1997
+University of Southern California, Information Sciences Institute,
+4676 Admiralty Way, Marina Del Rey, CA 90292, USA
+
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+@ignore
+Permission is granted to process this file through TeX and print the
+results, provided the printed document carries copying permission notice
+identical to this one except for the removal of this paragraph (this
+paragraph not being relevant to the printed manual).
+
+@end ignore
+@end titlepage
+
+@c===========================================================================
+
+@ifinfo
+@node Top, Introduction, (dir), (dir)
+@comment  node-name,  next,  previous,  up
+@ichapter PowerLoom Manual
+
+This document describes the PowerLoom knowledge representation and
+reasoning system.  PowerLoom is the successor to the Loom knowledge
+representation system. It provides a language and environment for
+constructing intelligent applications.
+
+@end ifinfo
+
+@c===========================================================================
+
+@menu
+* Introduction::                
+* Commands::                    
+* Function Index::              
+* Variable Index::              
+* Concept Index::               
+@end menu
+
+@node Introduction, Content Language, Top, Top
+@comment  node-name,  next,  previous,  up
+@chapter Introduction
+
+This document describes the PowerLoom knowledge representation and
+reasoning system.  PowerLoom is the successor to the Loom knowledge
+representation system. It provides a language and environment for
+constructing intelligent applications. PowerLoom uses a fully
+expressive, logic-based representation language (a variant of KIF). It
+uses a Prolog-technology backward chainer as its deductive
+component. The backward chainer is (not yet) a complete theorem prover,
+but it can handle Horn rules, negation, and simple equality
+reasoning. Contrary to Prolog, it also handles recursive rules without
+the risk of infinite recursion. Once the classifier is completed, it
+will be able to classify descriptions expressed in full first order
+predicate calculus. PowerLoom uses modules as a structuring device for
+knowledge bases, and ultra-lightweight worlds to support hypothetical
+reasoning.
+
+To implement PowerLoom we developed a new programming language called
+STELLA, which is a Strongly Typed, Lisp-like LAnguage that can be
+translated into Lisp and C++. STELLA tries to preserve those features of
+Lisp that facilitate symbolic programming and rapid prototyping, while
+still allowing translation into readable as well as efficient C++
+code. By writing PowerLoom in STELLA, we are able to deliver it in
+Common-Lisp as well as in C++. Once the STELLA-to-Java translator has
+been completed, PowerLoom will also become available in Java.
+
+@c===========================================================================
+
+@node Content Language, Command Interpreter, Introduction, Top
+@comment  node-name,  next,  previous,  up
+@chapter Content Language
+
+PowerLoom uses a variant of KIF (the Knowledge Interchange Format) with
+object-oriented extensions to express definitional and assertional
+content. The sentential component of this variant is closest in flavor
+to that of KIF 3.0 . The main differences are that relations in
+PowerLoom are (by default) polymorphic, and that variables in quantified
+sentences and terms can be typed. Not yet supported are logical terms
+generated by @code{if} or @code{cond}, the biconditional @code{<=>}, and
+the @code{holds} predicate. PowerLoom does not have sequence variables,
+but it allows the definition of functions and relations with a variable
+number of arguments. PowerLoom does not support quotation via
+@code{quote}, instead, it will support sentences that take propositional
+arguments. PowerLoom's definitional language is somewhat more different
+from its counterpart in KIF 3.0. It has similarities with parts of
+Ontolingua and is described in more detail in the manual. Future
+versions of PowerLoom will have translation frontends to support
+knowledge bases and ontologies written in vanilla KIF or Ontolingua.
+
+@c===========================================================================
+
+@node Typed Variables,  , Content Language, Content Language
+@comment  node-name,  next,  previous,  up
+@section Typed Variables
+
+Write me.
+
+@c===========================================================================
+
+@node Command Interpreter, Commands, Content Language, Top
+@chapter Command Interpreter
+
+Currently, the primary means for interacting with PowerLoom is its
+command interpreter.  The command interpreter can be used either
+interactively, or it can be invoked directly from a program to evaluate
+individual commands.  Future versions of PowerLoom will include
+additional APIs such as the Generic Frame Protocol (GFP).  All PowerLoom
+commands (@pxref{Commands}) can be evaluated using the command
+interpreter.
+
+The interactive command interpreter is invoked by calling the function
+@code{powerloom} without any arguments.  In the distributed C++ version
+of PowerLoom, this is the top-level function called within the
+@code{main} routine.  In the Lisp version, @code{(STELLA::powerloom)}
+has to be called explicitly.  However, in Lisp it is not really
+necessary to use the command interpreter, since all commands can also be
+executed directly at the Lisp top level.
+
+The interactive command interpreter functions as a simple
+read/eval/print loop that prompts for input with a @code{|=} prompt,
+reads a user command from standard input, evaluates it, and prints the
+result to standard output.  To exit the command interpreter, type
+@code{quit} or @code{stop}.
+
+To evaluate commands directly from a program, the following evaluator
+functions can be used:
+
+@include evaluator.texi
+
+@c===========================================================================
+
+@node Commands, Function Index, Command Interpreter, Top
+@chapter Commands
+
+This chapter lists all available PowerLoom commands alphabetically.
+Each command is documented with its name, a (possibly empty) list of
+parameters specified as @code{@w{(<name> <type>)}} pairs, its return
+type, and its command type which can be either @dfn{Command} or
+@dfn{N-Command}.  Regular commands do evaluate their arguments (similar
+to a Lisp or C++ function), while N-Commands do not (similar to a Lisp
+macro).  For example, the command @code{in-dialect} is defined as follows:
+
+@quotation
+@deffn N-Command in-dialect (@w{(dialect @sc{name})}) : @sc{keyword} 
+Change the current logic dialect to @var{dialect}.
+Currently supported dialects are @code{KIF}, @code{STELLA}, and @code{PREFIX-STELLA}.
+The STELLA dialects are not recommended for the construction of knowledge
+bases, they are mainly used internally by PowerLoom.
+@end deffn
+@end quotation
+
+This means that it takes one parameter called @var{dialect} of type
+@emph{@sc{name}}, returns a STELLA @emph{@sc{keyword}} as its result,
+and, since it is an N-Command, does not evaluate its arguments.
+
+Commands can also have @code{&rest} parameters (similar to Lisp
+functions).  These are either used to allow a variable number of
+arguments, or to handle optional arguments, since STELLA does not
+directly support optional arguments.
+
+Here is a list of important parameter types used in the
+command specifications below:
+
+@itemize 
+@item @emph{@sc{generalized-symbol}}: A generalized symbol is either a plain
+symbol (similar to a Lisp symbol) such as @code{Fred}, a keyword
+(similar to a Lisp keyword) such as @code{:KIF}, or a STELLA surrogate
+which is a symbol starting with an at-sign, e.g., @code{@@CONS}.  STELLA
+surrogates are used as names for objects of arbitrary types.
+
+@item @emph{@sc{name}}: Names can be either a string, or a
+@emph{@sc{generalized-symbol}} (i.e., a symbol, a kewyord, or a
+surrogate).  If a symbol is supplied, only its symbol-name is used.
+Commands that take names as arguments usually need a string, but by
+allowing a name they make it a little bit more convenient to supply such
+a name in an interactive invocation.
+
+@item @emph{@sc{parse-tree}}: A parse tree is similar to a Lisp s-expression,
+i.e., it can either be an atom such as a symbol, number, or a string, or
+a list of zero or more parse trees.  For example, the expression
+@code{(happy Fred)} is a parse tree, and so are its components
+@code{happy} and @code{Fred}.
+@end itemize
+
+Here is the list of all available PowerLoom commands:
+
+@include commands.texi
+
+@c===========================================================================
+
+@node Function Index,  , Commands, Top
+@comment  node-name,  next,  previous,  up
+@unnumbered Function Index
+
+@printindex fn
+
+@c===========================================================================
+@c 
+@c @node Variable Index, Concept Index, Function Index, Top
+@c @comment  node-name,  next,  previous,  up
+@c @unnumbered Variable Index
+@c 
+@c @printindex vr
+
+@c===========================================================================
+@c 
+@c @node Concept Index,  , Variable Index, Top
+@c @comment  node-name,  next,  previous,  up
+@c @unnumbered Concept Index
+@c 
+@c @printindex cp
+
+@c===========================================================================
+
+@contents
+
+@c===========================================================================
+
+@bye
+
+Notes:
+ - don't fiddle with nodes and menus before the overall structure isn't
+   pretty much determined (can run makeinfo even without nodes)
+
+ - to insert node lines with the titles taken from the sections do
+   `C-x h C-u M-x texinfo-insert-node-lines'
+
+ - to link all the nodes do `M-x texinfo-every-node-update'
+
+ - then create/update menus with `M-x texinfo-all-menus-update'
+
+ - node names have to be unique
+
+ - node names should be short, keep details in their explanations -
+   this makes the menus look better

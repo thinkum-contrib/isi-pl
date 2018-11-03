@@ -1,0 +1,268 @@
+
+
+Terminals which are not used:
+
+   ERROR
+
+
+
+Grammar
+rule 1    exp -> end
+rule 2    exp -> sexp
+rule 3    end -> END_OF_FILE
+rule 4    sexp -> atom
+rule 5    sexp -> LEFT_PAREN list RIGHT_PAREN
+rule 6    list -> sexp list
+rule 7    list ->		/* empty */
+rule 8    atom -> INTEGER
+rule 9    atom -> FLOAT
+rule 10   atom -> SYMBOL
+rule 11   atom -> SURROGATE
+rule 12   atom -> KEYWORD
+rule 13   atom -> STRING
+rule 14   atom -> CHARACTER
+rule 15   atom -> COMMENT
+rule 16   atom -> NIL_TOKEN
+
+Terminals, with rules where they appear
+
+$ (-1)
+error (256)
+INTEGER (258) 8
+FLOAT (259) 9
+KEYWORD (260) 12
+SYMBOL (261) 10
+SURROGATE (262) 11
+STRING (263) 13
+CHARACTER (264) 14
+NIL_TOKEN (265) 16
+COMMENT (266) 15
+LEFT_PAREN (267) 5
+RIGHT_PAREN (268) 5
+END_OF_FILE (269) 3
+ERROR (270)
+
+Nonterminals, with rules where they appear
+
+exp (16)
+    on left: 1 2
+end (17)
+    on left: 3, on right: 1
+sexp (18)
+    on left: 4 5, on right: 2 6
+list (19)
+    on left: 6 7, on right: 5 6
+atom (20)
+    on left: 8 9 10 11 12 13 14 15 16, on right: 4
+
+
+state 0
+
+    INTEGER	shift, and go to state 1
+    FLOAT	shift, and go to state 2
+    KEYWORD	shift, and go to state 3
+    SYMBOL	shift, and go to state 4
+    SURROGATE	shift, and go to state 5
+    STRING	shift, and go to state 6
+    CHARACTER	shift, and go to state 7
+    NIL_TOKEN	shift, and go to state 8
+    COMMENT	shift, and go to state 9
+    LEFT_PAREN	shift, and go to state 10
+    END_OF_FILE	shift, and go to state 11
+
+    exp 	go to state 19
+    end 	go to state 12
+    sexp	go to state 13
+    atom	go to state 14
+
+
+
+state 1
+
+    atom  ->  INTEGER .   (rule 8)
+
+    $default	reduce using rule 8 (atom)
+
+
+
+state 2
+
+    atom  ->  FLOAT .   (rule 9)
+
+    $default	reduce using rule 9 (atom)
+
+
+
+state 3
+
+    atom  ->  KEYWORD .   (rule 12)
+
+    $default	reduce using rule 12 (atom)
+
+
+
+state 4
+
+    atom  ->  SYMBOL .   (rule 10)
+
+    $default	reduce using rule 10 (atom)
+
+
+
+state 5
+
+    atom  ->  SURROGATE .   (rule 11)
+
+    $default	reduce using rule 11 (atom)
+
+
+
+state 6
+
+    atom  ->  STRING .   (rule 13)
+
+    $default	reduce using rule 13 (atom)
+
+
+
+state 7
+
+    atom  ->  CHARACTER .   (rule 14)
+
+    $default	reduce using rule 14 (atom)
+
+
+
+state 8
+
+    atom  ->  NIL_TOKEN .   (rule 16)
+
+    $default	reduce using rule 16 (atom)
+
+
+
+state 9
+
+    atom  ->  COMMENT .   (rule 15)
+
+    $default	reduce using rule 15 (atom)
+
+
+
+state 10
+
+    sexp  ->  LEFT_PAREN . list RIGHT_PAREN   (rule 5)
+
+    INTEGER	shift, and go to state 1
+    FLOAT	shift, and go to state 2
+    KEYWORD	shift, and go to state 3
+    SYMBOL	shift, and go to state 4
+    SURROGATE	shift, and go to state 5
+    STRING	shift, and go to state 6
+    CHARACTER	shift, and go to state 7
+    NIL_TOKEN	shift, and go to state 8
+    COMMENT	shift, and go to state 9
+    LEFT_PAREN	shift, and go to state 10
+
+    $default	reduce using rule 7 (list)
+
+    sexp	go to state 15
+    list	go to state 16
+    atom	go to state 14
+
+
+
+state 11
+
+    end  ->  END_OF_FILE .   (rule 3)
+
+    $default	reduce using rule 3 (end)
+
+
+
+state 12
+
+    exp  ->  end .   (rule 1)
+
+    $default	reduce using rule 1 (exp)
+
+
+
+state 13
+
+    exp  ->  sexp .   (rule 2)
+
+    $default	reduce using rule 2 (exp)
+
+
+
+state 14
+
+    sexp  ->  atom .   (rule 4)
+
+    $default	reduce using rule 4 (sexp)
+
+
+
+state 15
+
+    list  ->  sexp . list   (rule 6)
+
+    INTEGER	shift, and go to state 1
+    FLOAT	shift, and go to state 2
+    KEYWORD	shift, and go to state 3
+    SYMBOL	shift, and go to state 4
+    SURROGATE	shift, and go to state 5
+    STRING	shift, and go to state 6
+    CHARACTER	shift, and go to state 7
+    NIL_TOKEN	shift, and go to state 8
+    COMMENT	shift, and go to state 9
+    LEFT_PAREN	shift, and go to state 10
+
+    $default	reduce using rule 7 (list)
+
+    sexp	go to state 15
+    list	go to state 17
+    atom	go to state 14
+
+
+
+state 16
+
+    sexp  ->  LEFT_PAREN list . RIGHT_PAREN   (rule 5)
+
+    RIGHT_PAREN	shift, and go to state 18
+
+
+
+state 17
+
+    list  ->  sexp list .   (rule 6)
+
+    $default	reduce using rule 6 (list)
+
+
+
+state 18
+
+    sexp  ->  LEFT_PAREN list RIGHT_PAREN .   (rule 5)
+
+    $default	reduce using rule 5 (sexp)
+
+
+
+state 19
+
+    $   	go to state 20
+
+
+
+state 20
+
+    $   	go to state 21
+
+
+
+state 21
+
+    $default	accept

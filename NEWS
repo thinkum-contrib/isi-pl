@@ -1,0 +1,23 @@
+PowerLoom NEWS -- history of user-visible changes.
+
+Copyright (C) USC Information Sciences Institute, 1997
+See the file `COPYRIGHT' for detailed copyright information.
+
+Version: NEWS,v 1.2 1997/11/10 03:05:25 hans Exp
+
+Please send PowerLoom bug reports to `powerloom-forum@isi.edu'.
+
+This file is modeled after the GNU Emacs NEWS file.
+In Emacs you can use `outline-mode' to view the headings only.
+
+* PowerLoom 1.0.alpha (patch-level 0) released 
+
+Remember that this is an alpha release, i.e., most likely you will encounter
+bugs, inconsistencies, missing features, etc.  Main attention has been paid to
+providing correct core functionality.  No run-time/space optimization has been
+done so far.  Thus, if you encounter serious run-time or space performance
+problems, let us know so we can fix them in future releases.
+
+Local variables:
+mode: text
+end:

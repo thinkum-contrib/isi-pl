@@ -1,0 +1,414 @@
+@deffn N-Command all-facts-of (@w{(name @sc{name})}) : @sc{(list of proposition)} 
+Return a list of all definite (TRUE or FALSE) propositions
+that reference the logic-object named @var{name}.
+@end deffn
+
+@deffn N-Command ask (@w{(proposition @sc{parse-tree})}) : @sc{boolean} 
+Perform inference to determine whether @var{proposition} is true.
+Return TRUE if @var{proposition} was found to be true; return NULL otherwise.
+KIF example: @code{(ask (happy Fred))} will return TRUE if Fred was indeed
+found to be happy.  Note, that for this query to run, the logic constant
+@code{Fred} and the relation (or slot) @code{happy} must already be defined (see
+@code{assert}).  Use @code{(set/unset-feature goal-trace)} to en/disable goal tracing
+of the inference engine.
+@end deffn
+
+@deffn N-Command assert (@w{(proposition @sc{parse-tree})}) : @sc{object} 
+Assert the truth of @var{proposition}.  Return the asserted proposition object.
+KIF example:  @code{(assert (happy Fred))} asserts that Fred is indeed happy.
+Note, that for this assertion to succeed, the logic constant @code{Fred} must
+already be defined, e.g., as a side-effect of a type assertion such as
+@code{(assert (Person Fred))}, and the relation (or slot) @code{happy} must be defined
+on objects of @code{Fred}s type, e.g., on the class @code{Person}.
+@end deffn
+
+@deffn N-Command cc (@w{&rest (name @sc{name})}) : @sc{context} 
+Change the current context to the one named @var{name}.  Return the
+value of the new current context.  If no @var{name} is supplied, return
+the value of @code{*context*}.  @code{cc} is a no-op if the context reference
+cannot be successfully evaluated.
+@end deffn
+
+@deffn N-Command clear-instances (@w{&rest (name @sc{name})}) : 
+Destroy all instances belonging to module @var{name} or any of its children.
+If no @var{name} is supplied, the current module will be cleared after
+confirming with the user.
+@end deffn
+
+@deffn N-Command clear-module (@w{&rest (name @sc{name})}) : 
+Destroy all objects belonging to module @var{name} or any of its children.
+If no @var{name} is supplied, the current module will be cleared after
+confirming with the user.  Important modules such as STELLA are protected
+against accidental clearing.
+@end deffn
+
+@deffn N-Command conceive (@w{(proposition @sc{parse-tree})}) : @sc{proposition} 
+Build @var{proposition} without asserting its truth value.  Return the
+conceived proposition object.  KIF example: @code{(conceive (happy Fred))} builds
+the proposition expressing that Fred is happy without explictly asserting or
+denying it.  Note, that for this to succeed, the logic constant @code{Fred} and
+the relation (or slot) @code{happy} must already be defined (see @code{assert}).
+@end deffn
+
+@deffn Command copyright () : 
+Print detailed PowerLoom copyright information.
+@end deffn
+
+@deffn N-Command create (@w{(type @sc{generalized-symbol})} @w{&rest (name @sc{generalized-symbol})}) : @sc{logic-object} 
+Create a logic object of logical type @var{type} and return it.
+If @var{name} is also supplied, convert it into a surrogate and bind it to the 
+newly created object.
+@end deffn
+
+@deffn N-Command defclass (@w{&rest (args @sc{parse-tree})}) : @sc{class} 
+Define (or redefine) a class.  The accepted syntax is:
+
+@example 
+  (defclass <class-name> (<superclass-name>*)
+     [:documentation <docstring>]
+     [:self-variable <var>]
+     [[@{:definition | :is@} <relation-expression>] |
+      [<=> <sentence-with-argument-variables>]]
+     [:axioms @{<sentence> | (<sentence>+)@}]
+     [:constraints @{<sentence-with-argument-variables> |
+                    (<sentence-with-argument-variables>+)@}]
+     [:sort? @{TRUE | FALSE@}]
+     [:properties <list-of-properties>]
+     [:meta-attributes <list-of-key-value-pairs>]
+     [:slots (@{(<slot-name> <slot-options>*)@}*)]
+     [<other-options>*])
+@end example
+
+<slot-options> is a list of keyword/value pairs.  The set of legal slot
+options is the same as those accepted by @code{defrelation}.  Unless the @code{:sort?}
+option specifies otherwise, classes defined with @code{defclass} are assumed
+to be sorts, i.e., the extensions of two sibling classes that don't share
+a common subclass are assumed to be disjoint.
+CAUTION: The semantics of sorts is still somwhat in flux.
+@end deffn
+
+@deffn N-Command defconcept (@w{&rest (args @sc{parse-tree})}) : @sc{class} 
+Define (or redefine) a class that is not a sort.
+The accepted syntax is identical to that of @code{defclass}.  The only difference
+is that the value of the @code{:sort?} option will always be forced to be FALSE.
+This means that unrestricted inference might be used to determine whether
+a particular object is an instance of a non-sortal class defined with
+@code{defconcept}, since no disjointness assumptions can be made.  For example,
+suppose a hierarchy contains the classes @code{Human} and @code{Featherless-Biped}
+which share a common superclass, say @code{Living-Thing}.  If the two classes
+were defined as sorts, their extensions are assumed to be disjoint.  Thus,
+even if we have a rule 
+
+@example 
+  (forall (?x Living-Thing)
+     (=> (and (Featherless ?x) (Biped ?x))
+         (Featherless-Biped ?x)))
+@end example
+
+and @code{Human}s are in fact featherless and bipeds, we will not be able to
+infer @code{Human}s to be @code{Featherless-Biped}s.  However, if @code{Featherless-Biped}
+was defined with @code{defconcept}, the rule will become applicable, since now
+@code{Human}s and @code{Featherless-Biped}s are not necessarily disjoint anymore.
+CAUTION: The semantics of sorts is still somwhat in flux.
+@end deffn
+
+@deffn N-Command deffunction (@w{&rest (args @sc{parse-tree})}) : @sc{relation} 
+Define (or redefine) a logic function.  The accepted syntax is:
+
+@example 
+  (deffunction @{<function-name> |
+                (<function-name> <value-type>)@} (<var>+)
+     [:documentation <docstring>]
+     [:-> <value-variable>]
+     [:type <value-type>]
+     [[@{:definition | :is@} <relation-expression>] |
+      [<=> <sentence-with-argument-variables>] |
+      [:= <term-expression-with-argument-variables>]]
+     [:polymorphic? @{TRUE | FALSE@}]
+     [:axioms @{<sentence> | (<sentence>+)@}]
+     [:constraints @{<sentence-with-argument-variables> |
+                    (<sentence-with-argument-variables>+)@}]
+     [:properties <list-of-properties>]
+     [:meta-attributes <list-of-key-value-pairs>]
+     [<other-options>*])
+@end example
+
+Function parameters can be typed or untyped.  An untyped first parameter
+or a @code{:polymorphic? FALSE} specification defines a non-polymorphic function.
+Otherwise, the function will be polymorphic.  If a value variable is
+specified, it must be specified before any definition options, otherwise,
+the expansions of definitions might be incorrect.  The default KIF value
+variable is @code{?value}.
+@end deffn
+
+@deffn N-Command defmodule (@w{(name @sc{name})} @w{&rest (options @sc{object})}) : 
+Define (or redefine) a module named @var{name}.
+The accepted syntax is:
+
+@example 
+  (defmodule <module-name>
+     [:documentation <docstring>]
+     [:includes @{<module-name> | (<module-name>*)@}]
+     [:uses @{<module-name> | (<module-name>*)@}]
+     [:package <package-name-string>]
+     [:case-sensitive? @{TRUE | FALSE@}]
+     [:shadow (<symbol>*)])
+     [<other-options>*])
+@end example
+
+@var{name} can be a string or a symbol.  The list of modules specified in the
+@code{:includes} option plus (if supplied) the parent in the path used for @var{name}
+become the new module's parents.  If no @code{:uses} option was supplied, the
+new module will use the @code{STELLA} module by default, otherwise, it will use
+the set of specified modules.  @code{:package} specifies the name of a native
+package or name space in which symbols of the module should be allocated
+when they get translated into a native language such as Lisp or C++.
+By default, Lisp symbols are allocated in the @code{STELLA} package, and C++ names
+are translated without any prefixes.  If @code{:case-sensitive?} is supplied
+as TRUE, symbols in the module will be interned case-sensitively, otherwise
+(the default), they will be converted to uppercase before they get interned.
+Modules can shadow definitions of functions and classes inherited from
+parents or used modules.  Shadowing is done automatically, but generates
+a warning unless the shadowed type or function name is listed in the
+@code{:shadow} option of the module definition.  CAUTION: The implementation of
+shadowing is still somewhat fragile.
+
+Examples:
+
+@example 
+  (defmodule "/PL-USER"
+    :uses ("LOGIC" "STELLA")
+    :package "PL-USER")
+
+  (defmodule /PL-USER/GENEALOGY)
+@end example
+
+Modules include objects from other modules via two separate mechanisms:
+(1) they inherit from their parents specified via the @code{:includes} option
+and/or a fully qualified module name, and (2) they inherit from used
+modules specified via the @code{:uses} option.  The main difference between
+the two mechanisms is that inheritance from parents is transitive, while
+uses-links are only followed one level deep.  I.e., a module A that uses
+B will see all objects of B (and any of B's parents) but not see anything
+from modules used by B.  Another difference is that only objects declared
+as public can be inherited via uses-links (this is not yet enforced).
+Note that - contrary to Lisp - there are separate name spaces for classes,
+functions, and variables.  For example, a module could inherit the class
+@code{CONS} from the @code{STELLA} module, but shadow the function of the same name.
+CAUTION: The implementation of this semantics has not yet been fully
+completed.
+@end deffn
+
+@deffn N-Command defrelation (@w{&rest (args @sc{parse-tree})}) : @sc{relation} 
+Define (or redefine) a logic relation.  The accepted syntax is:
+
+@example 
+  (defrelation @{<relation-name> | 
+                (<relation-name> BOOLEAN)@} (<var>+)
+     [:documentation <docstring>]
+     [:type BOOLEAN]
+     [[@{:definition | :is@} <relation-expression>] |
+      [<=> <sentence-with-argument-variables>]]
+     [:polymorphic? @{TRUE | FALSE@}]
+     [:axioms @{<sentence> | (<sentence>+)@}]
+     [:constraints @{<sentence-with-argument-variables> |
+                    (<sentence-with-argument-variables>+)@}]
+     [:properties <list-of-properties>]
+     [:meta-attributes <list-of-key-value-pairs>]
+     [<other-options>*])
+@end example
+
+Relation parameters can be typed or untyped.  An untyped first parameter
+or a @code{:polymorphic? FALSE} specification defines a non-polymorphic relation.
+Otherwise, the relation will be polymorphic.
+@end deffn
+
+@deffn N-Command defrule (@w{(ruleName @sc{name})} @w{(rule @sc{parse-tree})}) : @sc{proposition} 
+Define (or redefine) a rule (any axiom) named @var{ruleName}.
+If an axiom with that name already exists, replace it with the new
+axiom @var{rule}.
+@end deffn
+
+@deffn N-Command demo (@w{&rest (fileandpause @sc{object})}) : 
+Read logic commands from a file, echo them verbatimly to standard output,
+and evaluate them just as if they had been typed in interactively.
+When called with no arguments, present a menu of example demos, otherwise,
+use the first argument as the name of the file to demo.
+Pause for user confirmation after each expression has been read but
+before it is evaluated.  Pausing can be turned off by suppling FALSE
+as the optional second argument, or by typing @code{c} at the pause prompt.
+Typing @code{?} at the pause prompt prints a list of available commands.
+@end deffn
+
+@deffn N-Command deny (@w{(proposition @sc{parse-tree})}) : @sc{proposition} 
+Assert the falsity of @var{proposition}.  Return the asserted proposition
+object.  KIF example:  @code{(deny (happy Fred))} asserts that Fred is not happy,
+which could have been done equivalently by @code{(assert (not (happy Fred)))}.
+Note, that for this to succeed, the logic constant @code{Fred} and the
+relation (or slot) @code{happy} must already be defined (see @code{assert}).
+@end deffn
+
+@deffn N-Command help (@w{&rest (commands @sc{symbol})}) : 
+Describe specific commands, or print a list of available commands.
+@end deffn
+
+@deffn N-Command in-dialect (@w{(dialect @sc{name})}) : @sc{keyword} 
+Change the current logic dialect to @var{dialect}.
+Currently supported dialects are @code{KIF}, @code{STELLA}, and @code{PREFIX-STELLA}.
+The STELLA dialects are not recommended for the construction of knowledge
+bases, they are mainly used internally by PowerLoom.
+@end deffn
+
+@deffn N-Command in-module (@w{(name @sc{name})}) : @sc{module} 
+Change the current module to the module named @var{name}.
+@end deffn
+
+@deffn Command load (@w{(file @sc{string})}) : 
+Read logic commands from @var{file} and evaluate them.
+@end deffn
+
+@deffn Command print-features () : 
+Print the currently enabled and available PowerLoom environment features.
+@end deffn
+
+@deffn N-Command propagate-constraints (@w{&rest (name @sc{name})}) : 
+Trigger constraint propagation over all propositions of module @var{name}.
+If no @var{name} is supplied, the current module will be used.  This also
+enables incremental constraint propagation for future monotonic updates to
+the module.  Once a non-monotonic update is performed, i.e., a retraction
+or clipping of a function value, all cached inferences will be discarded
+and constraint propagation will be turned off until this function is
+called again.
+@end deffn
+
+@deffn Command reset-features () : @sc{(list of keyword)} 
+Reset the PowerLoom environment features to their default settings.
+@end deffn
+
+@deffn N-Command retract (@w{(proposition @sc{parse-tree})}) : @sc{proposition} 
+Retract the truth of @var{proposition}.  Return the retracted proposition
+object.  KIF example:  @code{(retract (happy Fred))} retracts that Fred is
+happy.  Note, that for this to succeed, the logic constant @code{Fred} and the
+relation (or slot) @code{happy} must already be defined (see @code{assert}).
+@end deffn
+
+@deffn N-Command retract-facts-of (@w{(name @sc{name})}) : 
+Retract all definite (TRUE or FALSE) propositions
+that reference the logic-object named @var{name}.
+@end deffn
+
+@deffn N-Command retrieve (@w{&rest (query @sc{parse-tree})}) : @sc{query-iterator} 
+Retrieve elements of a relation (tuples) that satisfy a proposition.
+The accepted syntax is:
+
+@example 
+  (retrieve [<integer> | all]
+            [@{<variable-spec> | (<variable-spec>+)@}
+             [<proposition>]])
+@end example
+
+The variables and proposition are similar to an @code{exists} sentence or
+@code{kappa} term without the quantifier.  <proposition> usually contains
+references to the listed variables.  No other free variable references
+are allowed.  If <proposition> is omitted, it defaults to TRUE.  
+
+A solution is a set of bindings for the listed variables for which
+<proposition> is true.  The optional first argument controls how many
+solutions should be generated before control is returned.  The keyword
+@code{all} indicates that all solutions should be generated.  By default,
+@code{retrieve} returns after it has found one new solution or if it cannot
+find any more solutions.
+
+@code{retrieve} returns an iterator which saves all the necessary state of
+a query and stores all generated solutions.  When used interactively,
+the returned iterator will print out with the set of solutions collected
+so far.  Calling @code{retrieve} without any arguments (or only with the first
+argument) will generate one (or more) solutions to the most recently
+asked query.
+
+KIF examples:
+
+@example 
+  (retrieve (?x Person) (happy ?x)) 
+@end example
+
+will try to find the next happy person and store it in the returned 
+query iterator.
+
+@example 
+  (retrieve 10 (?x Person) (happy ?x))
+@end example
+
+will try to find 10 happy people.
+
+@example 
+  (retrieve 10)
+@end example
+
+will try to find the next 10 happy people.
+
+@example 
+  (retrieve all (?x Person) (happy ?x))
+@end example
+
+will find all happy people.
+
+@example 
+  (retrieve all (?x Person))
+@end example
+
+will find all people.
+
+@example 
+  (retrieve (?x Person) (or (happy ?x) (parent-of Fred ?x)))
+@end example
+
+will try to find the next person that is happy or has Fred as a parent.
+
+@example 
+  (retrieve ((?x Person) (?y Person)) (parent-of ?x ?y))
+@end example
+
+will try to find the next pair of parent/child.
+
+@example 
+  (retrieve all (?x Person)
+            (exists (?y Person) (parent-of ?x ?y)))
+@end example
+
+will generate the set of all parents.  Note, that for these queries to run,
+the class @code{Person}, the relations @code{happy} and @code{parent-of}, and the logic
+constant @code{Fred} must already be defined (see @code{assert}).
+
+Use @code{(set/unset-feature goal-trace)} to en/disable goal tracing of the
+inference engine.
+@end deffn
+
+@deffn N-Command save-module (@w{(name @sc{name})} @w{(file @sc{string})}) : 
+Save all definitions and assertions of module @var{name} to @var{file}.
+@end deffn
+
+@deffn N-Command set-feature (@w{&rest (features @sc{name})}) : @sc{(list of keyword)} 
+Enable the PowerLoom environment feature(s) named by @var{features}.
+Return the list of enabled features.  Calling @code{set-feature} without any
+arguments can be used to display the currently enabled features.
+The following features are supported:
+
+@code{closed-world}: Enables closed-world reasoning.  NOT YET IMPLEMENTED!
+
+@code{goal-trace}: Enables the generation of goal trace information during
+inference.
+@end deffn
+
+@deffn N-Command unassert (@w{(proposition @sc{parse-tree})}) : 
+Retract the truth or falsity of @var{proposition}.  This is a more general
+version of @code{retract} that also handles falsity.
+@end deffn
+
+@deffn N-Command unset-feature (@w{&rest (features @sc{name})}) : @sc{(list of keyword)} 
+Disable the PowerLoom environment feature(s) named by @var{features}.
+Return the list of enabled features.  Calling @code{unset-feature} without any
+arguments can be used to display the currently enabled features.
+See @code{set-feature} for a description of supported features.
+@end deffn
+

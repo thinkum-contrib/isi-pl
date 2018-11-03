@@ -1,0 +1,157 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Version: append.ste,v 1.6 1997/11/06 20:16:16 hans Exp
+
+;;; Prolog-style `append' using Horn rules
+;;; ======================================
+
+;;; This file demonstrates a Prolog-style definition of an `append'
+;;; function using Horn implication rules.  It also shows how to
+;;; define functions in PowerLoom.
+
+;;; The best way to view this file is by calling `(demo)' and
+;;; selecting it from the menu of example demos.  This demo assumes
+;;; familiarity with some basic PowerLoom concepts which are described
+;;; in the introductory demo (#1 on the demo menu) and other demos
+;;; preceding this one.
+
+
+;; Demo preamble:
+
+(in-package "STELLA")
+
+;; The module definition below is slightly different than the ones
+;; seen previously, since it uses the `:shadow' keyword to shadow two
+;; classes inherited from the STELLA module.  Without the shadowing
+;; declaration in the module definition the classes would have still
+;; been shadowed automatically, but we would have received an ugly
+;; warning, because automatic shadowing can lead to problems in the
+;; presence of forward references.
+
+(defmodule "/PL-USER/APPEND"
+  :shadow (OBJECT CONS))
+
+(in-module "/PL-USER/APPEND")
+
+(clear-module "/PL-USER/APPEND")
+(reset-features)
+
+(in-dialect :KIF)
+
+
+;; We start by defining two classes of objects as the basic building
+;; blocks of a cons-list datatype:
+
+(defclass OBJECT ())
+(defclass CONS (OBJECT))
+
+;; The class `Cons' defined above is different from its STELLA analogue,
+;; since it does not have any internal structure such as a `value' or
+;; `rest' slot.  Instead, the semantics of constructing and appending
+;; cons-lists is defined completely declaratively by the two functions
+;; below and the associated rules.
+
+;; In PowerLoom a function is defined with the `deffunction' command.
+;; It takes a name, a list of typed argument variables, and a list of
+;; keyword options as its arguments.  A function or relation must be
+;; defined before it can be used in any assertion or query.
+
+;; The function `cons' defined below takes two arguments `?head' and
+;; `?tail', the `:type' keyword specifies that it returns objects of
+;; type CONS, and the `:total?'  keyword specifies that it is a total
+;; function.  Note, that the queries below could not be answered
+;; without assuming that `cons' is a total function.  By default,
+;; PowerLoom functions are not assumed to be total.  Note also, that
+;; `cons' is a polymorphic function associated with the class `Object'
+;; (PowerLoom uses first-argument polymorphism similar to STELLA or
+;; C++).  I.e., we could define another `cons' function on a different
+;; class with completely different semantics, and the two functions
+;; would be disambiguated by the types of their first arguments.  We
+;; could have also made `cons' non-polymorphic by specifying FALSE as
+;; the value of the `:polymorphic?' keyword.
+
+(deffunction cons ((?head OBJECT) (?tail CONS))
+  :documentation "Add `?head' to the front of the cons-list `?tail'."
+  :type CONS :total? TRUE)
+
+;; Functions and relations are implemented as STELLA tables, which is
+;; why the result object above was printed with a `|T|' prefix.
+
+;; Very similar to `cons', we define the funtion `append':
+
+(deffunction append ((?cons1 CONS) (?cons2 CONS))
+  :documentation "Append the cons-lists `?cons1' and `?cons2'."
+  :type CONS :total? TRUE)
+
+
+;; Let us assert some instances to work with:
+
+(assert (Object RED))
+(assert (Object GREEN))
+(assert (Object BLUE))
+(assert (Object YELLOW))
+
+;; The empty list:
+
+(assert (Cons NIL))
+
+;; A named cons-cell:
+
+(assert (= (cons GREEN NIL) GREEN-CONS))
+
+
+;; Now we specify the rules that specify the semantics of `append'.
+;; Each rule is a universally quantified KIF implication.  Again,
+;; PowerLoom extends the syntax of the KIF `forall' to allow the
+;; quantified variables to be typed.  The current version of PowerLoom
+;; can only reason with Horn rules, i.e., implications that have an
+;; arbitrarily complex antecedent (or "tail"), but only a simple
+;; consequent (or "head").  PowerLoom considers atomic predicates such
+;; as `(happy ?x)' or `(= (age ?x) ?y)' and their negations as simple
+;; heads.  Rules with complex heads can be represented and asserted,
+;; but, currently, the inference system does not know how to use them.
+
+;; The first rule states that appending anything to the empty list NIL
+;; simply returns the second list (similar to Prolog formulations, we
+;; use `?z' as a kind of "output" variable):
+
+(assert (forall ((?h CONS) (?t CONS) (?z CONS))
+          (=> (and (= ?h NIL)
+                   (= ?t ?z))
+              (= (append ?h ?t) ?z))))
+
+;; The second rule handles the inductive case, where we split off a
+;; head element of the first list and reduce the problem to appending
+;; the shortened first list to the second:
+
+(assert (forall ((?x CONS) (?y CONS) (?z CONS))
+          (=> (exists ((?h OBJECT) (?t CONS) (?w CONS))
+                (and (= ?x (cons ?h ?t))
+                     (= ?w (append ?t ?y))
+                     (= ?z (cons ?h ?w))))
+              (= (append ?x ?y) ?z))))
+
+;; Various queries:
+
+(retrieve all (?z CONS)
+          (= ?z (append NIL NIL)))
+
+;; The queries below generate actual cons-like structure with the help
+;; of anonymous skolem individuals.  The generation of these skolems
+;; is sanctioned, since `cons' was declared to be a total function:
+
+(retrieve all (?z CONS)
+          (= ?z (append (cons RED NIL) NIL)))
+(retrieve all (?z CONS)
+          (= ?z (append NIL (cons RED NIL))))
+(retrieve all (?z CONS)
+          (= ?z (append (cons RED NIL) (cons BLUE NIL))))
+(retrieve all (?z CONS)
+          (= ?z (append
+                 (cons YELLOW NIL)
+                 (append (cons RED NIL) (cons BLUE NIL)))))
+
+;; Accessing the head element of GREEN-CONS:
+
+(retrieve all (?m OBJECT)
+          (exists (?t CONS) (= (cons ?M ?T) GREEN-CONS)))

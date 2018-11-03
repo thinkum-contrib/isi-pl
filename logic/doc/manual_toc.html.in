@@ -1,0 +1,27 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.51
+     from manual.texi on 11 December 1997 -->
+
+<TITLE>PowerLoom Manual - Table of Contents</TITLE>
+</HEAD>
+<BODY>
+<H1>PowerLoom Manual</H1>
+<P>
+<P><HR><P>
+<UL>
+<LI><A NAME="TOC1" HREF="manual.html#SEC1">Introduction</A>
+<LI><A NAME="TOC2" HREF="manual.html#SEC2">Content Language</A>
+<UL>
+<LI><A NAME="TOC3" HREF="manual.html#SEC3">Typed Variables</A>
+</UL>
+<LI><A NAME="TOC4" HREF="manual.html#SEC4">Command Interpreter</A>
+<LI><A NAME="TOC5" HREF="manual.html#SEC5">Commands</A>
+<LI><A NAME="TOC6" HREF="manual.html#SEC6">Function Index</A>
+</UL>
+<P><HR><P>
+This document was generated on 11 December 1997 using the
+<A HREF="http://wwwcn.cern.ch/dci/texi2html/">texi2html</A>
+translator version 1.51.</P>
+</BODY>
+</HTML>
