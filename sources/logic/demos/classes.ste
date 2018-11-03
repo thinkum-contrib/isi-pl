@@ -1,0 +1,188 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Version: $Id: classes.ste,v 1.14 2000/07/15 02:32:07 hans Exp $
+
+;;; Reasoning with primitive and non-primitive (defined) classes
+;;; ============================================================
+
+;;; This file demonstrates some definition facilities for primitive
+;;; and non-primitive (or defined) classes, and how such classes can
+;;; be used in queries of various kinds.
+
+;;; The best way to view this file is by calling `(demo)' and
+;;; selecting it from the menu of example demos.  This demo assumes
+;;; familiarity with some basic PowerLoom concepts which are described
+;;; in the introductory demo (#1 on the demo menu).
+
+
+;; Standard demo preamble:
+
+(in-package "STELLA")
+
+(defmodule "/PL-KERNEL/PL-USER/CLASSES")
+
+(in-module "CLASSES")
+
+(clear-module "CLASSES")
+(reset-features)
+
+(in-dialect :KIF)
+
+
+;; We start by defining a class `Person' with the already familiar
+;; `happy' relation and `age' function and a new function called
+;; `friends', which evaluates to a set of instances.
+
+(defconcept PERSON (?p) 
+  :documentation "The class of human beings.")
+(defrelation happy ((?p PERSON)))
+(deffunction age ((?p PERSON)) :-> (?age INTEGER))
+(deffunction friends ((?p PERSON)) :-> (?ps SET))
+
+
+(defconcept ARMED-SERVICE (?s)
+  :documentation "The class of armed services, for example, the US Navy.")
+
+;; Some instances of armed services:
+
+(assert (Armed-Service US-Army))
+(assert (Armed-Service US-Navy))
+(assert (Armed-Service US-Airforce))
+
+;; A primitive subclass of `Person' (note, how individual slots can
+;; also have documentation strings):
+
+(defconcept WARFIGHTER (?p PERSON)
+  :documentation "People involved in military operations.")
+
+(deffunction service ((?p WARFIGHTER)) :-> (?s ARMED-SERVICE)
+  :documentation "The armed service to which a warfighter belongs.")
+
+;; Below we define a non-primitve (or defined) subclass of `Person'.
+;; One way of defining a class is to supply a set-valued term to the
+;; `:definition' keyword.  The KIF term used below denotes the set of
+;; all people who are not warfighters.  PowerLoom slightly extends the
+;; KIF syntax for `setofall' to allow typed variables.  In this case,
+;; we could have done without the type specification, since it can be
+;; inherited from the specified superclass.  Alternatively, we could
+;; have left out the specification of a superclass and supplied only a
+;; type restriction on the variable.  Note, that the definition is
+;; if-and-only-if, i.e., every person who is not a warfighter is a
+;; civilian and vice versa.
+
+(defconcept CIVILIAN (?p PERSON)
+  :documentation "People who are not warfighters."
+  :<<=>> (and (PERSON ?p) (not (Warfighter ?p))))
+
+;; Since most class definitions will use the 
+;;    `(setofall (?<var> <super>) <predicate>)'
+;; idiom, there is an abbreviated syntax that only requires the
+;; specification of the qualifying predicate and fills in the
+;; remaining parts automatically.  The keyword for this predicate-only
+;; definition is `:<=>'.  For the KIF dialect, the default variable
+;; used to refer to elements of the class is `?self'.  The class below
+;; is defined using this idiom.  Note, that a class defined with the
+;; `:<=>' syntax almost always needs to specify a superclass,
+;; otherwise, polymorphic functions or relations (e.g., the `service'
+;; slot used below) can't be found, since they are indexed on the type
+;; of their first argument.
+
+(defconcept ARMY-PERSON (?p WARFIGHTER)
+  :<<=>> (and (WARFIGHTER ?p)
+              (= (service ?p) US-Army)))
+
+;; If one wants to use a "self-variable" different from the default,
+;; it has to be specified with the keyword `:self-variable'.  The
+;; definition below uses the variable `?p' to refer to elements of the
+;; defined class:
+
+(defconcept NAVY-PERSON (?p WARFIGHTER)
+  :<<=>> (and (WARFIGHTER ?p)
+              (= (service ?p) US-Navy)))
+
+;; Some instances of the above classes:
+
+(assert (Warfighter Buck))
+(assert (= (service Buck) US-Army))
+
+(assert (Person John))
+
+;; We can use `member-of' to express set membership:
+
+(assert (member-of Buck (friends John)))
+(assert (member-of John (friends Buck)))
+
+(assert (Person Judy))
+
+;; Since so far we only know that Judy is a person, the following two
+;; queries cannot derive any answers:
+
+(ask (Warfighter Judy))
+(ask (Civilian Judy))
+
+;; So, let us assert that Judy is a member of the US-Navy:
+
+(assert (Warfighter Judy))
+(assert (= (service Judy) US-Navy))
+
+;; Now we can successfully determine that she is a warfighter:
+
+(ask (NAVY-PERSON Judy))
+
+;; The next query does not return a result, since (currently) PowerLoom
+;; does not simultaneously try to answer a query and its negation:
+
+(ask (Civilian Judy))
+
+;; However, if we ask the negated question explicitly, we get the
+;; expected result:
+
+(ask (not (Civilian Judy)))
+
+;; The same works in the opposite direction:
+
+(assert (Civilian Blimpy))
+(ask (Civilian Blimpy))
+(ask (Warfighter Blimpy))
+(ask (not (Warfighter Blimpy)))
+
+;; Yet another warfighter:
+
+(assert (Warfighter Fred))
+(assert (= (service Fred) US-Airforce))
+
+;; Now, let us retrieve various sets of instances:
+
+(retrieve all (?p PERSON))
+(retrieve all (?w WARFIGHTER))
+(retrieve all (?p PERSON) (not (Civilian ?p)))
+(retrieve all (?p PERSON) (not (Warfighter ?p)))
+
+;; Retrieval of instances of defined classes:
+
+(retrieve all (?p CIVILIAN))
+(retrieve all (?w ARMY-PERSON))
+(retrieve all (?w NAVY-PERSON))
+
+;; Let us retrieve everybody who is either in the US-Navy or US-Airforce:
+
+(retrieve all (?w WARFIGHTER)
+          (or (= (service ?w) US-Navy)
+              (= (service ?w) US-Airforce)))
+
+;; Alternatively, this can be done like this:
+
+(retrieve all (?w WARFIGHTER)
+          (member-of (service ?w) (setof US-Navy US-Airforce)))
+
+;; Retrieve all people and their friends:
+
+(retrieve all ((?p PERSON) (?f PERSON))
+          (member-of ?f (friends ?p)))
+
+;; Retrieve all armed services with some members who have friends:
+
+(retrieve all (?s ARMED-SERVICE)
+          (exists ((?p PERSON) (?w WARFIGHTER))
+            (and (member-of ?p (friends ?w))
+                 (= (service ?w) ?s))))

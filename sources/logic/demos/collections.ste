@@ -1,0 +1,108 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Version: $Id: collections.ste,v 1.9 2000/05/26 03:35:46 hans Exp $
+
+;;; Reasoning with collections
+;;; ==========================
+
+;;; This file demonstrates some facilities for defining collections
+;;; and how to reason with them.
+
+;;; The best way to view this file is by calling `(demo)' and
+;;; selecting it from the menu of example demos.  This demo assumes
+;;; familiarity with some basic PowerLoom concepts which are described
+;;; in the introductory demo (#1 on the demo menu) and other demos
+;;; preceding this one.
+
+
+;; Standard demo preamble:
+
+(in-package "STELLA")
+
+(defmodule "/PL-KERNEL/PL-USER/COLLECTIONS")
+
+(in-module "COLLECTIONS")
+
+(clear-module "COLLECTIONS")
+(reset-features)
+
+(in-dialect :KIF)
+
+
+;; Let's start by defining a class `Color'.  The `:definition' keyword
+;; in a class definition expects a set-valued term.  One possibility
+;; is to supply a set defined by an explicit enumeration of its
+;; members, which can be achieved by using the `setof' operator:
+
+(defconcept COLOR (?c)
+  :<<=>> (member-of ?c (setof RED ORANGE YELLOW GREEN BLUE PURPLE)))
+
+;; Below we define two subsets of `Color', the first one in a somewhat
+;; roundabout way using `setofall', and the second one with a simple
+;; explicit enumeration similar to the definition above.  Again, note
+;; that in PowerLoom `in' can be used instead of the KIF `member'
+;; predicate.  Note also, that definitions can be supplied as strings:
+
+(defconcept PRIMARY-COLOR (?c COLOR)
+  :<<=>> (member-of ?c (setof RED YELLOW BLUE)))
+
+(defconcept ALLIANCE-COLOR (?c COLOR)
+  :<<=>> (member-of ?c (setof RED BLUE)))
+
+;; Now let's run some queries:
+
+(ask (Color GREEN))
+
+;; Since `Primary-Color' is a closed collection, we are always able to
+;; determine whether a particular instance is a member or not.  Again,
+;; we have to use an explicit negation in the query, since (currently)
+;; `ask' only looks for positive answers:
+
+(ask (not (Primary-Color ORANGE)))
+(ask (not (member-of ORANGE primary-color)))
+
+;; Retrieving various sets of colors:
+
+(retrieve all (?x COLOR))
+(retrieve all (?x COLOR) (= ?x GREEN))
+(retrieve all (?x PRIMARY-COLOR))
+
+;; Retrieve the complement of `Primary-Color':
+
+(retrieve all (?x COLOR) (not (Primary-Color ?x)))
+
+;; Simple membership tests:
+
+(ask (member-of BLUE (setof BLUE YELLOW)))
+(ask (member-of GREEN (setof BLUE YELLOW)))
+(ask (not (member-of BLUE (setof BLUE YELLOW))))
+(ask (not (member-of GREEN (setof BLUE YELLOW))))
+
+;; Simple subset tests:
+
+(ask (subset-of (setof BLUE YELLOW) (setof BLUE YELLOW PURPLE)))
+(ask (subset-of ALLIANCE-COLOR PRIMARY-COLOR))
+
+;; More subset-of tests that mainly demonstrate three different ways of
+;; specifying the set of primary colors:
+
+(ask (subset-of (setof RED BLUE) (setofall (?x PRIMARY-COLOR))))
+(ask (subset-of (setof RED BLUE) (setofall (?x PRIMARY-COLOR) TRUE)))
+(ask (subset-of (setof RED BLUE) PRIMARY-COLOR))
+
+;; Subset-of tests involving complements:
+
+(ask (subset-of (setofall (?x COLOR) (not (Primary-Color ?x))) COLOR))
+(ask (subset-of (setofall (?x COLOR) (not (Primary-Color ?x)))
+             (setofall (?x COLOR) (not (Alliance-Color ?x)))))
+
+;; Non-subset-of tests:
+
+(ask (not (subset-of Alliance-Color Primary-Color)))
+(ask (not (subset-of Primary-Color Alliance-Color)))
+(ask (not (subset-of (setofall (?x COLOR) (not (Primary-Color ?x)))
+                  (setofall (?x COLOR) (not (Alliance-Color ?x))))))
+(ask (not (subset-of (setofall (?x COLOR) (not (Alliance-Color ?x)))
+                  (setofall (?x COLOR) (not (Primary-Color ?x))))))
+
+

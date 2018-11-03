@@ -2,7 +2,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                          ;
-;  COPYRIGHT (C) UNIVERSITY OF SOUTHERN CALIFORNIA, 1996, 1997             ; 
+;  COPYRIGHT (C) UNIVERSITY OF SOUTHERN CALIFORNIA, 1996-2001              ; 
 ;  University of Southern California, Information Sciences Institute       ;
 ;  4676 Admiralty Way                                                      ;
 ;  Marina Del Rey, California 90292                                        ;
@@ -25,11 +25,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;; Version: load-stella.lisp,v 1.2 1997/11/04 20:16:00 hans Exp
+;;; Version: $Id: load-stella.lisp,v 1.2 1997/11/04 20:16:00 hans Exp $
 
 ;;; Load Stella.
 
 (in-package "CL-USER")
+
+(defvar *load-cl-struct-stella?* t)
 
 (load (merge-pathnames "translations" *load-pathname*))
 (load "PL:sources;stella;load-stella.lisp")

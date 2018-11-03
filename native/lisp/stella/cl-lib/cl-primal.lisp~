@@ -1,0 +1,841 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+#|--------------------------------------------------------------------------+
+ |                                                                          |
+ |  COPYRIGHT (C) UNIVERSITY OF SOUTHERN CALIFORNIA, 1996, 1997             | 
+ |  University of Southern California, Information Sciences Institute       |
+ |  4676 Admiralty Way                                                      |
+ |  Marina Del Rey, California 90292                                        |
+ |                                                                          |
+ |  This software was developed under the terms and conditions of Contract  |
+ |  No. N00014-94-C-0245 between the Defense Advanced Research Projects     |
+ |  Agency and the University of Southern California, Information Sciences  | 
+ |  Institute.  Use and distribution of this software is further subject    |
+ |  to the provisions of that contract and any other agreements developed   |
+ |  between the user of the software and the University of Southern         |
+ |  California, Information Sciences Institute.  It is supplied "AS IS",    |
+ |  without any warranties of any kind.  It is furnished only on the basis  |
+ |  that any party who receives it indemnifies and holds harmless the       |
+ |  parties who furnish and originate it against any claims, demands, or    |
+ |  liabilities connected with using it, furnishing it to others or         |
+ |  providing it to a third party.  THIS NOTICE MUST NOT BE REMOVED FROM    |
+ |  THE SOFTWARE, AND IN THE EVENT THAT THE SOFTWARE IS DIVIDED, IT SHOULD  |
+ |  BE ATTACHED TO EVERY PART.                                              |
+ |                                                                          |
+ +--------------------------------------------------------------------------|#
+
+(CL:IN-PACKAGE "STELLA")
+
+;;; Auxiliary variables:
+
+(CL:DEFVAR SGT-CL-PRIMAL-STELLA-CONS NULL)
+
+;;; Forward declarations:
+
+(CL:DECLAIM (CL:SPECIAL *STELLA-MODULE* *MODULE*))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:DEFVAR NULL :NULL_VALUE)
+
+;;; (DEFCONSTANT CL-NIL ...)
+
+(CL:DEFVAR CL-NIL (CL:OR))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+#-lispworks
+   (CL:defmethod print-object ((self (CL:eql NULL)) stream)
+     (CL:write-string "NULL" stream))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+#-lispworks
+   (CL:defmethod print-object ((self (CL:eql NULL-INTEGER)) stream)
+     (CL:write-string "NULL-INTEGER" stream))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+#-lispworks
+   (CL:defmethod print-object ((self (CL:eql NULL-FLOAT)) stream)
+     (CL:write-string "NULL-FLOAT" stream))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:defmethod cl:print-object ((self (CL:eql CL:NIL)) stream)
+     (CL:write-string "()" stream))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:DEFMETHOD NULL? ((VALUE CL:T))
+  (CL:EQ VALUE NULL))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:DEFMETHOD NULL? ((VALUE CL:INTEGER))
+  (CL:OR (CL:NOT (CL:TYPEP VALUE VALUE CL:FIXNUM)) (CL:EQ VALUE NULL-INTEGER)))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:DEFMETHOD NULL? ((VALUE CL:FLOAT))
+  (CL:EQ VALUE NULL-FLOAT))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:DEFMETHOD NULL? ((VALUE CL:CHARACTER))
+  (CL:EQ VALUE NULL-CHARACTER))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:DEFMETHOD DEFINED? ((VALUE CL:T))
+  (CL:NOT (CL:EQ VALUE NULL)))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:DEFMETHOD DEFINED? ((VALUE CL:INTEGER))
+  (CL:AND (CL:TYPEP VALUE VALUE CL:FIXNUM) (CL:NOT (CL:EQ VALUE NULL-INTEGER))))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:DEFMETHOD DEFINED? ((VALUE CL:FLOAT))
+  (CL:NOT (CL:EQ VALUE NULL-FLOAT)))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:DEFMETHOD DEFINED? ((VALUE CL:CHARACTER))
+  (CL:NOT (CL:EQ VALUE NULL-CHARACTER)))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:DEFUN EQ? (X Y)
+  "Equality test equivalent to the C++ '==' and the Common Lisp 'EQL'."
+  (CL:EQL X Y))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:DEFUN STRING-EQL? (X Y)
+  (CL:EQUAL X Y))
+
+;;; (DEFUN (> BOOLEAN) ...)
+
+(CL:DEFUN > (X Y)
+  (CL:RETURN-FROM > (CL:> X Y)))
+
+;;; (DEFUN (>= BOOLEAN) ...)
+
+(CL:DEFUN >= (X Y)
+  (CL:RETURN-FROM >= (CL:>= X Y)))
+
+;;; (DEFUN (< BOOLEAN) ...)
+
+(CL:DEFUN < (X Y)
+  (CL:RETURN-FROM < (CL:< X Y)))
+
+;;; (DEFUN (<= BOOLEAN) ...)
+
+(CL:DEFUN <= (X Y)
+  (CL:RETURN-FROM <= (CL:<= X Y)))
+
+;;; (DEFUN (+ NUMBER) ...)
+
+(CL:DEFUN + (X Y)
+  (CL:RETURN-FROM + (CL:+ X Y)))
+
+;;; (DEFUN (- NUMBER) ...)
+
+(CL:DEFUN - (X Y)
+  (CL:RETURN-FROM - (CL:- X Y)))
+
+;;; (DEFUN (* NUMBER) ...)
+
+(CL:DEFUN * (X Y)
+  (CL:RETURN-FROM * (CL:* X Y)))
+
+;;; (DEFUN (/ NUMBER) ...)
+
+(CL:DEFUN / (X Y)
+  (CL:RETURN-FROM / (CL:/ X Y)))
+
+;;; (DEFUN (ZERO? BOOLEAN) ...)
+
+(CL:DEFUN ZERO? (X)
+  (CL:DECLARE (CL:TYPE CL:FIXNUM X))
+  (CL:RETURN-FROM ZERO? (CL:ZEROP X)))
+
+;;; (DEFUN (PLUS? BOOLEAN) ...)
+
+(CL:DEFUN PLUS? (X)
+  (CL:DECLARE (CL:TYPE CL:FIXNUM X))
+  (CL:RETURN-FROM PLUS? (CL:PLUSP X)))
+
+;;; (DEFUN (EVEN? BOOLEAN) ...)
+
+(CL:DEFUN EVEN? (X)
+  (CL:DECLARE (CL:TYPE CL:FIXNUM X))
+  (CL:RETURN-FROM EVEN? (CL:EVENP X)))
+
+;;; (DEFUN (ODD? BOOLEAN) ...)
+
+(CL:DEFUN ODD? (X)
+  (CL:DECLARE (CL:TYPE CL:FIXNUM X))
+  (CL:RETURN-FROM ODD? (CL:ODDP X)))
+
+;;; (DEFUN (MOD INTEGER) ...)
+
+(CL:DEFUN MOD (X MODULO)
+  (CL:DECLARE (CL:TYPE CL:FIXNUM X MODULO))
+  (CL:RETURN-FROM MOD (CL:MOD X MODULO)))
+
+;;; (DEFUN (CEILING INTEGER) ...)
+
+(CL:DEFUN CEILING (N)
+  (CL:RETURN-FROM CEILING (CL:CEILING N)))
+
+;;; (DEFUN (FLOOR INTEGER) ...)
+
+(CL:DEFUN FLOOR (N)
+  (CL:RETURN-FROM FLOOR (CL:FLOOR N)))
+
+;;; (DEFUN (EXP FLOAT) ...)
+
+(CL:DEFUN EXP (X)
+  "The natural exponentiation function e^x."
+  (CL:RETURN-FROM EXP (CL:EXP X)))
+
+;;; (DEFUN (INTEGER-LENGTH INTEGER) ...)
+
+(CL:DEFUN INTEGER-LENGTH (ARG)
+  "The number of bits needed to represent `arg'"
+  (CL:DECLARE (CL:TYPE CL:FIXNUM ARG))
+  (CL:RETURN-FROM INTEGER-LENGTH (CL:INTEGER-LENGTH ARG)))
+
+;;; (DEFUN (MAKE-STRING STRING) ...)
+
+(CL:DEFUN MAKE-STRING (SIZE INITIALELEMENT)
+  "Return a string of 'size' characters.  If 'initialElement'
+is defined, initialize all elements of the new string with it."
+  (CL:DECLARE (CL:TYPE CL:FIXNUM SIZE))
+  (CL:RETURN-FROM MAKE-STRING
+   (CL:MAKE-STRING SIZE :INITIAL-ELEMENT INITIALELEMENT)))
+
+;;; (DEFUN (MAKE-MUTABLE-STRING MUTABLE-STRING) ...)
+
+(CL:DEFUN MAKE-MUTABLE-STRING (SIZE INITIALELEMENT)
+  "Return a string of 'size' characters.  If 'initialElement'
+is defined, initialize all elements of the new string with it."
+  (CL:DECLARE (CL:TYPE CL:FIXNUM SIZE))
+  (CL:RETURN-FROM MAKE-MUTABLE-STRING
+   (CL:MAKE-STRING SIZE :INITIAL-ELEMENT INITIALELEMENT)))
+
+;;; (DEFUN (STRING-CONCATENATE STRING) ...)
+
+(CL:DEFUN STRING-CONCATENATE (STRING1 STRING2)
+  "Return a new string representing the concatenation of
+'string1' and 'string2'."
+  (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING1 STRING2))
+  (CL:RETURN-FROM STRING-CONCATENATE
+   (CL:CONCATENATE CL:CONCATENATE CL:STRING STRING1 STRING2)))
+
+;;; (DEFUN (STRING-UPCASE STRING) ...)
+
+(CL:DEFUN STRING-UPCASE (STRING)
+  "Return an upper-case copy of 'string'."
+  (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
+  (CL:RETURN-FROM STRING-UPCASE (CL:STRING-UPCASE STRING)))
+
+;;; (DEFUN (STRING-DOWNCASE STRING) ...)
+
+(CL:DEFUN STRING-DOWNCASE (STRING)
+  "Return a lower-case copy of 'string'."
+  (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
+  (CL:RETURN-FROM STRING-DOWNCASE (CL:STRING-DOWNCASE STRING)))
+
+;;; (DEFUN (STRING-CAPITALIZE STRING) ...)
+
+(CL:DEFUN STRING-CAPITALIZE (STRING)
+  "Return a capitalized version of 'string'."
+  (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
+  (CL:RETURN-FROM STRING-CAPITALIZE (CL:STRING-CAPITALIZE STRING)))
+
+;;; (DEFMETHOD (COPY STRING) ...)
+
+(CL:DEFMETHOD COPY ((STRING CL:STRING))
+  "Return a copy of 'string'."
+  (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
+  (CL:RETURN-FROM COPY (CL:COPY-SEQ STRING)))
+
+;;; (DEFMETHOD (SUBSTITUTE MUTABLE-STRING) ...)
+
+(CL:DEFMETHOD SUBSTITUTE ((SELF CL:STRING) NEWCHAR OLDCHAR)
+  "Substitute all occurences of oldChar with newChar
+in the string 'self'."
+  (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
+  (CL:RETURN-FROM SUBSTITUTE (CL:SUBSTITUTE NEWCHAR OLDCHAR SELF)))
+
+;;; (DEFMETHOD (MEMBER? BOOLEAN) ...)
+
+(CL:DEFMETHOD MEMBER? ((SELF CL:STRING) CHAR)
+  (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
+  (CL:RETURN-FROM MEMBER? (CL:NOT (CL:NULL (CL:FIND CHAR SELF)))))
+
+;;; (DEFMETHOD (REST STRING) ...)
+
+(CL:DEFMETHOD REST ((SELF CL:STRING))
+  (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
+  (CL:RETURN-FROM REST (CL:SUBSEQ SELF 1)))
+
+;;; (DEFMETHOD (POSITION INTEGER) ...)
+
+(CL:DEFMETHOD POSITION ((STRING CL:STRING) CHARACTER START)
+  "Return the position of 'character' within 'string' (counting
+from zero); or return NULL if 'character' does not occur within 'string'.
+If 'start' was supplied as non-NULL, only consider the substring starting
+at 'start', however, the returned position will always be relative to the
+entire string."
+  (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING) (CL:TYPE CL:FIXNUM START))
+  (CL:LET* ((POSITION NULL-INTEGER)) (CL:DECLARE (CL:TYPE CL:FIXNUM POSITION))
+   (CL:PROGN (SETQ POSITION (CL:POSITION CHARACTER STRING :START START))
+    (CL:WHEN (CL:NULL POSITION) (SETQ POSITION NULL-INTEGER)))
+   (CL:RETURN-FROM POSITION POSITION))
+  (CL:ERROR "Returned from `|M|STRING.POSITION' without a `return'."))
+
+;;; (DEFUN (STRING-SEARCH INTEGER) ...)
+
+(CL:DEFUN STRING-SEARCH (STRING SUBSTRING START)
+  "Return start position of the left-most occurrence right of
+'start' of 'substring' in 'string'.  Return NULL if it is not a substring."
+  (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING SUBSTRING)
+   (CL:TYPE CL:FIXNUM START))
+  (CL:LET* ((POSITION NULL-INTEGER)) (CL:DECLARE (CL:TYPE CL:FIXNUM POSITION))
+   (CL:PROGN (SETQ POSITION (CL:SEARCH SUBSTRING STRING :START2 START))
+    (CL:WHEN (CL:NULL POSITION) (SETQ POSITION NULL-INTEGER)))
+   (CL:RETURN-FROM STRING-SEARCH POSITION))
+  (CL:ERROR "Returned from `|F|STRING-SEARCH' without a `return'."))
+
+;;; (DEFMETHOD (SUBSEQUENCE STRING) ...)
+
+(CL:DEFMETHOD SUBSEQUENCE ((STRING CL:STRING) START END)
+  "Return a substring of 'string' beginning at position 'start'
+and ending up to but not including position 'end', counting from zero.  An
+'end' value of NULL stands for the rest of the string."
+  (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING) (CL:TYPE CL:FIXNUM START END))
+  (CL:WHEN (CL:EQL END NULL-INTEGER) (SETQ END CL-NIL))
+  (CL:RETURN-FROM SUBSEQUENCE (CL:SUBSEQ STRING START END)))
+
+;;; (DEFUN (STRINGIFY STRING) ...)
+
+(CL:DEFUN STRINGIFY (EXPRESSION)
+  (CL:LET* ((*PRINTPRETTY?* FALSE) (*PRINTREADABLY?* TRUE))
+   (CL:DECLARE (CL:SPECIAL *PRINTPRETTY?* *PRINTREADABLY?*))
+   (CL:RETURN-FROM STRINGIFY
+    (CL:LET ((CL:*PRINT-PRETTY* CL:NIL)) (CL:PRIN1-TO-STRING EXPRESSION))))
+  (CL:ERROR "Returned from `|F|STRINGIFY' without a `return'."))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:DEFVAR *STANDARD-READTABLE* (CL:COPY-READTABLE CL:NIL))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:DEFVAR *CASE-SENSITIVE-READTABLE* (CL:COPY-READTABLE CL:NIL))
+
+;;; (VERBATIM :COMMON-LISP ...)
+
+(CL:progn
+    #+(or :ANSI-CL :CLTL2)
+    (CL:setf (CL:readtable-case *case-sensitive-readtable*) :preserve))
+
+;;; (DEFUN (INTEGER-TO-STRING STRING) ...)
+
+(CL:DEFUN INTEGER-TO-STRING (INTEGER)
+  "Return a string representation of 'integer'."
+  (CL:DECLARE (CL:TYPE CL:FIXNUM INTEGER))
+  (CL:RETURN-FROM INTEGER-TO-STRING
+   (CL:let ((buffer "                                ")
+                (table "0123456789")
+                (index 32)
+                (digit 0))
+         (CL:declare (CL:type CL:simple-string buffer table)
+                     (CL:type CL:fixnum index digit))
+         (CL:cond
+          ((CL:= integer 0) "0")
+          (CL:t
+           (CL:loop while (CL:> integer 0)
+               do (CL:decf index)
+                  (CL:multiple-value-setq (integer digit)
+                    (CL:floor integer 10))
+                  (CL:setf (CL:aref buffer index)
+                    (CL:aref table digit)))
+           (CL:subseq buffer index 32))))))
+
+;;; (DEFUN (FLOAT-TO-STRING STRING) ...)
+
+(CL:DEFUN FLOAT-TO-STRING (FLOAT)
+  "Return a string representation of 'float'."
+  (CL:RETURN-FROM FLOAT-TO-STRING (CL:FORMAT CL-NIL "~A" FLOAT)))
+
+;;; (DEFUN (FORMAT-FLOAT STRING) ...)
+
+(CL:DEFUN FORMAT-FLOAT (VALUE NDECIMALS)
+  "Return a string representation of 'float' with 'nDecimals' decimal places."
+  (CL:DECLARE (CL:TYPE CL:FIXNUM NDECIMALS))
+  (CL:RETURN-FROM FORMAT-FLOAT (CL:FORMAT CL-NIL "~,vF" NDECIMALS VALUE)))
+
+;;; (DEFUN (STRING-TO-INTEGER INTEGER) ...)
+
+(CL:DEFUN STRING-TO-INTEGER (STRING)
+  "Convert the 'string' representation of an integer into an
+integer and return the result."
+  (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
+  (CL:RETURN-FROM STRING-TO-INTEGER (CL:PARSE-INTEGER STRING)))
+
+;;; (DEFUN (STRING-TO-FLOAT FLOAT) ...)
+
+(CL:DEFUN STRING-TO-FLOAT (STRING)
+  "Convert the 'string' representation of a float into a
+float and return the result."
+  (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
+  (CL:RETURN-FROM STRING-TO-FLOAT (CL:READ-FROM-STRING STRING)))
+
+;;; (DEFUN UNMAKE ...)
+
+(CL:DEFUN UNMAKE (SELF)
+  (CL:SETQ SELF SELF)
+  NULL
+  :VOID)
+
+;;; (DEFUN (STELLA-CODE-TO-CONS-TREE OBJECT) ...)
+
+(CL:DEFUN STELLA-CODE-TO-CONS-TREE (STELLACODE)
+  "Translate 'stellaCode' into a Stella parse tree
+for which Lisp conses have been replaced by STELLA conses,
+Lisp symbols have been replaced by STELLA symbols,
+and literals have been replaced by wrapped literals."
+  (CL:COND
+   ((CL:NULL STELLACODE) (CL:RETURN-FROM STELLA-CODE-TO-CONS-TREE NIL))
+   ((CL:CONSP STELLACODE)
+    (CL:LET* ((CONSTREE NIL))
+     (CL:LOOP FOR ELEMENT IN STELLACODE DO
+      (SETQ CONSTREE (CONS (STELLA-CODE-TO-CONS-TREE ELEMENT) CONSTREE)))
+     (CL:RETURN-FROM STELLA-CODE-TO-CONS-TREE (REVERSE CONSTREE))))
+   ((CL:SYMBOLP STELLACODE)
+    (CL:LET* ((NAME (CL:SYMBOL-NAME STELLACODE)))
+     (CL:WHEN (CL:KEYWORDP STELLACODE)
+      (CL:RETURN-FROM STELLA-CODE-TO-CONS-TREE (INTERN-KEYWORD NAME)))
+     (CL:IF
+      (CL:AND
+       (CL:EQL (CL:SYMBOL-PACKAGE STELLACODE)
+        (CL:SYMBOL-PACKAGE CL:SYMBOL-PACKAGE CL:EVAL))
+       (CL:NOT (CL:EQ (CL:FIND-SYMBOL NAME "STELLA") STELLACODE)))
+      (CL:RETURN-FROM STELLA-CODE-TO-CONS-TREE
+       (INTERN-COMMON-LISP-SYMBOL NAME))
+      (CL:RETURN-FROM STELLA-CODE-TO-CONS-TREE
+       (INTERN-GENERALIZED-SYMBOL NAME)))))
+   ((CL:INTEGERP STELLACODE)
+    (CL:RETURN-FROM STELLA-CODE-TO-CONS-TREE
+     (WRAP-INTEGER (CL:FLOOR STELLACODE))))
+   ((CL:FLOATP STELLACODE)
+    (CL:RETURN-FROM STELLA-CODE-TO-CONS-TREE
+     (WRAP-FLOAT (CL:COERCE STELLACODE (CL:QUOTE CL:FLOAT)))))
+   ((CL:STRINGP STELLACODE)
+    (CL:RETURN-FROM STELLA-CODE-TO-CONS-TREE (WRAP-STRING STELLACODE)))
+   ((CL:CHARACTERP STELLACODE)
+    (CL:RETURN-FROM STELLA-CODE-TO-CONS-TREE (WRAP-CHARACTER STELLACODE)))
+   (CL:T (CL:RETURN-FROM STELLA-CODE-TO-CONS-TREE STELLACODE)))
+  (CL:ERROR "Returned from `|F|STELLA-CODE-TO-CONS-TREE' without a `return'."))
+
+;;; (DEFUN (CONS-TREE-TO-LISP-CODE LISP-CODE) ...)
+
+(CL:DEFUN CONS-TREE-TO-LISP-CODE (STELLATREE)
+  (CL:WHEN (CL:EQ STELLATREE NULL)
+   (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE (CL:QUOTE NULL)))
+  (CL:LET* ((TEST-VALUE-000 (SAFE-PRIMARY-TYPE STELLATREE)))
+   (CL:COND
+    ((CL:EQ TEST-VALUE-000 SGT-CL-PRIMAL-STELLA-CONS)
+     (CL:PROGN
+      (CL:IF (CL:EQ STELLATREE NIL)
+       (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE CL-NIL)
+       (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE
+        (CL:CONS (CONS-TREE-TO-LISP-CODE (%%VALUE STELLATREE))
+         (CONS-TREE-TO-LISP-CODE (%%REST STELLATREE)))))))
+    ((SUBTYPE-OF-KEYWORD? TEST-VALUE-000)
+     (CL:PROGN
+      (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE
+       (CL:INTERN (%SYMBOL-NAME STELLATREE) "KEYWORD"))))
+    ((SUBTYPE-OF-SYMBOL? TEST-VALUE-000)
+     (CL:PROGN
+      (CL:LET* ((NAME (%SYMBOL-NAME STELLATREE)))
+       (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
+       (CL:WHEN (CL:EQ (CL:CHAR NAME 0) #\:)
+        (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE
+         (CL:INTERN (CL:SUBSEQ NAME 1) "KEYWORD")))
+       (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE
+        (CL:INTERN NAME
+         (CL:IF (SYMBOL-COMMON-LISP? STELLATREE) "COMMON-LISP" "STELLA"))))))
+    ((SUBTYPE-OF-SURROGATE? TEST-VALUE-000)
+     (CL:PROGN
+      (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE
+       (CL:INTERN (CONCATENATE "@" (%SYMBOL-NAME STELLATREE)) "STELLA"))))
+    ((SUBTYPE-OF-VERBATIM-STRING? TEST-VALUE-000)
+     (CL:PROGN
+      (CL:LET*
+       ((VERBATIMSTRING (%WRAPPER-VALUE STELLATREE))
+        (PACKAGENAME (NATIVE-PACKAGE *MODULE*)))
+       (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING VERBATIMSTRING PACKAGENAME))
+       (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE
+        (CL:LET ((CL:*PACKAGE* (CL:FIND-PACKAGE PACKAGENAME)))
+         (CL:READ-FROM-STRING VERBATIMSTRING))))))
+    ((SUBTYPE-OF-INTEGER? TEST-VALUE-000)
+     (CL:PROGN
+      (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE (%WRAPPER-VALUE STELLATREE))))
+    ((SUBTYPE-OF-FLOAT? TEST-VALUE-000)
+     (CL:PROGN
+      (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE (%WRAPPER-VALUE STELLATREE))))
+    ((SUBTYPE-OF-STRING? TEST-VALUE-000)
+     (CL:PROGN
+      (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE (%WRAPPER-VALUE STELLATREE))))
+    ((SUBTYPE-OF-CHARACTER? TEST-VALUE-000)
+     (CL:PROGN
+      (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE (%WRAPPER-VALUE STELLATREE))))
+    ((SUBTYPE-OF-BOOLEAN? TEST-VALUE-000)
+     (CL:PROGN
+      (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE (%WRAPPER-VALUE STELLATREE))))
+    (CL:T
+     (CL:WARN
+      "cons-tree-to-lisp-code: Don't know how to convert `~A' into LISP-CODE"
+      STELLATREE)
+     (CL:RETURN-FROM CONS-TREE-TO-LISP-CODE
+      (CL:FORMAT CL-NIL "~s" STELLATREE)))))
+  (CL:ERROR "Returned from `|F|CONS-TREE-TO-LISP-CODE' without a `return'."))
+
+;;; (DEFUN (CONS-LIST-TO-LISP-LIST LISP-CODE) ...)
+
+(CL:DEFUN CONS-LIST-TO-LISP-LIST (LIST)
+  (CL:LET* ((LISPLIST CL-NIL))
+   (CL:LET* ((ITEM NULL) (ITER-000 LIST))
+    (CL:LOOP WHILE (CL:NOT (CL:EQ ITER-000 NIL)) DO
+     (CL:PROGN (CL:SETQ ITEM (%%VALUE ITER-000))
+      (CL:SETQ ITER-000 (%%REST ITER-000)))
+     (CL:PUSH ITEM LISPLIST)))
+   (CL:RETURN-FROM CONS-LIST-TO-LISP-LIST (CL:NREVERSE LISPLIST)))
+  (CL:ERROR "Returned from `|F|CONS-LIST-TO-LISP-LIST' without a `return'."))
+
+;;; (DEFUN (PROBE-FILE? BOOLEAN) ...)
+
+(CL:DEFUN PROBE-FILE? (FILENAME)
+  (CL:RETURN-FROM PROBE-FILE? (CL:NOT (CL:NULL (CL:PROBE-FILE FILENAME)))))
+
+;;; (DEFUN (FILE-WRITE-DATE INTEGER) ...)
+
+(CL:DEFUN FILE-WRITE-DATE (FILENAME)
+  (CL:RETURN-FROM FILE-WRITE-DATE
+   (CL:OR (CL:FILE-WRITE-DATE FILENAME) NULL-INTEGER)))
+
+;;; (DEFUN (FILE-LENGTH INTEGER) ...)
+
+(CL:DEFUN FILE-LENGTH (FILENAME)
+  (CL:RETURN-FROM FILE-LENGTH
+   (CL:WITH-OPEN-FILE (FSTREAM FILENAME :DIRECTION :INPUT)
+    (CL:FILE-LENGTH FSTREAM))))
+
+;;; (DEFUN DELETE-FILE ...)
+
+(CL:DEFUN DELETE-FILE (FILENAME)
+  (CL:DELETE-FILE FILENAME)
+  :VOID)
+
+;;; (DEFUN (GET-TICKTOCK TICKTOCK) ...)
+
+(CL:DEFUN GET-TICKTOCK ()
+  (CL:RETURN-FROM GET-TICKTOCK (CL:GET-INTERNAL-RUN-TIME)))
+
+;;; (DEFUN (TICKTOCK-DIFFERENCE FLOAT) ...)
+
+(CL:DEFUN TICKTOCK-DIFFERENCE (T1 T2)
+  "The difference in two TICKTOCK time values in seconds.
+The resolution is implementation dependent but will normally be some fractional
+value of a second."
+  (CL:RETURN-FROM TICKTOCK-DIFFERENCE
+   (CL:/ (CL:FLOAT (CL:- T2 T1)) (CL:FLOAT CL:INTERNAL-TIME-UNITS-PER-SECOND))))
+
+;;; (DEFUN (TICKTOCK-RESOLUTION FLOAT) ...)
+
+(CL:DEFUN TICKTOCK-RESOLUTION ()
+  "The minimum theoretically detectable resolution of the
+difference in two TICKTOCK time values in seconds.  This resolution is
+implementation dependent.  It may also not be realizable in practice, since
+the timing grain size may be larger than this resolution."
+  (CL:RETURN-FROM TICKTOCK-RESOLUTION
+   (CL:FLOAT (CL:/ (CL:FLOAT CL:INTERNAL-TIME-UNITS-PER-SECOND)))))
+
+(CL:DEFUN STARTUP-CL-PRIMAL ()
+  (CL:LET* ((*MODULE* *STELLA-MODULE*) (*CONTEXT* *MODULE*))
+   (CL:DECLARE (CL:SPECIAL *MODULE* *CONTEXT*))
+   (CL:WHEN (CURRENT-STARTUP-TIME-PHASE? 2)
+    (CL:SETQ SGT-CL-PRIMAL-STELLA-CONS
+     (INTERN-RIGID-SYMBOL-WRT-MODULE "CONS" NULL 1)))
+   (CL:WHEN (CURRENT-STARTUP-TIME-PHASE? 6) (FINALIZE-CLASSES))
+   (CL:WHEN (CURRENT-STARTUP-TIME-PHASE? 7)
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE ">" "NUMBER"
+        "(DEFUN (> BOOLEAN) ((X NUMBER) (Y NUMBER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION >)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE ">=" "NUMBER"
+        "(DEFUN (>= BOOLEAN) ((X NUMBER) (Y NUMBER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION >=)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "<" "NUMBER"
+        "(DEFUN (< BOOLEAN) ((X NUMBER) (Y NUMBER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION <)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "<=" "NUMBER"
+        "(DEFUN (<= BOOLEAN) ((X NUMBER) (Y NUMBER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION <=)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "+" "NUMBER"
+        "(DEFUN (+ NUMBER) ((X NUMBER) (Y NUMBER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION +)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "-" "NUMBER"
+        "(DEFUN (- NUMBER) ((X NUMBER) (Y NUMBER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION -)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "*" "NUMBER"
+        "(DEFUN (* NUMBER) ((X NUMBER) (Y NUMBER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION *)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "/" "NUMBER"
+        "(DEFUN (/ NUMBER) ((X NUMBER) (Y NUMBER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION /)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "ZERO?" "INTEGER"
+        "(DEFUN (ZERO? BOOLEAN) ((X INTEGER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION ZERO?)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "PLUS?" "INTEGER"
+        "(DEFUN (PLUS? BOOLEAN) ((X INTEGER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION PLUS?)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "EVEN?" "INTEGER"
+        "(DEFUN (EVEN? BOOLEAN) ((X INTEGER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION EVEN?)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "ODD?" "INTEGER"
+        "(DEFUN (ODD? BOOLEAN) ((X INTEGER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION ODD?)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "MOD" "INTEGER"
+        "(DEFUN (MOD INTEGER) ((X INTEGER) (MODULO INTEGER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION MOD)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "CEILING" "NUMBER"
+        "(DEFUN (CEILING INTEGER) ((N NUMBER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION CEILING)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "FLOOR" "NUMBER"
+        "(DEFUN (FLOOR INTEGER) ((N NUMBER)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION FLOOR)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "EXP" "FLOAT"
+        "(DEFUN (EXP FLOAT) ((X FLOAT)) :PUBLIC? TRUE :DOCUMENTATION \"The natural exponentiation function e^x.\")")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION EXP)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "INTEGER-LENGTH" "INTEGER"
+        "(DEFUN (INTEGER-LENGTH INTEGER) ((ARG INTEGER)) :PUBLIC? TRUE :DOCUMENTATION \"The number of bits needed to represent `arg'\")")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION INTEGER-LENGTH)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "MAKE-STRING" "INTEGER"
+        "(DEFUN (MAKE-STRING STRING) ((SIZE INTEGER) (INITIALELEMENT CHARACTER)) :DOCUMENTATION \"Return a string of 'size' characters.  If 'initialElement'
+is defined, initialize all elements of the new string with it.\" :PUBLIC? TRUE :GLOBALLY-INLINE? TRUE (RETURN (VERBATIM :COMMON-LISP (CL:MAKE-STRING SIZE :INITIAL-ELEMENT INITIALELEMENT))))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION MAKE-STRING)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "MAKE-MUTABLE-STRING" "INTEGER"
+        "(DEFUN (MAKE-MUTABLE-STRING MUTABLE-STRING) ((SIZE INTEGER) (INITIALELEMENT CHARACTER)) :DOCUMENTATION \"Return a string of 'size' characters.  If 'initialElement'
+is defined, initialize all elements of the new string with it.\" :PUBLIC? TRUE :GLOBALLY-INLINE? TRUE (RETURN (VERBATIM :COMMON-LISP (CL:MAKE-STRING SIZE :INITIAL-ELEMENT INITIALELEMENT))))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION MAKE-MUTABLE-STRING)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "STRING-CONCATENATE" "STRING"
+        "(DEFUN (STRING-CONCATENATE STRING) ((STRING1 STRING) (STRING2 STRING)) :DOCUMENTATION \"Return a new string representing the concatenation of
+'string1' and 'string2'.\")")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION STRING-CONCATENATE)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "STRING-UPCASE" "STRING"
+        "(DEFUN (STRING-UPCASE STRING) ((STRING STRING)) :DOCUMENTATION \"Return an upper-case copy of 'string'.\")")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION STRING-UPCASE)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "STRING-DOWNCASE" "STRING"
+        "(DEFUN (STRING-DOWNCASE STRING) ((STRING STRING)) :DOCUMENTATION \"Return a lower-case copy of 'string'.\")")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION STRING-DOWNCASE)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "STRING-CAPITALIZE" "STRING"
+        "(DEFUN (STRING-CAPITALIZE STRING) ((STRING STRING)) :DOCUMENTATION \"Return a capitalized version of 'string'.\")")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION STRING-CAPITALIZE)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "COPY" "STRING"
+        "(DEFMETHOD (COPY STRING) ((STRING STRING)) :DOCUMENTATION \"Return a copy of 'string'.\")")))
+     (CL:SETF (%METHOD-CODE METHOD) (CL:FUNCTION COPY)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "SUBSTITUTE" "MUTABLE-STRING"
+        "(DEFMETHOD (SUBSTITUTE MUTABLE-STRING) ((SELF MUTABLE-STRING) (NEWCHAR CHARACTER) (OLDCHAR CHARACTER)) :DOCUMENTATION \"Substitute all occurences of oldChar with newChar
+in the string 'self'.\")")))
+     (CL:SETF (%METHOD-CODE METHOD) (CL:FUNCTION SUBSTITUTE)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "MEMBER?" "STRING"
+        "(DEFMETHOD (MEMBER? BOOLEAN) ((SELF STRING) (CHAR CHARACTER)))")))
+     (CL:SETF (%METHOD-CODE METHOD) (CL:FUNCTION MEMBER?)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "REST" "STRING"
+        "(DEFMETHOD (REST STRING) ((SELF STRING)))")))
+     (CL:SETF (%METHOD-CODE METHOD) (CL:FUNCTION REST)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "POSITION" "STRING"
+        "(DEFMETHOD (POSITION INTEGER) ((STRING STRING) (CHARACTER CHARACTER) (START INTEGER)) :DOCUMENTATION \"Return the position of 'character' within 'string' (counting
+from zero); or return NULL if 'character' does not occur within 'string'.
+If 'start' was supplied as non-NULL, only consider the substring starting
+at 'start', however, the returned position will always be relative to the
+entire string.\" :PUBLIC? TRUE)")))
+     (CL:SETF (%METHOD-CODE METHOD) (CL:FUNCTION POSITION)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "STRING-SEARCH" "STRING"
+        "(DEFUN (STRING-SEARCH INTEGER) ((STRING STRING) (SUBSTRING STRING) (START INTEGER)) :DOCUMENTATION \"Return start position of the left-most occurrence right of
+'start' of 'substring' in 'string'.  Return NULL if it is not a substring.\")")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION STRING-SEARCH)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "SUBSEQUENCE" "STRING"
+        "(DEFMETHOD (SUBSEQUENCE STRING) ((STRING STRING) (START INTEGER) (END INTEGER)) :DOCUMENTATION \"Return a substring of 'string' beginning at position 'start'
+and ending up to but not including position 'end', counting from zero.  An
+'end' value of NULL stands for the rest of the string.\")")))
+     (CL:SETF (%METHOD-CODE METHOD) (CL:FUNCTION SUBSEQUENCE)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "STRINGIFY" "OBJECT"
+        "(DEFUN (STRINGIFY STRING) ((EXPRESSION OBJECT)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION STRINGIFY)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "INTEGER-TO-STRING" "INTEGER"
+        "(DEFUN (INTEGER-TO-STRING STRING) ((INTEGER INTEGER)) :DOCUMENTATION \"Return a string representation of 'integer'.\" :PUBLIC? TRUE)")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION INTEGER-TO-STRING)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "FLOAT-TO-STRING" "FLOAT"
+        "(DEFUN (FLOAT-TO-STRING STRING) ((FLOAT FLOAT)) :DOCUMENTATION \"Return a string representation of 'float'.\" :PUBLIC? TRUE)")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION FLOAT-TO-STRING)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "FORMAT-FLOAT" "FLOAT"
+        "(DEFUN (FORMAT-FLOAT STRING) ((VALUE FLOAT) (NDECIMALS INTEGER)) :DOCUMENTATION \"Return a string representation of 'float' with 'nDecimals' decimal places.\" :PUBLIC? TRUE)")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION FORMAT-FLOAT)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "STRING-TO-INTEGER" "STRING"
+        "(DEFUN (STRING-TO-INTEGER INTEGER) ((STRING STRING)) :DOCUMENTATION \"Convert the 'string' representation of an integer into an
+integer and return the result.\" :PUBLIC? TRUE)")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION STRING-TO-INTEGER)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "STRING-TO-FLOAT" "STRING"
+        "(DEFUN (STRING-TO-FLOAT FLOAT) ((STRING STRING)) :DOCUMENTATION \"Convert the 'string' representation of a float into a
+float and return the result.\" :PUBLIC? TRUE)")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION STRING-TO-FLOAT)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "UNMAKE" "UNKNOWN"
+        "(DEFUN UNMAKE ((SELF UNKNOWN)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION UNMAKE)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "STELLA-CODE-TO-CONS-TREE"
+        "LISP-CODE"
+        "(DEFUN (STELLA-CODE-TO-CONS-TREE OBJECT) ((STELLACODE LISP-CODE)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION STELLA-CODE-TO-CONS-TREE)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "CONS-TREE-TO-LISP-CODE"
+        "OBJECT"
+        "(DEFUN (CONS-TREE-TO-LISP-CODE LISP-CODE) ((STELLATREE OBJECT)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION CONS-TREE-TO-LISP-CODE)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "CONS-LIST-TO-LISP-LIST" "CONS"
+        "(DEFUN (CONS-LIST-TO-LISP-LIST LISP-CODE) ((LIST CONS)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION CONS-LIST-TO-LISP-LIST)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "PROBE-FILE?" "FILE-NAME"
+        "(DEFUN (PROBE-FILE? BOOLEAN) ((FILENAME FILE-NAME)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION PROBE-FILE?)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "FILE-WRITE-DATE" "FILE-NAME"
+        "(DEFUN (FILE-WRITE-DATE INTEGER) ((FILENAME FILE-NAME)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION FILE-WRITE-DATE)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "FILE-LENGTH" "FILE-NAME"
+        "(DEFUN (FILE-LENGTH INTEGER) ((FILENAME FILE-NAME)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION FILE-LENGTH)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "DELETE-FILE" "FILE-NAME"
+        "(DEFUN DELETE-FILE ((FILENAME FILE-NAME)))")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION DELETE-FILE)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "GET-TICKTOCK" NULL
+        "(DEFUN (GET-TICKTOCK TICKTOCK) () :PUBLIC? TRUE)")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION GET-TICKTOCK)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "TICKTOCK-DIFFERENCE" "TICKTOCK"
+        "(DEFUN (TICKTOCK-DIFFERENCE FLOAT) ((T1 TICKTOCK) (T2 TICKTOCK)) :DOCUMENTATION \"The difference in two TICKTOCK time values in seconds.
+The resolution is implementation dependent but will normally be some fractional
+value of a second.\" :PUBLIC? TRUE)")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION TICKTOCK-DIFFERENCE)))
+    (CL:LET*
+     ((METHOD
+       (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "TICKTOCK-RESOLUTION" NULL
+        "(DEFUN (TICKTOCK-RESOLUTION FLOAT) () :DOCUMENTATION \"The minimum theoretically detectable resolution of the
+difference in two TICKTOCK time values in seconds.  This resolution is
+implementation dependent.  It may also not be realizable in practice, since
+the timing grain size may be larger than this resolution.\" :PUBLIC? TRUE)")))
+     (CL:SETF (%FUNCTION-CODE METHOD) (CL:FUNCTION TICKTOCK-RESOLUTION)))
+    (DEFINE-METHOD-FROM-STRINGIFIED-SOURCE "STARTUP-CL-PRIMAL" NULL
+     "(DEFUN STARTUP-CL-PRIMAL () :PUBLIC? TRUE)"))
+   (CL:WHEN (CURRENT-STARTUP-TIME-PHASE? 8) (FINALIZE-SLOTS)
+    (CLEANUP-UNFINALIZED-CLASSES))
+   (CL:WHEN (CURRENT-STARTUP-TIME-PHASE? 9)
+    (DEFINE-STELLA-GLOBAL-VARIABLE-FROM-STRINGIFIED-SOURCE
+     "(DEFCONSTANT CL-NIL LISP-CODE (VERBATIM :COMMON-LISP (CL:OR)))")))
+  :VOID)

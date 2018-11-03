@@ -1,0 +1,150 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                          ;
+;  COPYRIGHT (C) UNIVERSITY OF SOUTHERN CALIFORNIA, 1996-2000              ; 
+;  University of Southern California, Information Sciences Institute       ;
+;  4676 Admiralty Way                                                      ;
+;  Marina Del Rey, California 90292                                        ;
+;                                                                          ;
+;  This software was developed under the terms and conditions of Contract  ;
+;  No. N00014-94-C-0245 between the Defense Advanced Research Projects     ;
+;  Agency and the University of Southern California, Information Sciences  ; 
+;  Institute.  Use and distribution of this software is further subject    ;
+;  to the provisions of that contract and any other agreements developed   ;
+;  between the user of the software and the University of Southern         ;
+;  California, Information Sciences Institute.  It is supplied "AS IS",    ;
+;  without any warranties of any kind.  It is furnished only on the basis  ;
+;  that any party who receives it indemnifies and holds harmless the       ;
+;  parties who furnish and originate it against any claims, demands, or    ;
+;  liabilities connected with using it, furnishing it to others or         ;
+;  providing it to a third party.  THIS NOTICE MUST NOT BE REMOVED FROM    ;
+;  THE SOFTWARE, AND IN THE EVENT THAT THE SOFTWARE IS DIVIDED, IT SHOULD  ;
+;  BE ATTACHED TO EVERY PART.                                              ;
+;                                                                          ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;; Version: $Id: stella-system.ste,v 1.5 2000/10/28 01:41:33 hans Exp $
+
+(in-package "STELLA")
+
+(in-module "STELLA")
+
+
+  ;;
+;;;;;; STELLA defsystem
+  ;;
+
+(defsystem STELLA
+  :directory "stella"
+  :cardinal-module "STELLA"
+  :production-settings (1 1 3 3)
+  :development-settings (3 2 3 3)
+  :lisp-only-files (("cl-lib" "cl-primal")
+                    ("cl-lib" "stella-to-cl")
+                    ("cl-lib" "cl-setup.lisp")
+                    ("cl-lib" "make-stella.lisp"))
+  :java-only-files (("javalib" "Native.java")
+                    ("javalib" "PrintStringStream.java")
+		    ("javalib" "StellaNativeException.java")
+		    ("javalib" "ConsEnumeration")
+		    ("javalib" "StellaEnumeration"))
+  :cpp-only-files  (;; BUG: these doesn't yet get copied correctly:
+                    ("cpp-lib" "Makefile")
+                    ("cpp-lib" "ObjectPtr.ObjectPtr.Map.cc")
+                    ("cpp-lib" "ObjectPtr.ObjectPtr.Map.hh")
+                    ("cpp-lib" "ObjectPtr.ObjectPtr.VHMap.cc")
+                    ("cpp-lib" "ObjectPtr.ObjectPtr.VHMap.hh")
+                    ("cpp-lib" "ObjectPtr.defs.hh")
+                    ("cpp-lib" "ObjectPtr.hh")
+                    ("cpp-lib" "Pix.hh")
+                    ("cpp-lib" "String.ObjectPtr.Map.cc")
+                    ("cpp-lib" "String.ObjectPtr.Map.hh")
+                    ("cpp-lib" "String.ObjectPtr.VHMap.cc")
+                    ("cpp-lib" "String.ObjectPtr.VHMap.hh")
+                    ("cpp-lib" "String.defs.hh")
+                    ("cpp-lib" "String.hh")
+                    ("cpp-lib" "String.int.Map.cc")
+                    ("cpp-lib" "String.int.Map.hh")
+                    ("cpp-lib" "String.int.VHMap.cc")
+                    ("cpp-lib" "String.int.VHMap.hh")
+                    ("cpp-lib" "cpp-hashtable.hh")
+                    ("cpp-lib" "cpp-primal.cc")
+                    ("cpp-lib" "cpp-primal.hh")
+                    ("cpp-lib" "gc.hh")
+                    ("cpp-lib" "hashfns.cc")
+                    ("cpp-lib" "hashfns.hh")
+                    ("cpp-lib" "my-builtin.hh"))
+  :files ("hierarchy" 
+          "taxonomies"
+          "streams"
+          ("cl-lib" "cl-primal")        ; redundant because of ordering considerations
+          ("cl-lib" "stella-to-cl")     ; ditto
+          "primal"			; Needs to be after cl-primal to make sure Native
+					;   signatures are handled properly.  TAR 4/5/00
+          "type-predicates" 
+          "conses"
+          "lists"
+          "collections"
+          "iterators"
+          "symbols"
+          "literals"
+          "classes"
+          "methods"
+          "defclass"
+          "stella-in"
+          "foreach"
+          "walk"
+          "cl-translate"
+          "cl-translate-file"
+          "dynamic-slots"
+          "dynamic-literal-slots"
+          "modules"
+          "contexts"
+          "read"
+          "macros"
+          "memoize"
+          "demons"
+          "more-demons"
+          "translate-file"
+          "systems"
+          "describe"
+          "cpp-translate-file"
+          "cpp-translate"
+          "cpp-class-out"
+          "cpp-output"
+          "java-translate-file"
+          "java-translate"
+          "java-class-out"
+          "java-output"
+          "idl-translate"
+          "idl-class-out"
+          "idl-translate-file"
+          "idl-output"
+	  "startup")
+  :copyright-header
+  "--------------------------------------------------------------------------+
+ |                                                                          |
+ |  COPYRIGHT (C) UNIVERSITY OF SOUTHERN CALIFORNIA, 1996-2000              | 
+ |  University of Southern California, Information Sciences Institute       |
+ |  4676 Admiralty Way                                                      |
+ |  Marina Del Rey, California 90292                                        |
+ |                                                                          |
+ |  This software was developed under the terms and conditions of Contract  |
+ |  No. N00014-94-C-0245 between the Defense Advanced Research Projects     |
+ |  Agency and the University of Southern California, Information Sciences  | 
+ |  Institute.  Use and distribution of this software is further subject    |
+ |  to the provisions of that contract and any other agreements developed   |
+ |  between the user of the software and the University of Southern         |
+ |  California, Information Sciences Institute.  It is supplied \"AS IS\",    |
+ |  without any warranties of any kind.  It is furnished only on the basis  |
+ |  that any party who receives it indemnifies and holds harmless the       |
+ |  parties who furnish and originate it against any claims, demands, or    |
+ |  liabilities connected with using it, furnishing it to others or         |
+ |  providing it to a third party.  THIS NOTICE MUST NOT BE REMOVED FROM    |
+ |  THE SOFTWARE, AND IN THE EVENT THAT THE SOFTWARE IS DIVIDED, IT SHOULD  |
+ |  BE ATTACHED TO EVERY PART.                                              |
+ |                                                                          |
+ +--------------------------------------------------------------------------"
+  )                   ; end of STELLA defsystem

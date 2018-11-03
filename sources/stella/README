@@ -1,0 +1,551 @@
+-*- Mode: Text -*-
+
+STELLA INSTALLATION AND (RUDIMENTARY) USER'S GUIDE
+
+Version: $Id: README,v 1.4 1997/04/29 02:31:09 hans Exp $
+This document describes "Stella 1.1.alpha, patch-level 0" or later.
+
+
+SYSTEM REQUIREMENTS
+
+To install and use Stella you need the following amounts of disk space:
+
+  -  2.0 Meg for the tar file
+  - 14.5 Meg for the untarred sources plus translations
+  -  4.5 Meg to compile a Lisp version
+  -  4.5 Meg to compile the C++ version (without -g)
+
+This means that you will need approximately 25 Meg to work with one Lisp and
+one C++ version of Stella in parallel.  If you also want to experiment with
+the two Lisp translation variants that use structures instead of CLOS
+instances to implement Stella objects, then you will need an extra 10 Meg to
+compile them.
+
+To run a Lisp version of Stella you need an ANSI Common-Lisp (or at least one
+that supports CLOS and logical pathnames).  We have successfully tested Stella
+with Allegro-CL 4.2 and 4.3, Macintosh CL 3.0, and Lucid CL 4.1 (plus the
+necessary ANSI extensions and Mark Kantrowitz's logical pathnames
+implementation).  Our main development platform is Allegro-CL 4.3 running
+under Unix on Suns and HPs, so, the closer your environment is to ours, the
+higher are the chances that everything will work right out of the box.
+
+To compile the C++ version of Stella you need a C++ compiler such as g++.  We
+have successfully compiled and run Stella with g++ 2.7.2.  We have also used
+Centerline C++ (and ObjectCenter) to compile Stella.  However, we have never
+tested the garbage collector with Centerline, so, there is a possibility for
+problems.
+
+
+FILENAME CONVENTIONS
+
+Stella source files have the extension `.ste'.  Translated versions of a
+Stella file share the same basename but get a different extension.  For
+example, the Lisp translation of the file `iterators.ste' is called
+`iterators.lisp'.  The C++ translation is comprised of the two files
+`iterators.hh' and `iterators.cc'.  There are also two alternative Lisp
+translation schemes that use Common-Lisp structures instead of CLOS instances
+to implement Stella objects.  The Lisp translation of `iterators.ste' that
+uses standard CL-structs is called `iterators.slisp', and the one that uses
+vector structs is called `iterators.vslisp'.  Thus, for every Stella source
+file, there are five associated translation files for the different target
+languages and translation schemes.  Once these files get compiled with the
+native Lisp and C++ compilers, there will be additional `.o' and `.fasl' files
+generated.  Compiled Lisp files are kept in a separate tree under the LISP-BIN
+directory that allows you to simultaneously compile Stella for different Lisp
+implementations.
+
+
+INSTALLATION
+
+Uncompress and untar the file `stella-X.Y.Z.tar.gz' in the parent directory of
+where you want to install Stella (`X.Y.Z' are place holders for the actual
+version numbers).  This will create the Stella tree in the directory
+`stella-X.Y.Z/'.  All pathnames mentioned below will be relative to that
+directory which we will usually refer to as the "Stella directory".
+
+Uncomment and edit the logical pathname translations in the file
+`load-stella.lisp' to match your Stella installation directory (or copy them
+to your Lisp initialization file and edit them there).
+
+Startup Lisp and load the file `load-stella.lisp'.  The first time around this
+will compile all Lisp-translated Stella files before they are loaded.  During
+subsequent sessions the compiled files will be loaded right away.
+
+
+EMACS SETUP
+
+Stella development is very similar to Lisp development, and it is best done in
+an Emacs-based Lisp development environment such as the Allegro-CL
+fi-interface plus Composer, or ILISP.  If you do use X/Emacs, add the
+following to your .emacs file (assuming you use ACL with the fi-interface):
+
+        (setq auto-mode-alist
+              (cons '("\\.ste$" . fi:common-lisp-mode) auto-mode-alist))
+
+If you are using the ACL fi-interface, you might want to install the file
+`emacs/fi-stella.el', since it makes looking up Stella definitions with 
+`C-c .' or `M-.' work better.  Look at the file `emacs/fi-stella.el' for
+specific installation instructions.
+
+
+RUNNING STELLA
+
+Startup Lisp and load the file `load-stella.lisp'.  When the loading and
+startup has completed type `(in-package "STELLA")'.  Now you are ready to
+interact with the Stella system (all unqualified Lisp symbols mentioned below
+are assumed to be in the STELLA package).
+
+IMPORTANT: The STELLA package does not inherit anything from the LISP package
+(see the file `cl-lib/cl-setup.lisp' for the few exceptions), hence, you have
+to explicitly qualify every Lisp symbol you want to use with `CL:'.  E.g., to
+get the result of the previous evaluation you have to use `CL:*'.  In some
+situations, this also causes problems for the ACL fi-interface.  For example,
+starting up Composer does not work while your Listener is in the STELLA
+package.  You have to switch back to the USER package to start it, or start it
+before you switch to the STELLA package.
+
+To reduce startup time, you might want to create a Lisp image that has all of
+Stella preloaded.
+
+
+WRITING AND TRANSLATING NEW STELLA CODE
+
+The preferred method of Stella code development is to use a Lisp-based version
+of Stella for all the prototyping and testing, since that allows you to
+exploit most (or all) of the rapid-prototyping advantages of Lisp.  Once a
+system has reached a certain point of stability, it can be translated into C++
+for increased performance, or simply to interface it with other C++ code.
+
+In the following, we assume an Emacs-based Lisp development environment such
+as the ACL fi-interface, where Lisp is run in an Emacs subprocess, and Lisp
+source can be compiled and evaluated directly from the source buffers.  By
+"Lisp buffer" we mean the listener buffer in which Lisp is actually running,
+and by "source buffer" we mean a buffer that is used to edit a file that
+contains Stella source.
+
+Included in the distribution are two files `your-file.ste' and
+`your-file2.ste', which are intended to give you a quick start with your
+experimental Stella code.  To get started, simply add your code to these
+files, since they are already linked into all the necessary locations.  To
+generate more complex systems, some configuration files will need to be
+written by hand (once our system-building facilities are a little bit more
+sophisticated, most of that will be automated).
+
+Suppose, you add the following function to `your-file.ste':
+
+        (defun (factorial INTEGER) ((n INTEGER))
+          (if (eql? n 0)
+              (return 1)
+            (return (* n (factorial (1- n))))))
+
+There are various options for translating and evaluating this definition.  The
+easiest one is to use your Emacs-to-Lisp interface, i.e., simply put your
+cursor somewhere inside the definition in the source buffer and evaluate it in
+the standard way, e.g., type `M-C-x'.  This translates the Stella code into
+Lisp and compiles (or evaluates) the resulting Lisp code, thus, now you can
+actually try it out in Lisp, e.g., try `(factorial 6)' in the Lisp buffer.
+
+Instead of evaluating the definition in the source buffer, you can also
+enter it directly at the Lisp prompt with the same effect.  The Lisp symbol
+`stella::defun' is actually bound to a Lisp macro that calls all the necessary
+translation machinery to convert the Stella definition into Lisp code.  Look
+at the file `cl-lib/stella-to-cl.ste' for the complete set of such macros.
+
+Since a newly-written Stella function might have errors, it is prudent to
+first only translate it without actually executing the result of the
+translation.  In the source buffer you can do that by macro-expanding the
+`defun'.  Any errors discovered by the Stella translator are reported in
+the Lisp buffer window.  The expansion will be a `CL:progn' that contains the
+translated definition as the first element plus various startup-time
+(initialization) code following it.
+
+In the Lisp buffer you can achieve a similar effect with the macro `ptrans'.
+For example, executing
+
+       (ptrans
+        (defun (factorial INTEGER) ((n INTEGER))
+          (if (eql? n 0)
+              (return 1)
+            (return (* n (factorial (1- n)))))))
+
+in the Lisp buffer first translates the definition, and then prints the
+translation (hence, the name `ptrans').
+
+You can also use `ptrans' to translate code fragments that are not top-level
+definitions such as `defun' and its friends.  For example,
+
+       (ptrans
+        (foreach keyword in (list :a :b :c)
+                 do (print keyword EOL)))
+
+prints the translation of this Stella loop.  The use of `ptrans' is really
+necessary here, since there is no Lisp macro `foreach' that knows how to
+translate Stella `foreach' loops.  In order to translate such code fragments
+without error messages, they need to be self-contained, i.e., all referenced
+variables have to be either bound by a surrounding `let', or they must be
+globally defined variables.  Otherwise, the Stella translator will generate
+various "undefined variable" error messages.
+
+You can use the Lisp macro `eval' to actually execute such a code fragment.
+For example,
+
+       (eval
+        (foreach keyword in (list :a :b :c)
+                 do (print keyword EOL)))
+
+translates the loop and executes the result, which will print the keywords
+to standard output.
+
+Make it a habit to wrap `eval' around the incremental execution of any but the
+simplest Stella code.  This makes sure that all the arguments to a function,
+etc., are translated into the appropriate Stella objects.  For example,
+evaluating
+
+        (list :a :b :c)
+
+in the Lisp buffer generates a Stella list that points to the Lisp keywords
+`:a', `:b', and `:c'.  If the resulting list is used by any other Stella code,
+it will most likely break, since Stella expects Stella keywords, not Lisp
+keywords (this can be very confusing, since they look exactly alike).
+
+Using `eval', e.g.,
+
+        (eval (list :a :b :c))
+
+avoids this problem by making sure that `:a', `:b', and `:c' are actually
+translated into Stella keywords before they are inserted into the resulting
+list.
+
+`eval' is also necessary to access Stella symbols and surrogates in the Lisp
+buffer.  For example,
+
+        (eval @OBJECT)  ;; case is insignificant
+
+returns the Stella surrogate `@OBJECT'.  If you type `@OBJECT' without the
+`eval', you will get an "unbound variable" error in Lisp.  To access a Stella
+symbol, you can use `quote', e.g.,
+
+        (eval (quote foo))
+
+returns the Stella symbol `foo'.
+
+
+TRANSLATING FILES TO COMMON-LISP
+
+All the translations described above were incremental.  To translate a whole
+Stella file into Common-Lisp you can use the function `cl-translate-file'.
+For example,
+
+        (cl-translate-file "PL:sources;stella;your-file.ste")
+
+will translate `your-file.ste' and generate a corresponding `your-file.lisp'.
+If your Lisp already runs in the Stella directory, you can use the filename
+without the complete directory specification, e.g.,
+
+        (cl-translate-file "your-file.ste")
+
+MINOR GLITCH: If in the Lisp version of Stella you do use a pathname with a
+directory component, make sure you use a logical pathname, since Stella needs
+to separate the filename from the directory component, and to do that it
+expects logical pathname syntax.
+
+Note, that `cl-translate-file' does not actually make the translated
+definitions available in your Lisp image.  All it does is translate each
+definition in the Stella file and write its translation to the resulting Lisp
+file.  The only side-effect is that the Stella meta-objects that describe the
+various objects defined in the Stella file are generated in the Lisp image.
+For example, if the file `your-file.ste' defines a function `foo', then
+translating the file will generate a Stella meta-object that records various
+information about `foo', such as its return-type, number of parameters, etc.,
+(i.e., its signature).  Hence, if you later translate `your-file2.ste', and
+some definition there references `foo', Stella will use the meta-object
+describing `foo' to check whether the call to `foo' is correct or not.
+Without translating `your-file.ste' first, `foo' will be reported as an
+undefined function.  Note, that these meta-objects are also created during
+incremental translation.
+
+To bring the translations generated by `cl-translate-file' into your Lisp
+image, you can use the function `cl-compile-and-load-file' which will
+invoke the standard Lisp compiler and loader.  For example,
+
+        (cl-compile-and-load-file "PL:sources;stella;your-file")
+
+will compile the latest translation of `your-file.ste' and load it into Lisp.
+If a previously generated compiled file exists that is up-to-date, it will be
+used instead of recompiling the translated file.  
+
+In files translated with `cl-translate-file', all startup-time initialization
+code is collected into a single startup-time function.
+`cl-compile-and-load-file' makes sure to call that function right after the
+file gets loaded, unless you supply FALSE as a second argument.
+
+The CL-translations of `your-file.ste' and `your-file2.ste' are automatically
+loaded with the standard Stella load procedure; hence, right after starting
+up Stella, the most recent translations of these files will be available in
+your Lisp image.
+
+
+TRANSLATING TO C++
+
+Once your Stella program translates and runs error-free in Lisp, you are ready
+to translate it into C++.  The standard vehicle for doing so is the function
+`cpp-translate-file' which is similar to `cl-translate-file'.  For example,
+
+        (cpp-translate-file "PL:sources;stella;your-file.ste")
+
+will generate the C++ files `your-file.hh' and `your-file.cc' in the Stella
+directory.  
+
+Before you can compile the C++ version of Stella including your code, you have
+to write a proper `main' function that can be called by C++ as the initial
+program entry point.  There are two ways to go about this: (1) You can use the
+`main' function defined in the file `main.cc' and modify it to call the
+top-level function of your Stella code, or (2) you can uncomment the Stella
+version of `main' defined in `your-file.ste' and modify that.  If you choose
+the second option, you have to comment the version of `main' defined in
+`main.cc' to avoid a duplicate definition.  The first option is the one
+enabled by default, since you usually want to call some C++-specific code
+inside `main' (e.g., for benchmarking), and this would be a little bit more
+tedious to write in a Stella version of `main'.
+
+In order to be able to use any Stella variables and data structures, you have
+to call the Stella function `startup' to perform all necessary
+initializations.  Therefore, the first thing you should do in your `main'
+function is to call `startup' (it takes a boolean argument which controls
+whether progress annotations should be printed during startup).
+
+Since Stella is less restrictive about identifier names than C++, the C++
+translator has to perform certain character substitutions to map a Stella
+identifier onto a C++ identifier.  For example, `-' is mapped onto `_', `?' is
+mapped onto `P', etc.  It also performs some tricks with character case to
+avoid name clashes.  So, if you want to use the function `main' in `main.cc',
+you have to find out how the name of your top-level function was translated
+into C++.  An easy way to do so is to look at the file `your-file.cc' and see
+what name was generated by the C++ translator.  The function `hello-world'
+defined in the distributed version of `your-file.ste' and its call in
+`main.cc' should give you an idea how this is done.
+
+A precomputed, global includes-file called `stella-includes.hh' already
+references `your-file.hh' and `your-file2.hh', i.e., you can now compile the
+C++ translation of Stella including your code by running `make' in the Stella
+directory.  The first time around this will compile all of Stella, plus some
+low-level ("primal") support in the directory `cpp-lib', plus the C++ garbage
+collector.  Subsequent compilations will only recompile your modified files.
+By default, gcc and g++ are used as the C and C++ compilers.  If you want to
+use different compilers, you have to edit the `make' variables `CC' and `CXX'
+in the `Makefile'.
+
+IMPORTANT: As long as you do not define any methods on any of the standard
+Stella classes (e.g., CONS), all you have to do is to re/translate
+`your-file/2.ste' to C++ whenever you make a change.  If you do want to define
+a new method, e.g., a different version of `member?' called `mem?' on the
+various classes `member?' is already defined on, you also have to retranslate
+`hierarchy.ste' to C++, since in C++ all methods on a class have to be
+declared in the class definition.  In that case you will also have to
+recompile all of Stella and its primal support with the C++ compiler, since
+V-tables might have changed.
+
+The most common way of translating Stella to C++ is to use
+`cpp-translate-file' as described above.  However, once in a while it is
+useful to perform a C++-translation on a small piece of Stella code only.
+You can do that by calling
+
+        (cpp-translate-to-standard-out)
+
+From then on any calls to `ptrans' (or any macro-expansions of `defun', etc.)
+will translate the Stella code to C++ and print the result to standard output
+in you Lisp buffer.  For example, after calling the function above, this call
+to `ptrans'
+
+        (ptrans
+          (foreach keyword in (list :a :b :c)
+                   do (print keyword EOL)))
+
+will generate the following output:
+
+        { Object* keyword = NULL;
+          Cons* iter_003 = list(3, KWD_A, KWD_B, KWD_C)->the_cons_list;
+        
+          while (!nilP(iter_003)) {
+            {
+              keyword = iter_003->value;
+              iter_003 = iter_003->rest;
+            }
+            cout << keyword << endl;
+          }
+        }
+
+Note, that while you are in C++-translation mode, none of your incremental
+translations will have any effect in Lisp.  To switch back to Lisp-translation
+mode, you can call the function
+
+        (toggle-output-language)
+
+which will switch you back to Lisp.  You can call it multiple times to switch
+back and forth between Lisp and C++.  Each call will return a keyword
+indicating the new current output language.
+
+
+CURRENT RESTRICTIONS IN C++
+
+There are a few things that are not yet implemented for C++-translations of
+Stella files.  For one, logical pathnames do not yet work in C++, since there
+is no Stella support available for them yet (in Lisp, we rely on the
+underlying Lisp system to handle them).  There are also a few primitive data
+structures and operations that are not yet implemented in C++, for example,
+integer and float hashtables, as well as some operations on files such as
+`file-write-date' and `delete-file' are still missing.  If you try to use any
+of these unimplemented operations, you will get a run-time error message when
+they are called.
+
+
+GENERAL PERFORMANCE HINTS
+
+Here are a few things to watch out for once you get serious about the
+performance of your translated Stella programs:
+
+Safety checks: The Stella variable `*safety*' controls whether certain safety
+code is added to your translated Stella program.  For Lisp translations it
+also controls whether `cast's will be translated into run-time type checks or
+not (there is no run-time type checking performed in C++).  The default
+`*safety*' level is 3 which enables the translation of all `safety' clauses
+with level 3 or lower.  A safety level of 1 or lower disables the generation
+of calls to the `cast' function in Lisp.  `cast' performs run-time type checks
+which are somewhat expensive.  However, you should not disable run-time type
+checking in Lisp until you have fully debugged your program.  Once you are
+confident that your program works correctly, you can set `*safety*' to 0
+before you translate it.  That way you will avoid the generation and execution
+of any safety code at all.  All of the core Stella system was translated with
+`*safety*' set to 0.
+
+Quoted cons trees: Access to quoted constants that are not symbols is somewhat
+slow, since it uses hashing to find them in a table.  Hence, access to quoted
+constants such as `(quote (foo bar fum))' should be avoided in inner loops.
+Access to quoted symbols such as `(quote foo)' is fast and should not cause
+any performance problems.  The use of `quote' for constant cons trees is very
+rare in Stella (and somewhat deprecated), which is the reason why this
+mechanism is not all that well supported.
+
+Equality tests: The standard equality test in Stella is `eql?', which the
+translator will translate into the most efficient equality test for the
+particular types of operands (`eql?' is somewhat similar to the Lisp function
+`CL:eql' with the exception of comparing strings).  If the translator can
+determine that at least one of the operands is a subtype of STANDARD-OBJECT,
+it will translate it into a fast pointer comparison with the Lisp function
+`CL:eq' or the C++ `==' operator.  However, if both operands are of type
+OBJECT, they might be wrapped literals such as wrapped integers or strings.
+In that case the equality test translates into a call to the function `eql?'
+which in turn uses method calls to handle comparison of different types of
+wrapped literals (two wrapped literals are equal if their wrapped content is
+equal).  This is of course a lot less efficient than a Lisp `CL:eq' test.  It
+also means that if you can restrict the type of a variable that will be tested
+with `eql?' to STANDARD-OBJECT, you probably should do so for performance
+reasons.
+
+Type tests: Run-time type tests as used implicitly within a `typecase' or
+explicitly with functions such as `cons?' have to use a call to the method
+`primary-type'.  Hence, in performance-critical portions of your code you
+should try to keep the number of such tests as small as possible.
+
+Lisp-style property lists: Lisp programs often use property lists for fast
+retrieval of information that is linked to symbols.  To support the easy
+translation of existing Lisp programs that use this paradigm into Stella, a
+similar mechanism implemented by the functions `symbol-value', `symbol-plist',
+and `symbol-property' is available that preserves the performance benefits of
+this storage scheme (see the file `symbols.ste').  However, property lists do
+not fit the object-oriented programming paradigm supported by Stella, and,
+hence, are frowned upon.
+
+Compiler optimization: The optimization settings used with the native Lisp or
+C++ compiler can greatly influence performance results.  In particular, using
+high optimization settings with the Lisp compiler can greatly improve slot
+access time on Stella objects.
+
+
+C++ PERFORMANCE HINTS:
+
+Some methods such as `CONS.emtpy?' or `CONS.non-empty?' are not yet inlined by
+the C++ translator, which can lead to decreased performance if these methods
+are used in inner loops.  A temporary work-around in performance-critical code
+is to inline them by hand, for example, instead of
+
+        (non-empty? x)
+
+where `x' is of type CONS, one can write
+
+        (not (eql? x NIL))
+
+which will translate into a fast C++ pointer comparison instead of a method
+call.
+
+
+LISP PERFORMANCE HINTS
+
+The standard Lisp implementation for Stella objects are CLOS objects, since
+CLOS provides the most natural Lisp implementation for the Stella object
+system.  However, there is a price to pay, since in Lisp slot access on CLOS
+objects is a lot slower than slot access on structs.  For example, in Allegro
+CL 4.3, the access to the `value' slot of a Stella CONS cell takes about 4
+times longer on a CLOS object implementation of CONS than on a struct
+implementation.  Unfortunately, the struct implementation itself takes about 3
+times longer than calling `CL:car' on a Lisp cons (which is why, eventually,
+we want to use Lisp conses as the Lisp implementation for Stella CONSes).
+Note, that in the C++ translation these slot-access performance problems are
+nonexistent.
+
+In order to get the maximum performance out of the Lisp version of Stella, you
+can tell the translator to use structs as the implementation for Stella
+objects.  There are two possible struct translation schemes: (1) regular
+structs, and (2) vector structs.  The first scheme simply uses the regular
+`CL:defstruct' instead of `CL:defclass' and dispatches methods directly on the
+structure object.  The second scheme uses structs of type vector that use the
+first element as a type field, and methods are dispatched on a prototype
+element stored in the type field.  The reason for implementing the second
+scheme, was that in Allegro CL method dispatch on struct objects takes about 4
+times as long as method dispatch on CLOS objects, which eliminates the
+performance benefit gained from faster slot access.  The second scheme only
+slows down method calls by a tiny bit while keeping the slot access benefits.
+If you use Allegro-CL, you should only use vector structs in case you want
+better performance for a Lisp version of Stella.
+
+To use a struct translation scheme evaluate either
+
+        (enable-environment-feature :use-common-lisp-structs)
+or 
+        (enable-environment-feature :use-common-lisp-vector-structs)
+
+before you translate a file with, for example:
+
+        (cl-translate-file "PL:sources;stella;your-file.ste")
+
+This will then generate a corresponding file `your-file.slisp' or
+`your-file.vslisp' depending on which scheme you used.  Make sure that after
+you translated all the files you are interested in, you disable the above
+features with
+
+        (disable-environment-feature :use-common-lisp-structs)
+or
+        (disable-environment-feature :use-common-lisp-vector-structs)
+
+Otherwise, subsequent incremental translations in that Lisp image might fail,
+since different translation schemes cannot be mixed.
+
+To use the struct translation of `your-file.ste' you have to use a version
+of Stella that was translated with the same scheme.  To do so, set the
+variable
+
+        (setq cl-user::*load-cl-struct-stella?* CL:t)
+or
+        (setq cl-user::*load-vector-struct-stella?* CL:t)
+
+before you load the file `load-stella.lisp'.  The first time around this will
+compile all the `.slisp' or `.vslisp' files that make up Stella in the
+particular translation scheme.  In subsequent sessions only your modified
+files will be recompiled.
+
+The reasons why neither of the struct translation schemes is enabled by
+default are (1) that the performance trade-offs might be different in
+different versions of Lisp, and (2) that they are somewhat harder to debug (in
+particular, the vector-struct implementation).  This means, that you should
+view the usage of a struct-translation scheme for Lisp as a kind of delivery
+option, similar to translating into C++.

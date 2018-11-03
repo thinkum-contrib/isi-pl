@@ -1,0 +1,1152 @@
+;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                          ;
+;  COPYRIGHT (C) UNIVERSITY OF SOUTHERN CALIFORNIA, 1997                   ; 
+;  University of Southern California, Information Sciences Institute       ;
+;  4676 Admiralty Way                                                      ;
+;  Marina Del Rey, California 90292                                        ;
+;                                                                          ;
+;  This software was developed under the terms and conditions of Contract  ;
+;  No. N00014-94-C-0245 between the Defense Advanced Research Projects     ;
+;  Agency and the University of Southern California, Information Sciences  ; 
+;  Institute.  Use and distribution of this software is further subject    ;
+;  to the provisions of that contract and any other agreements developed   ;
+;  between the user of the software and the University of Southern         ;
+;  California, Information Sciences Institute.  It is supplied "AS IS",    ;
+;  without any warranties of any kind.  It is furnished only on the basis  ;
+;  that any party who receives it indemnifies and holds harmless the       ;
+;  parties who furnish and originate it against any claims, demands, or    ;
+;  liabilities connected with using it, furnishing it to others or         ;
+;  providing it to a third party.  THIS NOTICE MUST NOT BE REMOVED FROM    ;
+;  THE SOFTWARE, AND IN THE EVENT THAT THE SOFTWARE IS DIVIDED, IT SHOULD  ;
+;  BE ATTACHED TO EVERY PART.                                              ;
+;                                                                          ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;; Version: $Id: pl-kernel-kb.ste,v 1.21 2000/12/15 00:28:52 tar Exp $
+
+;;; Built-in mathematical and logical definitions
+
+(in-package "STELLA")
+
+(in-module "PL-KERNEL")
+
+
+    ;;
+  ;;;;;;
+;;;;;;;;;; PL-KERNEL Declarations
+  ;;;;;;
+    ;;
+
+;;; COLLECTION, SET, RELATION, CLASS, FUNCTION, LIST, and 'arity' are
+;;;    shadowed in the PL-KERNEL 'defmodule' declaration.
+
+;;; Bootstrap.  Create a dummy CLASS class; then create the real
+;;;    one, which inserts itself into the dummy's extension; finally,
+;;;    insert CLASS into its own extension:
+
+(startup-time-progn
+  (setf (surrogate-value @CLASS)
+    (new NAMED-DESCRIPTION
+         :surrogate-value-inverse @CLASS))
+  (get-description-extension (surrogate-value @CLASS) TRUE)
+  ;; avoid a redefinition warning:
+  (setq *warnIfRedefine?* FALSE))
+
+(defconcept CLASS (?x RELATION)
+  :documentation "The class of non-polymorphic unary relations.")
+
+(startup-time-progn
+  ;; this is a bit rude, in case somebody had turned it off:
+  (setq *warnIfRedefine?* TRUE))
+
+;;; End of bootstrap.
+
+(defconcept RELATION (?x SET)
+  :documentation "The class of relations.")
+
+(defconcept FUNCTION (?r RELATION)
+  :documentation "The class of single-valued relations that can be
+used in a term applied to n-1 arguments.")
+
+;; forward references to 'arithmetic' file:
+(defobject greater-or-equal)
+(assert (relation greater-or-equal))
+(defobject less-or-equal)
+(assert (relation less-or-equal))
+
+(defobject abstract)
+(assert (relation abstract))
+(defobject duplicate-free)
+(assert (relation duplicate-free))
+(defobject arity)
+(assert (function arity))
+(defobject variable-arity)
+(assert (relation variable-arity))
+(defobject closed)
+(assert (relation closed))
+(defobject single-valued)
+(assert (relation single-valued))
+(defobject ordered)
+(assert (relation ordered))
+(defobject subset-of)
+(assert (relation subset-of))
+(defobject collect-into-list)
+(assert (function collect-into-list))
+(defobject length-of-list)
+(assert (relation length-of-list))
+;(defobject phrase)
+;(assert (relation phrase))
+
+
+  ;;
+;;;;;; Meta-classes:
+  ;;
+
+(defconcept AGGREGATE (?a)
+  :documentation "?a is an aggregate")
+
+(defconcept COLLECTION (?c AGGREGATE)
+  :documentation "?c is a collection"
+  :axioms (ABSTRACT COLLECTION))
+
+(defconcept DUPLICATE-FREE-COLLECTION (?c COLLECTION)
+  :documentation "?c is free of duplicates"
+  :=>> (duplicate-free ?c))
+
+(defconcept SET (?s DUPLICATE-FREE-COLLECTION)
+  :documentation "?s is a set")
+
+(defconcept NUMERIC-SET (?s COLLECTION)
+  :documentation "?s is a set of numbers"
+  :iff (subset-of ?x NUMBER)
+  :axioms (ABSTRACT NUMERIC-SET))
+
+(defconcept LIST (?l COLLECTION)
+  :documentation "?l is a list"
+  :=>> (ordered ?l))
+
+(defconcept GROUP (?c DUPLICATE-FREE-COLLECTION)
+  :documentation "?c is a group")
+
+(defconcept STUFF (?s AGGREGATE)
+  :documentation "?s is stuff")
+
+(defconcept SCALAR (?x)
+  :documentation "The class of scalar quantities.")
+(assert (subset-of NUMBER SCALAR))
+
+(defconcept SCALAR-INTERVAL (?x SCALAR)
+  :documentation "An interval of scalar quantities. ")
+
+(defclass INTEGER-INTERVAL (THING)
+  :documentation "An interval of integers"
+  :slots ((interval-lower-bound :type INTEGER)
+          (interval-upper-bound :type INTEGER)))
+(assert (subset-of INTEGER-INTERVAL SCALAR-INTERVAL))
+
+(defconcept USER-THING (?x)
+  ;; this is exactly like thing, except it will have an extension.
+  ;; I hate doing this, but Bob and Hans won't build support for
+  ;; generating from thing and I've run into numerous occasions
+  ;; where I need it.
+  :documentation "The class of user-defined things.")
+
+
+  ;;
+;;;;;; Annotations; Documentation Strings
+  ;;
+
+(defrelation phrase (?r (?s STRING))
+  :documentation "A phrase is a variablized sentence, a template, that
+is used to express individual axiomatic facts as natural language
+sentences.  By convention, a phrase contains one or more occurrences
+of each variable in a relation or concept definition, it does not
+begin with a capital letter, and it has no concluding period."
+  :documentation "?r has phrase ?s")
+
+(defrelation lexeme (?r (?s String))
+  :documentation "?s is a lexeme for the relation or individual ?r"
+  :documentation "An relation or individual ?r can have zero or more 
+lexemes, words that are natural langage equivalents of a logical constant.
+The same lexeme may be attached to more than one constant.")
+  
+(defrelation comment (?x (?s String))
+  :documentation "?s is a comment attached to ?x.")
+
+(defrelation documentation (?x (?s String))
+  :documentation "?s is a documentation string attached to ?x."
+  :=> (comment ?x ?s)
+  :axioms (relation-specialist documentation documentation-specialist))
+
+(defrelation issue (?x (?s String))
+  :documentation "?s is an issue attached to ?x."
+  :=> (comment ?x ?s))
+
+(defrelation example ((?r Relation) ?e)
+  :documentation "?e is an example of (the use of) ?r.")
+
+(defrelation image-url (?x (?url String))
+  :documentation "?url is a URL pointing to an image illustrating ?x.")
+
+
+  ;;
+;;;;;; Specialists and Computations
+  ;;
+
+(defrelation AUTOMATIC-TERM-INTRODUCTION ((?c CLASS))
+  :documentation "Asserts that first-time references to predication
+arguments of type ?c cause automatic introduction of new instances
+of ?c.")
+
+(defclass COMPUTED-PROCEDURE (THING)
+  :public? TRUE
+  :documentation "Each instance denotes a programming language 
+function that computes some procedure.  The slot 'procedure-name'
+provides the name of the procedure.  The slot 'procedure-code'
+points directly to the procedure itself.  Both slots are optional;
+if neither is supplied, the procedure will be invoked by extracting
+its name from the name of the instance."
+  :public-slots ((procedure-name :type STELLA/SYMBOL)
+		 (procedure-code :type STELLA/FUNCTION-CODE)) )
+(assert (automatic-term-introduction COMPUTED-PROCEDURE))
+
+(defrelation relation-specialist ((?r RELATION) (?sp COMPUTED-PROCEDURE))
+  :documentation
+  "Names a 'specialist' (a function) that evaluates an (atomic) relation
+proposition during query processing.  This defines an extensible
+means for computing with the control stack.  The function is passed
+a CONTROL-FRAME that contains the proposition, and returns a keyword
+:FINAL-SUCCESS, :CONTINUING-SUCCESS, :FAILURE, or :TERMINAL-FAILURE
+that controls the result of the computation."
+  :axioms (single-valued RELATION-SPECIALIST))
+
+(defrelation relation-evaluator ((?r RELATION) (?ev COMPUTED-PROCEDURE))
+  :documentation
+  "Names an 'evaluator' (a function) that evaluates an (atomic) relation
+proposition during constraint propagation.  This defines an extensible
+means for computing using auxiliary data structures.  The function is passed
+a proposition for evaluation.  All side-effects are made by updates to
+the proposition, or by generating other assertions."
+  :axioms (single-valued RELATION-EVALUATOR))
+
+(defrelation relation-computation 
+  ((?r RELATION) (?computation COMPUTED-PROCEDURE))
+  :documentation
+  "Names a 'computation' (a function) that evaluates an (atomic) relation
+proposition during query processing.  The function is passed a proposition
+for evaluation for which all arguments are bound.  The function
+returns a BOOLEAN if it represents a predicate, or some sort of value
+if its a function."
+  :=>> (relation-specialist ?r computation-specialist)
+  :axioms (single-valued RELATION-COMPUTATION))
+
+(defrelation relation-constraint 
+  ((?r RELATION) (?computation COMPUTED-PROCEDURE))
+  :documentation
+  "Names a 'computation' (a function) that evaluates an (atomic) relation
+proposition during query processing.  The function is passed a proposition
+for evaluation for which all arguments are bound.  The function
+returns a BOOLEAN if it represents a predicate, or some sort of value
+if its a function."
+  :=>> (relation-specialist ?r constraint-specialist)
+  :axioms (single-valued RELATION-CONSTRAINT))
+
+(defrelation handles-reverse-polarity ((?cp COMPUTED-PROCEDURE))
+  :documentation
+  "Very specialized PowerLoom predicate.  Indicates that a computed procedure
+used as a relation specialist is programmed to handle reverse
+polarity (*reversePolarity?*).")
+
+(defrelation goes-true-demon 
+  ((?r RELATION) (?computation COMPUTED-PROCEDURE))
+  :documentation
+  "Names a 'computation' (a function) that is attached (logically)
+to ?r  Each time a proposition with predicate ?r becomes
+true, the function is applied to that proposition."
+  :axioms (single-valued GOES-TRUE-DEMON))
+
+(defrelation goes-unknown-demon 
+  ((?r RELATION) (?computation COMPUTED-PROCEDURE))
+  :documentation
+  "Names a 'computation' (a function) that is attached (logically)
+to ?r  Each time a proposition with predicate ?r becomes
+unknown, the function is applied to that proposition."
+  :axioms (single-valued GOES-UNKNOWN-DEMON))
+
+(defrelation goes-false-demon 
+  ((?r RELATION) (?computation COMPUTED-PROCEDURE))
+  :documentation
+  "Names a 'computation' (a function) that is attached (logically)
+to ?r  Each time a proposition with predicate ?r becomes
+false, the function is applied to that proposition."
+  :axioms (single-valued GOES-FALSE-DEMON))
+
+
+  ;;
+;;;;;; Collection-forming functions
+  ;;
+
+(deffunction collectionof (?m) :-> (?c COLLECTION)
+  :documentation "Abstract function existing to subsume 'SETOF'
+and 'LISTOF'."
+  :axioms (variable-arity collectionof))
+
+(deffunction setof (?m) :-> (?c SET)
+  :documentation "Term-forming function that defines an enumerated set
+consisting of all function arguments."
+  :axioms (and (subset-of SETOF COLLECTIONOF)
+               (variable-arity SETOF)
+               (total SETOF)))
+
+(deffunction listof (?m) :-> (?c LIST)
+  :documentation "Term-forming function that defines an ordered list
+consisting of all function arguments."
+  :axioms (and (subset-of LISTOF COLLECTIONOF)
+               (variable-arity LISTOF)
+               (total LISTOF)))
+
+
+  ;;
+;;;;;; Meta-meta:
+  ;;
+
+(defrelation HOLDS ((?relation RELATION) ?arguments)
+  :documentation "True if the tuple '?arguments' is a member of the
+relation '?relation'."
+  :axioms (and (variable-arity HOLDS)
+               (relation-specialist HOLDS holds-specialist)))
+
+(deffunction VALUE ((?function FUNCTION) ?arguments) :-> ?value
+  :documentation "True if applying '?function' to '?arguments'
+yields the value '?value'."
+  :axioms (and (variable-arity VALUE)
+               (relation-specialist VALUE value-specialist)))
+
+(defrelation IST ((?context CONTEXT) (?p PROPOSITION))
+  :documentation "True if proposition ?p is true in context ?context."
+  :axioms (and (relation-specialist IST IST-specialist)
+               (handles-reverse-polarity IST-specialist)))
+
+(defrelation CUT (?arguments)
+  :documentation "Prolog-like CUT.  Succeeds the first time and
+then fails.  Side-effect:  Locally disables query optimization."
+  ;; Note: The variable arity exists because zero-arity relations
+  ;;    are not supported.
+  :axioms (and (variable-arity CUT)
+               (relation-specialist CUT cut-specialist)))
+
+(defrelation BOUND-VARIABLES (?arguments)
+  :documentation "True if all arguments are bound.  Used to block
+backchaining into unfruitful branches.  Side-effect:
+Locally disables query optimization."
+  :axioms (and (variable-arity BOUND-VARIABLES)
+               (handles-reverse-polarity bound-variables-specialist)
+               (relation-specialist
+                BOUND-VARIABLES bound-variables-specialist)))
+
+(defrelation FORK ((?test PROPOSITION) (?then PROPOSITION) (?else PROPOSITION))
+  :documentation "Fail-based conditional.  If ?test succeeds, evaluates
+?then; otherwise evaluates ?else."
+  :axioms (relation-specialist FORK fork-specialist))
+
+     
+  ;;
+;;;;;; System Relations
+  ;;
+
+(deffunction OBSERVED-CARDINALITY-OF ((?r RELATION)) :-> (?card INTEGER)
+  :documentation "Used by PowerLoom to record the sizes of class
+and relation extensions.  Only filled if the relation extension was
+directly accessed by some query.")
+
+(defrelation HIDDEN-RELATION ((?r RELATION))
+  :documentation "Indicates that ?r is used like an internal data
+structure; not for user consumption.")
+
+(defrelation POLYMORPHIC ((?r RELATION))
+  :documentation "True if ?r' supports polymorphism")
+
+
+  ;;
+;;;;;; 'instance-of' and 'subset-of'
+  ;;
+
+(defrelation instance-of ((?x THING) (?c CLASS))
+  :documentation "True if ?x is an instance of ?c.  Can
+be used to generate class values of ?c, given an instance ?i."
+;  :specialist instance-of-specialist
+  :axioms (relation-specialist instance-of instance-of-specialist))
+
+(defrelation type-of ((?c CLASS) (?x THING))
+  :documentation "True if ?x is an element of ?c."
+  :<<=>> (instance-of ?x ?c)
+  :axioms (inverse instance-of type-of))
+
+(defrelation subset-of ((?sub COLLECTION) (?super COLLECTION))
+  :documentation "True if ?sub is a subset of ?super.
+IMPLEMENTATION NOTE: 'subset-of' is converted internally to an IMPLIES
+proposition, i.e., its not an ordinary relation -- it can't have
+its own backchaining rules."
+  :axioms (relation-specialist subset-of subset-of-specialist))
+
+(defrelation member-of ((?x THING) (?c COLLECTION))
+  :documentation "?x is a member of collection ?c"
+  :axioms (and (relation-specialist member-of member-of-specialist)
+               (handles-reverse-polarity member-of-specialist)
+               (relation-evaluator MEMBER-OF MEMBER-OF-evaluator)))
+
+(defun MEMBER-OF-evaluator ((self PROPOSITION))
+  ;; If the second argument to 'self' is an unnamed description, inherit
+  ;;    it onto the first argument during forward propagation.
+; (print "MEMB-eval: " self EOL)
+  (let ((value1 (value-of (nth (arguments self) 0)))
+        (value2 (value-of (nth (arguments self) 1))))
+    (when (and (isa? value2 @DESCRIPTION)
+               (isa? value1 @LOGIC-OBJECT)
+               (not (named-description? value2)))
+      (inherit-unnamed-description 
+       (cast value1 LOGIC-OBJECT) value2 (default-true? self)))) )
+
+(defrelation has-member ((?c COLLECTION) (?x THING))
+  :documentation "?x is a member of collection ?c"
+  :axioms ((inverse has-member member-of)))
+
+
+  ;;
+;;;;;; Stuff
+  ;;
+
+
+(defrelation portion-of ((?x AGGREGATE) (?y AGGREGATE))
+  :phrase "?x is a portion of (a piece of) ?y"
+  :axioms ((transitive portion-of)))
+
+
+  ;;
+;;;;;; domain, range, etc.
+  ;;
+
+(defrelation domain ((?r RELATION) (?d CLASS))
+  :documentation "Defines 'domain' for binary relations.  Not normally
+asserted for a localized relation (since it would be redundant)."
+  :=>> (=> (holds ?r ?i ?v) (holds ?d ?i)) )
+
+(defrelation range ((?r RELATION) (?c CLASS))
+  :documentation "Defines 'range' for binary relations."
+  :=>> (=> (holds ?r ?i ?v) (holds ?c ?v)) )
+
+(defrelation nth-domain ((?r RELATION) (?i INTEGER) (?d CLASS))
+  :documentation "True if the nth value for a tuple T satisfying
+?r must belong to the class ?d. Argument counting starts at one (not at zero)."
+  :axioms (and (<=> (and (binary-relation ?r) (nth-domain ?r 1 ?d))
+                    (domain ?r ?d))
+               (<=> (and (binary-relation ?r) (nth-domain ?r 2 ?d))
+                    (range ?r ?d))))
+
+(defrelation slot-of (?i (?r RELATION))
+  :documentation "True if the relation ?r is a slot on the instance ?i."
+  )
+
+
+  ;;
+;;;;;; Set and Roleset relations
+  ;;
+
+(defrelation closed ((?c COLLECTION))
+  :phrase "?c is closed"
+  :documentation "The collection ?c is closed if all of its members are known."
+  :axioms (and (handles-reverse-polarity closed-specialist)
+               (relation-specialist CLOSED closed-specialist)))
+
+(defrelation single-valued ((?c RELATION))
+  :documentation "The relation ?c is single-valued if the value of its
+last argument is a function of all other arguments."
+  :axioms (and (handles-reverse-polarity single-valued-specialist)
+               (relation-specialist SINGLE-VALUED single-valued-specialist)))
+
+(defrelation empty ((?c COLLECTION))
+  :documentation "The collection ?c is empty if it has no members."
+  :axioms (and (relation-specialist EMPTY empty-specialist)
+               (computed EMPTY)))
+
+(defrelation computed ((?c RELATION))
+  :documentation "?c is computed if it can be evaluated only if all of
+its input arguments are bound (all of them if its a relation).
+Used by the query optimizer when looking for generators.")
+
+(deffunction the-roleset ((?r RELATION) ?i) :-> (?rs SET)
+  :documentation "Function that defines a mapping from a relation
+and instance to the skolem that (intensionally) denotes the
+corresponding set of role fillers."
+  ;; THIS WOULD BE GOOD IF WE COULD AUTOMATICALLY INSTANTIATE THE KAPPA
+  ;;    IN BOTH DIRECTIONS:
+  :iff (= (kappa ?v (holds ?r ?i ?v)) ?rs)
+;; THIS MAY NOT BE WORTH THE OVERHEAD, PLUS IT UNCOVERS A BUG:
+;  :=>> (and (SET ?rs)
+;            (=>> (range ?r ?range) (subset-of ?rs ?range)))
+  ;; OOPS: POWERLOOM BACKWARD CHAINS ON THIS (ELIMINATE FOR NOW; RESTORE
+  ;;    WHEN WE CAN FORWARD CHAIN ON COMPLEX ANTECEDENTS):
+;  :axioms (=> (and (the-roleset ?subR ?i ?subRS)
+;                   (the-roleset ?superR ?i ?superRS)
+;                   (subset-of ?subR ?superR))
+;              (subset-of ?subRS ?superRS))
+  )
+
+(deffunction fillers ((?r RELATION) ?i) :-> (?members LIST)
+  :documentation "Given a relation ?r and instance ?i, returns
+a set of known fillers of ?r applied to ?i."
+  :<<= (and (bound-variables ?r ?i)
+            (collect-into-list (setofall ?v (holds ?r ?i ?v)) ?members))
+  :axioms (computed FILLERS))
+
+(deffunction set-cardinality ((?c SET)) :-> (?card INTEGER)
+  :documentation "Function that returns the cardinality of a set."
+  :<<=  (and (closed ?c)
+             (length-of-list (collect-into-list ?c) ?card)))
+
+(defconcept frame-predicate ((?c RELATION))
+  :documentation "Metaclass for frame predicate relations.")
+  
+;; THIS REALLY NEEDS A SPECIALIST TO COMPUTE A MOST SPECIFIC TYPE:
+(defrelation value-type ((?r RELATION) ?i (?type CLASS))
+  :documentation
+  "Relation that specifies a type/range of the relation ?r applied to ?i. "
+;; PERFORMANCE BUG: PROPAGATION OF THIS FORWARD RULE GENERATES A
+;;    BACKWARD RULE THAT KILLS SYSTEM PERFORMANCE.  HENCE, WE NEED
+;;    TO DISABLE IT FOR NOW:  -rmm
+;  :=>> (forall ?v (=> (holds ?r ?i ?v) (holds ?type ?v)))
+  :<<=>> (subset-of (the-roleset ?r ?i) ?type)
+  :<<= (and (bound-variables ?r ?i ?type)
+            (fork (and (single-valued ?r)
+                       (exists ?v (holds ?r ?i ?v)))
+                  ;; single-valued test:
+                  (exists ?v (and (holds ?r ?i ?v)
+                                  (holds ?type ?v)))
+                  ;; multiple-valued test:
+                  (or (and (or (closed ?r)
+                               (closed (the-roleset ?r ?i)))
+                           (forall ?v (=> (holds ?r ?i ?v) (holds ?type ?v))))
+                      (exists (?superR ?superVT)
+                              (and (subset-of ?r ?superR)
+                                   (value-type ?superR ?i ?superVT)
+                                   (subset-of ?superVT ?type))))))
+  :axioms (and (variable-arity VALUE-TYPE)
+               (computed VALUE-TYPE)
+               (frame-predicate VALUE-TYPE)
+               (relation-specialist
+                VALUE-TYPE value-type-specialist)))
+
+(deffunction cardinality ((?r RELATION) ?i (?q CLASS)) :-> (?card INTEGER)
+  :documentation "Function that returns the cardinality of the set
+of fillers of the relation ?r applied to ?i.  "
+#|
+  :axioms (<<= (cardinality ?r ?i ?card ?q)
+               (and (cardinality-lower-bound ?r ?i ?card ?q)
+                    (cardinality-upper-bound ?r ?i ?card ?q)))
+  :axioms (=>> (cardinality ?r ?i ?card ?q)
+               (and (cardinality-lower-bound ?r ?i ?card ?q)
+                    (cardinality-upper-bound ?r ?i ?card ?q)))
+|#
+;; BUG: THIS SHOULD PARSE, BUT IT DOESN'T:
+;  :axioms (<<=>> (cardinality ?r ?i ?card ?q)
+;                 (and (cardinality-lower-bound ?r ?i ?card ?q)
+;                      (cardinality-upper-bound ?r ?i ?card ?q)))
+  :axioms (<<= (cardinality ?r ?i ?card)
+               (and (minimum-cardinality ?r ?i ?card)
+                    (maximum-cardinality ?r ?i ?card)))
+  :axioms (=>> (cardinality ?r ?i ?card)
+               (= (set-cardinality (the-roleset ?r ?i)) ?card))
+  :axioms (and (variable-arity CARDINALITY)
+               (frame-predicate CARDINALITY)
+               (computed CARDINALITY)))
+
+(defrelation cardinality-lower-bound ((?r RELATION) ?i (?lb INTEGER) (?q CLASS))
+  :documentation "Relation that specifies a lower bound on the cardinality 
+of the set of fillers of the relation ?r applied to ?i."
+  :axioms (<<= (cardinality-lower-bound ?r ?i ?lb)
+               (and (bound-variables ?r ?i ?lb)
+                    (=< ?lb (minimum-cardinality ?r ?i))))
+  :axioms (=>> (cardinality-lower-bound ?r ?i ?lb)
+               (>= (set-cardinality (the-roleset ?r ?i)) ?lb))
+  :axioms (and (variable-arity CARDINALITY-LOWER-BOUND)
+               (frame-predicate CARDINALITY-LOWER-BOUND)
+               (relation-specialist
+                CARDINALITY-LOWER-BOUND minimum-cardinality-specialist)))
+
+(defrelation cardinality-upper-bound ((?r RELATION) ?i (?ub INTEGER) (?q CLASS))
+  :documentation "Relation that specifies an upper bound on the cardinality 
+of the set of fillers of the relation ?r applied to ?i."
+  :axioms (<<= (cardinality-upper-bound ?r ?i ?ub)
+               (and (bound-variables ?r ?i ?ub)
+                    (>= ?ub (maximum-cardinality ?r ?i))))
+  :axioms (=>> (cardinality-upper-bound ?r ?i ?ub)
+               (=< (set-cardinality (the-roleset ?r ?i)) ?ub))
+  :axioms (and (variable-arity CARDINALITY-UPPER-BOUND)
+               (frame-predicate CARDINALITY-UPPER-BOUND)
+               (relation-specialist
+                CARDINALITY-UPPER-BOUND maximum-cardinality-specialist)))
+
+(deffunction minimum-cardinality ((?r RELATION) ?i) :-> (?minCard INTEGER)
+  :documentation "Returns the strictest computable lower bound on the
+cardinality of the set of fillers of the relation ?r applied to ?i."
+  :<<= (or (and (single-valued ?r)
+                (exists ?v (holds ?r ?i ?v))
+                (= ?minCard 1))
+           ;; quick proof missed; try complex proof:
+           (maximum-value
+            (collect-into-list
+             (setofall 
+              ?m (or (>= (set-cardinality (the-roleset ?r ?i)) ?m)
+                     (= ?m 0)
+                     (length-of-list (fillers ?r ?i) ?m)
+                     (exists ?subR
+                             (and (subset-of ?subR ?r)
+                                  (>= (set-cardinality (the-roleset ?subR ?i))
+                                      ?m)))
+                     )))
+            ?minCard))
+  :axioms (and (frame-predicate MINIMUM-CARDINALITY)
+               (computed MINIMUM-CARDINALITY)
+               ;; NOT SURE IF WE NEED A SPECIALIST HERE: -rmm
+               (relation-specialist
+                MINIMUM-CARDINALITY minimum-cardinality-specialist)))
+
+(deffunction maximum-cardinality ((?r RELATION) ?i) :-> (?maxCard INTEGER)
+  :documentation "Returns the strictest computable upper bound on the
+cardinality of the set of fillers of the relation ?r applied to ?i."
+  :<<= (or (and (single-valued ?r)
+                (exists ?v (holds ?r ?i ?v))
+                (= ?maxCard 1))
+           ;; quick proof missed; try complex proof:
+           (minimum-value
+            (collect-into-list
+             (setofall
+              ?m (or (=< (set-cardinality (the-roleset ?r ?i)) ?m)
+                     (and (single-valued ?r)
+                          (= ?m 1))
+                     ;; BUG: 'empty' USED AS GENERATOR:
+                     (and (empty (the-roleset ?r ?i))
+                          (= ?m 0))
+                     (and (closed ?r)
+                          (minimum-cardinality ?r ?i ?m))
+                     (exists ?superR
+                             (and (subset-of ?r ?superR)
+                                  (=< (set-cardinality (the-roleset ?superR ?i))
+                                      ?m)))
+                     )))
+            ?maxCard))
+  :axioms (and (frame-predicate MAXIMUM-CARDINALITY)
+               (computed MAXIMUM-CARDINALITY)
+               (relation-specialist
+                MAXIMUM-CARDINALITY maximum-cardinality-specialist)))
+
+(deffunction set-numeric-range ((?x NUMERIC-SET))
+  :-> (?interval INTEGER-INTERVAL)
+  :documentation "Function that returns an interval representing
+the range of allowable numeric values for its members."
+  :=>> (SCALAR-INTERVAL ?interval))
+
+(defrelation numeric-minimum ((?r RELATION) ?i (?n NUMBER))
+  :documentation "Relation that specifies a lower bound on any numeric
+value that can belong to the set of fillers of the relation ?r applied to ?i."
+  :<<=>> (>= (interval-lower-bound (set-numeric-range (the-roleset ?r ?i))) ?n)
+  :axioms (frame-predicate numeric-minimum))
+
+(defrelation numeric-maximum ((?r RELATION) ?i (?n NUMBER))
+  :documentation "Relation that specifies an upper bound on any numeric
+value that can belong to the set of fillers of the relation ?r applied to ?i."
+  :<<=>> (=< (interval-upper-bound (set-numeric-range (the-roleset ?r ?i))) ?n)
+  :axioms (frame-predicate numeric-maximum))
+
+
+  ;;
+;;;;;; Relation Hierarchies
+  ;;
+
+(defrelation direct-subrelation ((?r RELATION) (?sub RELATION))
+  :documentation "True iff ?sub is a direct subrelation of ?r; written
+in set notation, ?sub < ?r, and there is no ?s such that ?sub < ?s < ?r.
+This relation will generate bindings for at most one unbound argument."
+  :axioms (relation-specialist direct-subrelation
+                               relation-hierarchy-specialist))
+
+(defrelation direct-superrelation ((?r RELATION) (?super RELATION))
+  :documentation "True iff ?super is a direct superrelation of ?r;
+in set notation, ?super > ?r, and there is no ?s such that ?super > ?s > ?r.
+This relation will generate bindings for at most one unbound argument."
+  :axioms (and (inverse direct-superrelation direct-subrelation)
+               (relation-specialist direct-superrelation
+                                    relation-hierarchy-specialist)))
+
+(defrelation subrelation ((?r RELATION) (?sub RELATION))
+  :documentation "True iff ?sub is a subrelation of ?r; written in set
+notation, ?sub =< ?r.  This relation will generate bindings for at most
+one unbound argument."
+  :axioms (relation-specialist subrelation
+                               relation-hierarchy-specialist))
+
+(defrelation superrelation ((?r RELATION) (?super RELATION))
+  :documentation "True iff ?super is a superrelation of ?r; written in set
+notation, ?super >= ?r.  This relation will generate bindings for at most
+one unbound argument."
+  :axioms (and (inverse superrelation subrelation)
+               (relation-specialist superrelation
+                                    relation-hierarchy-specialist)))
+
+(defrelation proper-subrelation ((?r RELATION) (?sub RELATION))
+  :documentation "True iff ?sub is a proper subrelation of ?r; written in
+set notation, ?sub < ?r.  This relation will generate bindings for at most
+one unbound argument."
+  :axioms (relation-specialist proper-subrelation
+                               relation-hierarchy-specialist))
+
+(defrelation proper-superrelation ((?r RELATION) (?super RELATION))
+  :documentation "True iff ?super is a proper superrelation of ?r; written in
+set notation, ?super > ?r.  This relation will generate bindings for at most
+one unbound argument."
+  :axioms (and (inverse proper-superrelation proper-subrelation)
+               (relation-specialist proper-superrelation
+                                    relation-hierarchy-specialist)))
+
+(defrelation equivalent-relation ((?r RELATION) (?equiv RELATION))
+  :documentation "True if ?r is equivalent to ?equiv; written in set notation,
+?r = ?equiv.  This relation will generate bindings for at most one unbound
+argument."
+  :axioms (relation-specialist equivalent-relation
+                               relation-hierarchy-specialist))
+
+
+  ;;
+;;;;;; Sets
+  ;;
+
+(deffunction union-of ((?s SET)) :-> (?union COLLECTION)
+  :documentation "True if the union of the collections in ?s
+equals ?union."
+  :iff (<=> (member-of ?i ?s) 
+            (exists ?c (and (member-of ?c ?union)
+                            (member-of ?i ?c)))))
+
+  ;;
+;;;;;; Utility functions
+  ;;
+
+(deffunction collect-into-list ((?c COLLECTION)) :-> (?l LIST)
+  :documentation "Infer as many members of ?c as possible and
+collect them into a STELLA list ?l. "
+  :axioms (relation-specialist COLLECT-INTO-LIST collect-into-list-specialist))
+
+(defrelation length-of-list ((?l LIST) (?length INTEGER))
+  :documentation "Computes the length of the list ?l."
+  :axioms (and (relation-specialist
+                LENGTH-OF-LIST length-of-list-specialist)
+               (single-valued LENGTH-OF-LIST)))
+
+(defrelation minimum-value ((?l LIST) (?min NUMBER))
+  :documentation "Return the minimum of the numbers in ?l."
+  :axioms (and (relation-specialist
+                MINIMUM-VALUE minimum-of-numbers-specialist)
+               (single-valued MINIMUM-VALUE)))
+
+(defrelation maximum-value ((?l LIST) (?max NUMBER))
+  :documentation "Return the maximum of the numbers in ?l."
+  :axioms (and (relation-specialist
+                MAXIMUM-VALUE maximum-of-numbers-specialist)
+               (single-valued MAXIMUM-VALUE)))
+
+(defrelation sum ((?l LIST) (?sum NUMBER))
+  :documentation "Return the sum of the numbers in ?l."
+  :axioms (and (relation-specialist
+                SUM sum-of-numbers-specialist)
+               (single-valued SUM)))
+
+(deffunction project-column ((?i INTEGER) (?c COLLECTION)) :-> (?l LIST)
+  :documentation "Project elements in column ?i (zero-based) of the tuples of ?c and
+collect them into a STELLA list ?l. "
+  :axioms (relation-specialist PROJECT-COLUMN project-column-specialist))
+
+  ;;
+;;;;;; Statistical functions
+  ;;
+
+(defrelation mean-value ((?l LIST) (?mean NUMBER))
+  :documentation "Return the mean of the numbers in ?l."
+  :axioms (and (relation-specialist
+                MEAN-VALUE mean-of-numbers-specialist)
+               (single-valued MEAN-VALUE)))
+
+(defrelation median-value ((?l LIST) (?median NUMBER))
+  :documentation "Return the median of the numbers in ?l."
+  :axioms (and (relation-specialist
+                MEDIAN-VALUE median-of-numbers-specialist)
+               (single-valued MEDIAN-VALUE)))
+
+(defrelation standard-deviation ((?l LIST) (?median NUMBER))
+  :documentation "Return the standard deviation of the numbers in ?l."
+  :axioms (and (relation-specialist
+                STANDARD-DEVIATION standard-deviation-specialist)
+               (single-valued STANDARD-DEVIATION)))
+
+(defrelation variance ((?l LIST) (?median NUMBER))
+  :documentation "Return the variance of the numbers in ?l."
+  :axioms (and (relation-specialist
+                VARIANCE variance-specialist)
+               (single-valued VARIANCE)))
+
+  ;;
+;;;;;;
+  ;;
+
+;;; Introduce the 'computation-specialist' and 'constraint-specialist' procedures
+;;;    (defined  in 'specialists.ste':
+(assert (COMPUTED-PROCEDURE computation-specialist))
+(assert (handles-reverse-polarity computation-specialist))
+(assert (COMPUTED-PROCEDURE constraint-specialist))
+(assert (handles-reverse-polarity constraint-specialist))
+
+
+(deffunction arity ((?r RELATION)) :-> (?arity INTEGER)
+  :documentation "The number of arguments/domains of the relation '?r'."
+  :axioms (and (relation-computation ARITY ARITY-computation)
+               (relation-specialist ARITY computation-specialist)))
+
+(defun (ARITY-computation INTEGER-WRAPPER) ((descriptionArg OBJECT))
+  ;; Return the arity of 'description'.
+  (let ((description OBJECT (value-of descriptionArg)))
+    (if (defined? description)
+      (typecase description
+        (LOGIC/DESCRIPTION (return (LOGIC/arity description)))
+        ;; POSSIBLY LOGIC-OBJECTS OF TYPE COLLECTION SHOULD RETURN 1?:
+        (otherwise (return NULL)))
+      (return NULL)) ))
+
+(defrelation variable-arity ((?r Relation))
+  :documentation "Asserts that the relation ?r can take a variable
+number of arguments.")
+
+(defconcept BINARY-RELATION (?r RELATION)
+  :documentation "The class of binary relations."
+  :<<=>> (arity ?r 2))
+
+(deffunction inverse ((?r RELATION)) :-> ?inverseRelation
+  :documentation "Function that returns the inverse relation for ?r."
+  :=>> (BINARY-RELATION ?inverseRelation)
+  :=>> (<=> (holds ?r ?x ?y) (holds ?inverseRelation ?y ?x)))
+
+
+  ;;
+;;;;;; Meta-properties:
+  ;;
+
+(defrelation duplicate-free ((?c COLLECTION))
+  :documentation "?c is duplicate-free if no two members
+denote the same object.")
+
+(defrelation ordered ((?c COLLECTION))
+  :documentation "?c is ordered if the ordering of its
+members is significant.")
+
+(defrelation commutative ((?r RELATION))
+  :documentation "A relation ?r is commutative if its truth value is
+invariant with any permutation of its arguments."
+  :=>> (=> (binary-relation ?r)
+           (symmetric ?r)))
+
+(defrelation reflexive ((?r RELATION))
+  :documentation "A binary relation ?r is reflexive if it is always true when
+both of its arguments are identical."
+  :=>> (binary-relation ?r)
+;;; TOO EXPENSIVE?
+;  :=>> (forall (?r ?d)
+;           (=> (and (binary-relation ?r) (domain ?r ?d) (holds ?d ?x))
+;               (holds ?r ?x ?x))
+  :=>> (forall ?x (holds ?r ?x ?x)))
+
+(defrelation irreflexive ((?r RELATION))
+  :documentation "A binary relation ?r is irreflexive if it is false when both
+of its arguments are identical."
+  :=>> (binary-relation ?r)
+  :<=> (not (reflexive ?r))
+  :=>> (forall ?x (not (holds ?r ?x ?x))))
+
+(defrelation symmetric ((?r RELATION))
+  :documentation "A binary relation ?r is symmetric if it is commutative."
+  :=>> (binary-relation ?r)
+  :=>> (commutative ?r)
+  :=>> (forall (?x ?y) (=> (holds ?r ?x ?y) (holds ?r ?y ?x))))
+
+(defrelation antisymmetric ((?r RELATION))
+  :documentation "A binary relation ?r is antisymmetric if whenever (?r ?x ?y)
+is true (?r ?y ?x) is false unless ?x equals ?y."
+  :=>> (binary-relation ?r)
+  :<=> (not (symmetric ?r))
+;;; THIS WE CAN'T INDEX AND IT'S ONLY USEFUL FOR IDENTIFYING SKOLEMS:
+;  :=>> (forall (?x ?y)
+;         (=> (and (holds ?r ?x ?y)
+;                  (holds ?r ?y ?x))
+;             (= ?x ?y)))
+  :=> (forall (?x ?y)
+        (=> (and (holds ?r ?x ?y)
+                 (not (= ?x ?y)))
+            (not (?r ?y ?x)))))
+
+(defrelation transitive ((?r RELATION))
+  :documentation "A binary relation ?r is transitive if (?r ?x ?y)
+and (?r ?y ?z) implies that (?r ?x ?z)."
+  :=>> (binary-relation ?r)
+  :=>> (=> (and (?r ?x ?y) (?r ?y ?z)) (?r ?x ?z)))
+
+(defrelation total ((?r FUNCTION))
+  :documentation "True if the function '?r' is defined for all
+combinations of inputs.")
+
+(defrelation abstract ((?r RELATION))
+  :documentation "True if there are no direct assertions made
+to the relation ?r.")
+
+
+  ;;
+;;;;;; Class prototypes
+  ;;
+
+(deffunction class-prototype ((?c CLASS)) :-> ?i
+  :documentation "Function that, given a class, returns a prototypical
+instance that inherits all constraints that apply to any class member,
+and has no additional constraints."
+;  :=>> (holds ?c ?i)
+  :axioms (and (relation-specialist
+                CLASS-PROTOTYPE CLASS-PROTOTYPE-specialist)
+               (total CLASS-PROTOTYPE)))
+
+  ;;
+;;;;;; Synonyms
+  ;;
+
+(defrelation synonym (?term ?synonym)
+  :phrase "?synonym is a synonym for ?term"
+  :documentation "Assert that ?synonym is a synonym of ?term  This
+causes all references to ?synonym to be interpreted as references
+to ?term  Retraction eliminates a synonym relation (ignoring
+the value of the first arguement."
+  :axioms (and ;; FIXED??? BUG: CREATES 'assert-synonym-demon' AS LOGIC-OBJECT:
+               (goes-true-demon SYNONYM assert-synonym-demon)
+               (goes-unknown-demon SYNONYM retract-synonym-demon)))
+
+(defun assert-synonym-demon ((self PROPOSITION))
+  ;; Point the surrogate of the first argument at the value of
+  ;;    the second argument. 
+  (let ((value1 (value-of (nth (arguments self) 0)))
+        (value2 (value-of (nth (arguments self) 1)))
+        (surrogate2 SURROGATE NULL))
+    (when (isa? value2 @LOGIC-OBJECT)
+      (setq surrogate2 (surrogate-value-inverse (cast value2 LOGIC-OBJECT)))
+      (setf (surrogate-value surrogate2) value1)) ))
+
+(defun retract-synonym-demon ((self PROPOSITION))
+  ;; Unpoint the surrogate of the first argument at the value of
+  ;;    the second argument.  The second argument is ignored. 
+  (let ((value1 (value-of (nth (arguments self) 0)))
+        (value2 (value-of (nth (arguments self) 1)))
+        (surrogate2 SURROGATE NULL))
+    (when (isa? value2 @LOGIC-OBJECT)
+      (setq surrogate2 (surrogate-value-inverse (cast value2 LOGIC-OBJECT)))
+      (setf (surrogate-value surrogate2) value1)) ))
+
+#|
+(assert (synonym GREATER-THAN >))
+|#    
+
+
+  ;;
+;;;;;; 'member-of', 'instance-of' and 'subset-of' rules
+  ;;
+
+;; PROBABLY A BAD IDEA:
+#|
+(defrule "'member-of' chained with 'subset-of' rule"
+  (<= (member-of ?x ?c2)
+      (and (bound-variables ?c2)
+           (member-of ?x ?c1)
+           (subset-of ?c1 ?c2))))
+|#
+
+(defrule "'Instance-of' chained with 'subset-of' rule"
+  (<= (instance-of ?x ?c2)
+      (and (bound-variables ?c2)
+           (instance-of ?x ?c1)
+           (subset-of ?c1 ?c2))))
+
+(defrule "'Not instance-of' rule"
+  (<= (not (instance-of ?x ?c))
+      (and (collection ?c) (closed ?c)
+           (fail (instance-of ?x ?c)))))
+
+(defrule "Forward 'instance-of' rule"
+  (=> (instance-of ?x ?c)
+      (and (class ?c)
+           (holds ?c ?x)))
+  :forward? TRUE)
+
+;; NOT CLEAR IF 'closed-super-collection' BEHAVES WELL ENOUGH TO
+;;    JUSTIFY ITS 'elegance':   -rmm
+#|
+;; Helper relation:
+(defrelation closed-super-collection (?c1 ?c2))
+
+;; TO DO: FIGURE OUT HOW THESE RULES INTERACT WITH REVERSE POLARITY:
+(defrule "Intermediate closed collection rule"
+  (<= (subset-of ?c1 ?c2)
+      (and (bound-variables ?c1 ?c2)
+           (class ?c1)
+           (closed-super-collection ?c1 ?closedC)
+           (forall ?x (=> (holds ?closedC ?x)
+                          (or (holds ?c2 ?x)
+                              (not (holds ?c1 ?x)))))))
+  :backward? TRUE)
+
+(defrule "Find a closed supercollection"
+  (<= (closed-super-collection ?c1 ?c2)
+      (and (subset-of ?c1 ?c2) (closed ?c2) (cut)))
+  :backward? TRUE)
+|#
+
+
+  ;;
+;;;;;; Case-match relation(s)
+  ;;
+
+;; General case-match predicate
+(defrelation case-match ((?x thing) (?y thing)))
+
+(defrule case-match-rule
+    (forall ((?x thing) (?y thing))
+      (=> (= ?x ?y)
+	  (case-match ?x ?y))))
+
+;; Soft equals relation so the rule optimizer doesn't take away
+;; the equals conditions.  For example in the following clauses:
+
+;; (and (parent ?x ?x1)
+;;      (parent ?y ?x2)
+;;      (= ?x1 ?x2))
+
+;; would be optimized to:
+
+;; (and (parent ?x ?x1)
+;;      (parent ?y ?x1))
+
+;; This is not a good thing to do when partial matching.
+
+(defrelation soft-eq ((?x thing) (?y thing)))
+
+(defrule soft-eq-rule
+    (forall ((?x thing) (?y thing))
+      (=> (= ?x ?y)
+	  (soft-eq ?x ?y))))
+
+
+  ;;
+;;;;;; Initialization of contexts
+  ;;
+
+(defun (context-of-computation CONTEXT) ((instance OBJECT))
+  (return (home-module instance)))
+
+(deffunction context-of (?x) :-> (?c CONTEXT)
+  :axioms (and (computed context-of)
+               (relation-computation context-of
+                                     context-of-computation)
+               (relation-specialist context-of
+                                    computation-specialist)))
+
+(defun initialize-modules ()
+  ;; Assign a surrogate to each module that doesn't already have one
+  ;;    (because it was created during the bootstrap phase).
+  ;; Also, add each such module to the extension of the class MODULE.
+  (foreach mdl in (all-modules)
+           do (introduce-module mdl)) )
+
+(startup-time-progn
+  (initialize-modules))
+
+
+  ;;
+;;;;;; Disjointness helper relations
+  ;;
+
+;; TO DO: CONSIDER GOING TO EXPENSIVE DISJOINTNESS AFTER META-LEVEL
+;;    CACHING IS IMPLEMENTED:
+(defrelation disjoint ((?c1 COLLECTION) (?c2 COLLECTION))
+  :documentation "True if the intersection of ?c1 and ?c2 is empty."
+  :iff (not (exists ?i (and (member-of ?i ?c1)
+                            (member-of ?i ?c2))))
+  :<<= (cheap-disjoint ?c1 ?c2))
+
+(defrelation mutually-disjoint-collection ((?s SET))
+  :documentation "True if the members of ?s are pair-wise disjoint."
+  :=>> (=> (and (member-of ?c1 ?s)
+                (member-of ?c2 ?s)
+                (not (= ?c1 ?c2)))
+           (disjoint ?c1 ?c2)))
+
+(defrelation covering ((?c COLLECTION) (?cover SET))
+  :documentation "True if ?c is a subset of the union of all
+collections in the set ?cover."
+  :<<= (subset-of ?c (union-of ?cover)))
+
+(defrelation disjoint-covering ((?c COLLECTION) (?disjointCover SET))
+  :documentation "True if ?c is covered by the collections in
+?disjointCover and if ?disjointCover is mutually-disjoint."
+  :<<= (and (covering ?c ?disjointCover)
+            (mutually-disjoint-collection ?disjointCover)))
+
+(defrelation cheap-disjoint ((?c1 COLLECTION) (?c2 COLLECTION))
+  :documentation "Find proof of disjointness without using refutation."
+  :<<= (and (has-partition-membership ?c1)
+            (has-partition-membership ?c2)
+            (exists (?proposition ?partition1 ?partition2)
+                    (and
+                     (partition-membership ?c1 ?proposition ?partition1)
+                     (partition-membership ?c2 ?proposition ?partition2)
+                     (not (= ?partition1 ?partition2))))))
+
+(defrelation refutation-disjoint ((?c1 CLASS) (?c2 CLASS))
+  :documentation "Assume that an instance belongs to both ?c1 and ?c2
+and look for a clash."
+  :axioms (relation-specialist 
+           REFUTATION-DISJOINT REFUTATION-DISJOINT-specialist))
+
+;;; Hidden predicates for computing (cheap) disjointness:
+
+(defrelation has-partition-membership ((?c COLLECTION))
+  :documentation "TRUE if one or more PARTITION-MEMBERSHIP tuples
+exist with ?c as the first argument.  FALSE if none exists.
+Unknown if a derivation of PARTITION-MEMBERSHIP tuples has not
+occurred.  A specialist for this relation creates PARTITION-MEMBERSHIP
+tuples as a side-effect of querying this predicate."
+  :axioms (and (hidden-relation HAS-PARTITION-MEMBERSHIP)
+               (relation-specialist 
+                HAS-PARTITION-MEMBERSHIP HAS-PARTITION-MEMBERSHIP-specialist)))
+
+(defrelation partition-membership 
+  ((?c COLLECTION) (?proposition PROPOSITION) (?partition COLLECTION))
+  :documentation "Caches the fact that ?partition is a partition of
+a mutually-disjoint collection, and that ?c is a subset of ?partition.
+Used to support rapid computation of pairwise disjointness."
+  :axioms (hidden-relation PARTITION-MEMBERSHIP))
+
+
+  ;;
+;;;;;;
+  ;;
+
+;; a bit more bootstrapping:
+(assert (closed class))
+(assert (closed relation))
+
+(startup-time-progn
+  (finalize-relations))
+

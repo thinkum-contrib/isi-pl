@@ -1,0 +1,103 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Version: $Id: named-rules.ste,v 1.7 1999/03/03 02:50:07 hans Exp $
+
+;;; Using a named rule to implement transitivity of `>'
+;;; ===================================================
+
+;;; This file demonstrates the definition of a named rule to implement
+;;; the transitivity of the `>' (greater-than) predicate.  It also
+;;; shows the interaction between computation and logical inference
+;;; to infer `>' relationships.
+
+;;; The best way to view this file is by calling `(demo)' and
+;;; selecting it from the menu of example demos.  This demo assumes
+;;; familiarity with some basic PowerLoom concepts which are described
+;;; in the introductory demo (#1 on the demo menu) and other demos
+;;; preceding this one.
+
+
+;; Standard demo preamble:
+
+(in-package "STELLA")
+
+(defmodule "/PL-KERNEL/PL-USER/RULES")
+
+(in-module "RULES")
+
+(clear-module "RULES")
+(reset-features)
+
+(in-dialect :KIF)
+
+
+;; The already familiar `Person' class:
+
+(defconcept PERSON (?p)
+  :documentation "The class of human beings.")
+
+(defrelation happy ((?p PERSON)))
+(deffunction age ((?p PERSON)) :-> (?a INTEGER))
+
+(assert (Person Fred))
+
+;; Let us assert that Fred is older than thirty using the built-in
+;; `>' predicate.  Other comparison predicates such as `>=', `=<', and
+;; `<' are also available.  Note the somewhat unusual spelling of `=<'
+;; to make it not conflict with the reverse implication sign `<='.
+
+(assert (> (age Fred) 30))
+
+;; Even though we don't know what Fred's age really is, we can now find
+;; out whether he is older than thirty, since we asserted that above:
+
+(ask (> (age Fred) 30))
+
+;; However, the following query fails, since PowerLoom does not know
+;; about the transitivity of `>', and, since Fred's real age is unknown,
+;; it cannot compute the `>' relationship:
+
+(ask (> (age Fred) 25))
+
+;; To remedy this situation, we define the following named rule about
+;; the transitivity of `>' using PowerLoom's `defrule' syntax.
+;; `defrule' takes a name and an arbitrary proposition as its
+;; arguments (it does not necessarily have to be an implication).  The
+;; advantage of defining a named rule with `defrule' as opposed to
+;; defining an unnamed one with `assert', is that we can later
+;; redefine it and the old version will automatically disappear.  By
+;; using `assert' both versions would remain in the system.  Another
+;; way of naming rules is by defining them with the `:axioms' or
+;; `:constraints' keywords available with `defclass', `deffunction',
+;; or `defrelation'.
+
+;; Note, that different than before the rule below is written as a
+;; reverse implication (somewhat similar to Prolog):
+
+(defrule TRANSITIVE-GT
+  (forall ((?x INTEGER) (?z INTEGER))
+	   (<= (> ?x ?z)
+	       (exists ((?y INTEGER))
+		 (and (> ?x ?y) (> ?y ?z))))))
+
+;; Now we can infer that Fred is older than 25:
+
+;; NOPE: FAILS BECAUSE FRED'S AGE ISN'T INFERABLE AS AN INTEGER
+;;    UNLESS WE FORWARD CHAIN: -rmm 
+(ask (> (age Fred) 25))
+;(assert (integer (age fred)))
+
+;; If the arguments to `>' are known, the result can be computed directly
+;; without resorting to logical inference, for example:
+
+(assert (Person Susi))
+(assert (= (age Susi) 16))
+
+;; Since Susi's age is known, PowerLoom can compute whether she is
+;; older than 12:
+
+(ask (> (age Susi) 12))
+
+;; And, even though we don't know Fred's age, he must be older than Susi:
+
+(ask (> (age Fred) (age Susi)))

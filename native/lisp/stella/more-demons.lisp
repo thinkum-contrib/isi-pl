@@ -1,0 +1,156 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+#|--------------------------------------------------------------------------+
+ |                                                                          |
+ |  COPYRIGHT (C) UNIVERSITY OF SOUTHERN CALIFORNIA, 1996-2000              | 
+ |  University of Southern California, Information Sciences Institute       |
+ |  4676 Admiralty Way                                                      |
+ |  Marina Del Rey, California 90292                                        |
+ |                                                                          |
+ |  This software was developed under the terms and conditions of Contract  |
+ |  No. N00014-94-C-0245 between the Defense Advanced Research Projects     |
+ |  Agency and the University of Southern California, Information Sciences  | 
+ |  Institute.  Use and distribution of this software is further subject    |
+ |  to the provisions of that contract and any other agreements developed   |
+ |  between the user of the software and the University of Southern         |
+ |  California, Information Sciences Institute.  It is supplied "AS IS",    |
+ |  without any warranties of any kind.  It is furnished only on the basis  |
+ |  that any party who receives it indemnifies and holds harmless the       |
+ |  parties who furnish and originate it against any claims, demands, or    |
+ |  liabilities connected with using it, furnishing it to others or         |
+ |  providing it to a third party.  THIS NOTICE MUST NOT BE REMOVED FROM    |
+ |  THE SOFTWARE, AND IN THE EVENT THAT THE SOFTWARE IS DIVIDED, IT SHOULD  |
+ |  BE ATTACHED TO EVERY PART.                                              |
+ |                                                                          |
+ +--------------------------------------------------------------------------|#
+
+(CL:IN-PACKAGE "STELLA")
+
+;;; Auxiliary variables:
+
+(CL:DEFVAR SYM-MORE-DEMONS-STELLA-INVERSE NULL)
+(CL:DEFVAR KWD-MORE-DEMONS-CODE NULL)
+(CL:DEFVAR SYM-MORE-DEMONS-STELLA-SLOT-DEMONS NULL)
+(CL:DEFVAR KWD-MORE-DEMONS-DOCUMENTATION NULL)
+(CL:DEFVAR KWD-MORE-DEMONS-CREATE NULL)
+(CL:DEFVAR KWD-MORE-DEMONS-ALL NULL)
+(CL:DEFVAR KWD-MORE-DEMONS-DESTROY NULL)
+(CL:DEFVAR SYM-MORE-DEMONS-STELLA-STARTUP-MORE-DEMONS NULL)
+(CL:DEFVAR SYM-MORE-DEMONS-STELLA-METHOD-STARTUP-CLASSNAME NULL)
+
+;;; Forward declarations:
+
+(CL:DECLAIM (CL:SPECIAL *STELLA-MODULE* *MODULE*))
+
+;;; (DEFUN INVERSE-SLOT-DEMON ...)
+
+(CL:DEFUN INVERSE-SLOT-DEMON (SELF SLOT OLDVALUE NEWVALUE)
+  (CL:LET*
+   ((INVERSESLOT
+     (DYNAMIC-SLOT-VALUE (%DYNAMIC-SLOTS SLOT)
+      SYM-MORE-DEMONS-STELLA-INVERSE NULL)))
+   (CL:WHEN (CL:NOT (CL:EQ OLDVALUE NULL))
+    (DROP-SLOT-VALUE OLDVALUE INVERSESLOT SELF))
+   (CL:WHEN (CL:NOT (CL:EQ NEWVALUE NULL))
+    (PUT-SLOT-VALUE NEWVALUE INVERSESLOT SELF)))
+  :VOID)
+
+;;; (DEFUN ATTACH-INVERSE-SLOT-DEMON ...)
+
+(CL:DEFUN ATTACH-INVERSE-SLOT-DEMON (SLOT)
+  (CL:COND
+   ((SUBTYPE-OF-STORAGE-SLOT? (SAFE-PRIMARY-TYPE SLOT))
+    (CL:PROGN
+     (CL:LET* ((INVERSEDEMON (LOOKUP-DEMON "inverse-slot-demon")))
+      (PUSH (%DEMON-CLASS-REFS INVERSEDEMON) (%SLOT-OWNER SLOT))
+      (PUSH (%DEMON-SLOT-REFS INVERSEDEMON) (%SLOT-NAME SLOT))
+      (SET-DYNAMIC-SLOT-VALUE (%DYNAMIC-SLOTS SLOT)
+       SYM-MORE-DEMONS-STELLA-SLOT-DEMONS
+       (INJECT-DEMON (SLOT-DEMONS SLOT) INVERSEDEMON) NULL))))
+   (CL:T (CL:RETURN-FROM ATTACH-INVERSE-SLOT-DEMON)))
+  :VOID)
+
+;;; (DEFUN CLASS-EXTENSION-CONSTRUCTOR-DEMON ...)
+
+(CL:DEFUN CLASS-EXTENSION-CONSTRUCTOR-DEMON (SELF CLASS)
+  (CL:LET* ((EXTENSION (EXTENSION CLASS)))
+   (CL:WHEN (CL:NOT (CL:EQ EXTENSION NULL)) (INSERT EXTENSION SELF)))
+  :VOID)
+
+;;; (DEFUN CLASS-EXTENSION-DESTRUCTOR-DEMON ...)
+
+(CL:DEFUN CLASS-EXTENSION-DESTRUCTOR-DEMON (SELF CLASS)
+  (CL:LET* ((EXTENSION (EXTENSION CLASS)))
+   (CL:WHEN (CL:NOT (CL:EQ EXTENSION NULL)) (REMOVE EXTENSION SELF)))
+  :VOID)
+
+(CL:DEFUN STARTUP-MORE-DEMONS ()
+  (CL:LET* ((*MODULE* *STELLA-MODULE*) (*CONTEXT* *MODULE*))
+   (CL:DECLARE (CL:SPECIAL *MODULE* *CONTEXT*))
+   (CL:WHEN (CURRENT-STARTUP-TIME-PHASE? 2)
+    (CL:SETQ SYM-MORE-DEMONS-STELLA-INVERSE
+     (INTERN-RIGID-SYMBOL-WRT-MODULE "INVERSE" NULL 0))
+    (CL:SETQ KWD-MORE-DEMONS-CODE
+     (INTERN-RIGID-SYMBOL-WRT-MODULE "CODE" NULL 2))
+    (CL:SETQ SYM-MORE-DEMONS-STELLA-SLOT-DEMONS
+     (INTERN-RIGID-SYMBOL-WRT-MODULE "SLOT-DEMONS" NULL 0))
+    (CL:SETQ KWD-MORE-DEMONS-DOCUMENTATION
+     (INTERN-RIGID-SYMBOL-WRT-MODULE "DOCUMENTATION" NULL 2))
+    (CL:SETQ KWD-MORE-DEMONS-CREATE
+     (INTERN-RIGID-SYMBOL-WRT-MODULE "CREATE" NULL 2))
+    (CL:SETQ KWD-MORE-DEMONS-ALL
+     (INTERN-RIGID-SYMBOL-WRT-MODULE "ALL" NULL 2))
+    (CL:SETQ KWD-MORE-DEMONS-DESTROY
+     (INTERN-RIGID-SYMBOL-WRT-MODULE "DESTROY" NULL 2))
+    (CL:SETQ SYM-MORE-DEMONS-STELLA-STARTUP-MORE-DEMONS
+     (INTERN-RIGID-SYMBOL-WRT-MODULE "STARTUP-MORE-DEMONS" NULL 0))
+    (CL:SETQ SYM-MORE-DEMONS-STELLA-METHOD-STARTUP-CLASSNAME
+     (INTERN-RIGID-SYMBOL-WRT-MODULE "METHOD-STARTUP-CLASSNAME" NULL 0)))
+   (CL:WHEN (CURRENT-STARTUP-TIME-PHASE? 6) (FINALIZE-CLASSES))
+   (CL:WHEN (CURRENT-STARTUP-TIME-PHASE? 7)
+    (DEFINE-FUNCTION-OBJECT "INVERSE-SLOT-DEMON"
+     "(DEFUN INVERSE-SLOT-DEMON ((SELF STANDARD-OBJECT) (SLOT STORAGE-SLOT) (OLDVALUE STANDARD-OBJECT) (NEWVALUE STANDARD-OBJECT)))"
+     (CL:FUNCTION INVERSE-SLOT-DEMON) NULL)
+    (DEFINE-FUNCTION-OBJECT "ATTACH-INVERSE-SLOT-DEMON"
+     "(DEFUN ATTACH-INVERSE-SLOT-DEMON ((SLOT SLOT)))"
+     (CL:FUNCTION ATTACH-INVERSE-SLOT-DEMON) NULL)
+    (DEFINE-FUNCTION-OBJECT "CLASS-EXTENSION-CONSTRUCTOR-DEMON"
+     "(DEFUN CLASS-EXTENSION-CONSTRUCTOR-DEMON ((SELF ACTIVE-OBJECT) (CLASS CLASS)))"
+     (CL:FUNCTION CLASS-EXTENSION-CONSTRUCTOR-DEMON) NULL)
+    (DEFINE-FUNCTION-OBJECT "CLASS-EXTENSION-DESTRUCTOR-DEMON"
+     "(DEFUN CLASS-EXTENSION-DESTRUCTOR-DEMON ((SELF ACTIVE-OBJECT) (CLASS CLASS)))"
+     (CL:FUNCTION CLASS-EXTENSION-DESTRUCTOR-DEMON) NULL)
+    (DEFINE-FUNCTION-OBJECT "STARTUP-MORE-DEMONS"
+     "(DEFUN STARTUP-MORE-DEMONS () :PUBLIC? TRUE)"
+     (CL:FUNCTION STARTUP-MORE-DEMONS) NULL)
+    (CL:LET*
+     ((FUNCTION
+       (LOOKUP-FUNCTION SYM-MORE-DEMONS-STELLA-STARTUP-MORE-DEMONS)))
+     (SET-DYNAMIC-SLOT-VALUE (%DYNAMIC-SLOTS FUNCTION)
+      SYM-MORE-DEMONS-STELLA-METHOD-STARTUP-CLASSNAME
+      (WRAP-STRING "Startup-More-Demons") NULL-STRING-WRAPPER)))
+   (CL:WHEN (CURRENT-STARTUP-TIME-PHASE? 8) (FINALIZE-SLOTS)
+    (CLEANUP-UNFINALIZED-CLASSES))
+   (CL:WHEN (CURRENT-STARTUP-TIME-PHASE? 9)
+    (DEFINE-DEMON "inverse-slot-demon" KWD-MORE-DEMONS-CODE
+     (WRAP-FUNCTION-CODE (CL:FUNCTION INVERSE-SLOT-DEMON)))
+    (DEFINE-DEMON "class-extension-constructor-demon"
+     KWD-MORE-DEMONS-DOCUMENTATION
+     (WRAP-STRING
+      "Demon that inserts the instance 'self' into the extension of
+the class 'class'.")
+     KWD-MORE-DEMONS-CREATE KWD-MORE-DEMONS-ALL KWD-MORE-DEMONS-CODE
+     (WRAP-FUNCTION-CODE (CL:FUNCTION CLASS-EXTENSION-CONSTRUCTOR-DEMON)))
+    (DEFINE-DEMON "class-extension-destructor-demon"
+     KWD-MORE-DEMONS-DOCUMENTATION
+     (WRAP-STRING
+      "Demon that removes the instance 'self' from the extension of
+the class 'class'.  Removal removes the instance forever.  Deletion without
+removal can be achieved in constant time by setting 'deleted?' on 'self'.")
+     KWD-MORE-DEMONS-DESTROY KWD-MORE-DEMONS-ALL KWD-MORE-DEMONS-CODE
+     (WRAP-FUNCTION-CODE (CL:FUNCTION CLASS-EXTENSION-DESTRUCTOR-DEMON)))
+    (CL:LET*
+     ((CREATEDEMON (LOOKUP-DEMON "class-extension-constructor-demon"))
+      (DESTROYDEMON (LOOKUP-DEMON "class-extension-destructor-demon")))
+     (ACTIVATE-DEMON CREATEDEMON) (ACTIVATE-DEMON DESTROYDEMON))))
+  :VOID)

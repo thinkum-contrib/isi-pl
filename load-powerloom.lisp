@@ -2,7 +2,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                          ;
-;  COPYRIGHT (C) UNIVERSITY OF SOUTHERN CALIFORNIA, 1997                   ; 
+;  COPYRIGHT (C) UNIVERSITY OF SOUTHERN CALIFORNIA, 1997-2001              ; 
 ;  University of Southern California, Information Sciences Institute       ;
 ;  4676 Admiralty Way                                                      ;
 ;  Marina Del Rey, California 90292                                        ;
@@ -25,16 +25,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;; Version: load-powerloom.lisp,v 1.6 1997/11/04 22:03:36 hans Exp
+;;; Version: $Id: load-powerloom.lisp,v 1.8 2000/04/20 23:26:00 hans Exp $
 
 ;;; Load PowerLoom.
 
 (in-package "CL-USER")
 
-
 (load (merge-pathnames "translations" *load-pathname*))
-(load "PL:sources;stella;load-stella.lisp")
-(load "PL:sources;logic;load-logic.lisp")
+(load (merge-pathnames "load-stella" *load-pathname*))
+(stella::load-system "logic" :common-lisp)
 
 (defun powerloom ()
   (stella::powerloom))
