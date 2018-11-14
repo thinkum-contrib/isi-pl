@@ -169,8 +169,11 @@ necessary to generate a newline.")
 
 ;;; (DEFGLOBAL STELLA-CHARSET ...)
 
-(CL:DEFVAR STELLA-CHARSET #+allegro (CL:ignore-errors (excl::find-external-format :iso-8859-1))
-                          #-allegro (CL:stream-external-format CL:*standard-output*)
+(CL:DEFVAR STELLA-CHARSET 
+#+allegro (CL:ignore-errors (excl::find-external-format :iso-8859-1))
+#+sbcl :latin-1
+#+ccl :iso-8859-1
+#-(or allegro sbcl ccl) (CL:stream-external-format CL:*standard-output*)
   "For STELLA we always assume an 8-bit transparent mapping from bytes to STRING characters
 such as ISO-8859-1 (ISO-LATIN-1), since that's what C++ natively supports.  For Java and some Lisps, we have
 to do some extra work to enforce this encoding when creating streams.  This is just a first iteration towards

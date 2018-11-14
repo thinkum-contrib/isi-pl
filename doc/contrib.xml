@@ -19,6 +19,37 @@
       <personname>Sean Champ</personname>
       <email>spchamp@users.noreply.github.com</email>
     </author>
+    <revhistory>
+      <revision>
+        <date>2018-11-04</date>
+        <revdescription>
+          <simplelist>
+            <member>
+              Add adeitional document entity definitions
+              (<symbol>stella</symbol>, <symbol>emacs</symbol>); add
+              <tag>productname</tag> markup to <symbol>pl</symbol>
+              document entity definition
+            </member>
+            <member>
+              Add document section, <quote>Configuration for the
+              &stella; Applications Environment - Common Lisp</quote>
+              (TBD: xref syntax for document) (TBD: Syntax for denoting
+              ANSI CL as a well-known language, in document entity
+              definitions)
+            </member>
+            <member>
+              Add document section, <quote>Configuration for the
+              &stella; Applications Environment - &emacs;</quote>
+              (TBD: xref syntax for document)
+            </member>
+          </simplelist>
+        </revdescription>
+      </revision>
+      <revision>
+        <date>2018-11-13</date>
+        <revremark>add remark about PL *.plm file type</revremark>
+      </revision>
+    </revhistory>
   </info>
 
   <xi:include href="contrib.ov.xml"/>

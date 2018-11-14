@@ -1,4 +1,4 @@
-;; stella.asd 						-*- lisp -*-
+;; stella.asd						-*- lisp -*-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; BEGIN LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                                                                            ;
@@ -72,7 +72,7 @@ procedures:
 - Compiler optimization and compiler printout policies
 - Forms affected:
 
-- CL:OPTIMIZE declaration signature 
+- CL:OPTIMIZE declaration signature
 in CL-USER::*STELLA-COMPILER-OPTIMIZATION*
 
 - CL-USER::*COMPILE-VERBOSE* [typically provided via CL package]
@@ -100,7 +100,7 @@ in the file <PL:native;lisp;stella;load-stella.lisp>
 
 - contrast to C++ system translation as provided via the files
 <PL:native;cpp;stella;Makefile>,
-<PL:native;cpp;stella;stella-system.hh>, 
+<PL:native;cpp;stella;stella-system.hh>,
 and other files under 'cpp;stella;' source branch
 
 - contrast to Java system translation as provided via the files
@@ -128,15 +128,15 @@ The STELLA implementation in Common Lisp is defined in two distinct
 sets of files, such that one of the sets of files must be selected as
 per the value of CL-USER::*LOAD-CL-STRUCT-STELLA?*
 
-In this system definition, the variable CL-USER::*LOAD-CL-STRUCT-STELLA?*  
+In this system definition, the variable CL-USER::*LOAD-CL-STRUCT-STELLA?*
 is accompanied with the Common Lisp feature expression,
 :STELLA-STRUCT. If :STELLA-STRUCT is defined as a Common Lisp feature
 when this system definition "stella.asd" is evaluated, then:
 
 1) the 'stella' system definition will be defined as to include the
-component 'stella-system-structs' 
+component 'stella-system-structs'
 
-2) the method ASDF:SOURCE-FILE-TYPE (STELLA-LISP-FILE STELLA-SYSTEM-ASDF) 
+2) the method ASDF:SOURCE-FILE-TYPE (STELLA-LISP-FILE STELLA-SYSTEM-ASDF)
 will be defined as to ensure that the respective "*.slisp" files
 will be selected for operations in ASDF
 
@@ -146,7 +146,7 @@ single STELLA application.
 
 FIXME: The *.ste source files ... Common Lisp ... STELLA KB modules ...
 
-FIXME: Transformation of the *.ste source files ...  ??? 
+FIXME: Transformation of the *.ste source files ...  ???
 
 ## Functions - "Legacy" STELLA System Definitions (In Package: CL-USER)
 
@@ -173,16 +173,19 @@ pl:sources;powerloom;doc;*.pdf
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
   (let ((p (find-package '#:cl-user)))
+    ;; NB STELLA/POWERLOOM symbols in CL-USER
     (dolist (s '(#:*load-cl-struct-stella?*
                  #:*stella-verbose?*
-                 #:*source-truename* ;; [new]
-                 #:*system-asdf* ;; [new]
+                 #:*source-truename* ;; [new][GL]
+                 #:*system-asdf* ;; [new][GL]
                  ))
       (intern (symbol-name s) p)))
-  
+
   (defpackage #:stella-system
     (:use #:asdf #:cl)
 
+    ;; TBD : CCL
+    ;;       NB #+MCL in PL system src
     #+CMUCL
     (:shadowing-import-from #:ext #:inhibit-warnings)
     #+SBCL
@@ -191,7 +194,7 @@ pl:sources;powerloom;doc;*.pdf
     (:shadowing-import-from #:sb-kernel #:redefinition-warning)
     #+EXCL
     (:shadowing-import-from #:excl compiler-undefined-functions-called-warning)
-    
+
     (:shadowing-import-from
      #:cl-user
      #:*load-cl-struct-stella?*
@@ -206,7 +209,7 @@ pl:sources;powerloom;doc;*.pdf
            ;; CL-USER::*load-cl-struct-stella?* => T
            ;; developed in this system definition
            :test #'eq)
-  
+
   (unless (find-package "STELLA")
     ;; emulating forms defined in
     ;; file native/lisp/stella/cl-lib/cl-setup.lisp
@@ -223,17 +226,18 @@ pl:sources;powerloom;doc;*.pdf
        #:IN-PACKAGE #:EXPORT
        #:TRACE #:UNTRACE #:INSPECT
        #:apropos
+       ;; TBD : CCL
        #+Allegro #:COMPILE
        #+Allegro #:EVAL-WHEN
        #+Allegro #:READTABLE
        )))
-  
+
   ) ;; EVAL-WHEN
 
 
 ;; n.b
 ;;
-;;   *STELLA-SOURCE-EXTENSION* =default=> ".ste" 
+;;   *STELLA-SOURCE-EXTENSION* =default=> ".ste"
 ;;   *STELLA-TRANSLATED-EXTENSION*  =default=> ".lisp"
 
 (in-package #:stella-system)
@@ -287,7 +291,7 @@ pl:sources;powerloom;doc;*.pdf
   ;;
   ;; cf. <PL:native;lisp;stella;cl-lib;stella-to-cl.lisp>
   ;;
-  
+
   ;; FIXME: Contrast, in documentation
   ;;
   ;; 1) *Common Lisp system defining the STELLA interpreter* (provided
@@ -336,6 +340,16 @@ pl:sources;powerloom;doc;*.pdf
   ;; NOTES:
   ;; STELLA::MAKE-SYSTEM is defined in <PL:native;lisp;stella;systems.lisp>
   ;;
+
+  ;; --
+  ;; FIXME - This requires that at least a STELLA bootstrap system is
+  ;; available within the running Lisp session. This should be used only
+  ;; within a corresponding "Generate Source" method - see also, Maven
+  ;; workflow documentation.
+  ;;
+  ;; NB: The PL STELLA system itself would serve as the effective STELLA
+  ;; bootstrap system, such that may be denoted as effectively extended
+  ;; by the PL PowerLoom system, in prototypes and in applications.
   `(apply (fdefinition 'stella::make-system)
           ,name (quote ,args)))
 
@@ -356,7 +370,7 @@ pl:sources;powerloom;doc;*.pdf
   (:default-initargs :type "java"))
 
 (defclass c-header-file (source-file)
-  ()
+  () ;; NB C++ tools (PL)
   (:default-initargs :type "h"))
 
 ;; asdf:c-source-file - defined in ASDF upstream
@@ -389,7 +403,7 @@ pl:sources;powerloom;doc;*.pdf
   ;; NB: The :common-lisp translation is furthermore affected as per
   ;; the value of CL-USER::*LOAD-CL-STRUCT-STELLA?* and the
   ;; corresponding feature expression :STELLA-STRUCT - see previous
-  ;; notes 
+  ;; notes
   '(member :common-lisp :cpp :java))
 
 
@@ -415,7 +429,7 @@ pl:sources;powerloom;doc;*.pdf
   ;;     REFERENCE
   ;;
   ;;     TRANSFORMATION TARGET PLATFORMS:
-  ;;          Common Lisp 
+  ;;          Common Lisp
   ;;          C++
   ;;          Java
   ;;
@@ -432,12 +446,12 @@ pl:sources;powerloom;doc;*.pdf
   ;; sourcing <PL:native;lisp;stella;cl-lib;cl-setup.lisp>
   ;;
   ;; Here, this is applied onto COMPILE-OP and LOAD-OP onto any
-  ;; STELLA-SYSTEM-ASDF 
+  ;; STELLA-SYSTEM-ASDF
   (let ((len (integer-length most-positive-fixnum)))
   (unless (>= len 24) ;; use `eval' to avoid unreachable code warns
     (error "The maximum fixnum size of this lisp implementation ~
 (~D)~%is too small.  It must be at least 24 bits."
-	   len))))
+           len))))
 
 
 
@@ -468,7 +482,7 @@ pl:sources;powerloom;doc;*.pdf
   ;;  - STELLA system definitions
   ;;  - PLATFORM MODEL
   ;;  - INTEGRATION WITH ASDF
-  
+
   ;; FIXME: pathname handling
   ;;
   ;; FIXME: Provide a custom IN-ORDER-TO method ?
@@ -490,13 +504,13 @@ pl:sources;powerloom;doc;*.pdf
   ;; approximately as a "Quick Hack," however
 
   ;; FIXME: FINALIZE DEFINITION
-  
+
   ;; FIXME: pathname handling'
   ;;
   ;; FIXME: Provide a custom IN-ORDER-TO method ?
 
   ;; FIXME: What exactly is the diff between 'operate' and 'perform' in ASDF?
-  
+
   ;; compiles <...>
   ;;
   ;; referring to docstriing of STELLA::MAKE-SYSTEM, STELLA::%MAKE-SYSTEM
@@ -531,7 +545,7 @@ pl:sources;powerloom;doc;*.pdf
   ;; modified from <PL:native;lisp;stella;cl-lib;cl-setup.lisp>
   `(locally
        #+(or CMUCL SBCL) (declare (optimize (inhibit-warnings 3)))
-       (handler-bind 
+       (handler-bind
            (#+EXCL
             (compiler-undefined-functions-called-warning #'muffle-warning)
             )
@@ -602,7 +616,7 @@ pl:sources;powerloom;doc;*.pdf
 (defmethod perform :around ((op operation) (c stella-system-asdf))
   (let ((*system-asdf* c))
     ;; because ....
-    
+
     ;; NB: PERFORM might not be applied recursively onto system components
     (call-next-method)))
 
@@ -611,7 +625,7 @@ pl:sources;powerloom;doc;*.pdf
   :class stella-system-asdf
   :depends-on
   (#:usocket ;; portable sockets interface
-   ;; ^ cf. socket handling in STELLA 
+   ;; ^ cf. socket handling in STELLA
    ;; ^ see native/lisp/stella/cl-lib/cl-setup.lisp , ...
    ;; ^ #+Allegro, #+(And MCL (not OPENMCL)), #+Lispworks, #+SBCL
 
@@ -620,16 +634,16 @@ pl:sources;powerloom;doc;*.pdf
    ;; ^ see native/lisp/stella/cl-lib/cl-setup.lisp , ...
    ;; ^ #+Allegro, #+Lispworks #+MCL, #+CMUCL, #+SBCL
    )
-  
+
   :perform
   (compile-op :before (o c)
-              
+
               ;; [new] in COMPILE-OP :BEFORE
               #+stella-struct
               (setv *load-cl-struct-stella?* t)
               ;; ^ set CL-USER::*load-cl-struct-stella?*
               ;; per #+STELLA-STRUCT
-              
+
               ) ;; :BEFORE COMPILE-OP
 
   ;; :perform
@@ -637,8 +651,8 @@ pl:sources;powerloom;doc;*.pdf
   ;;;; tmp. reflection onto STELLA system definitions - GraniteLoom early dev't
   ;;             (trace STELLA::DEFINE-SYSTEM)
   ;;             #+NIL (trace STELLA::%MAKE_SYSTEM))
-  
-  
+
+
   :perform
   (load-op :after (o c)
            (macrolet ((func (name pkg)
@@ -647,12 +661,12 @@ pl:sources;powerloom;doc;*.pdf
                                                 (quote ,pkg))))))
              ;; convenience - emulating a top-level form defined in
              ;; <PL:native;lisp;stella;cl-lib;make-stella.lisp>
-             (func #:startup-stella-system #:stella) 
+             (func #:startup-stella-system #:stella)
              (func #:startup-stella-to-cl #:stella))
 
            ;; emulating a form defined in
            ;; file ./load-stella.lisp
-           (when *stella-verbose?* 
+           (when *stella-verbose?*
              (format t "~&~a loaded.~%~
 Type `(in-package \"STELLA\")' to execute STELLA commands."
                      (symbol-value (find-symbol
@@ -680,7 +694,7 @@ Type `(in-package \"STELLA\")' to execute STELLA commands."
                #+NIL
                (:file "make-stella" ;; transposed to this system definition
                       :depends-on ("cl-setup"))))
-     
+
      #+:stella-struct (stella-lisp-file "stella-system-structs") ;; [X] !!
      ;; following elements transposed from make-stella.lisp
      (stella-lisp-file "hierarchy")
@@ -738,4 +752,3 @@ Type `(in-package \"STELLA\")' to execute STELLA commands."
      (stella-lisp-file "startup-system")
      ))
    ))
- 
