@@ -1,0 +1,56 @@
+<!-- Shared Document Entity Metadata			-*- dtd -*- -->
+
+<!ENTITY thinkum
+        "<orgname>Thinkum Labs&#x2122;</orgname>"
+>
+
+<!ENTITY isi.abv
+	"<orgname><acronym>ISI</acronym></orgname>"
+> <!-- i.e USC ISI -->
+<!ENTITY isi.full
+         "<orgname>Information Sciences Institute</orgname>"
+>
+<!ENTITY isi.href
+        "http://www.isi.edu/"
+>
+<!ENTITY isi.h
+        "<olink targetdoc='&isi.href;'>&isi.full;</olink>"
+>
+
+
+<!ENTITY usc.abv
+         "<orgname><acronym>USC</acronym></orgname>"
+>
+<!ENTITY usc.full
+	"<orgname>University of Southern California</orgname>"
+>
+<!ENTITY usc.href
+        "http://www.usc.edu/"
+>
+<!ENTITY usc.h
+        "<olink targetdoc='&usc.href;'>&usc.full;</olink>"
+>
+
+
+
+<!ENTITY pl
+        "<productname>PowerLoom&#xAE;</productname>"
+>
+<!ENTITY pl.href
+        "http://www.isi.edu/isd/LOOM/PowerLoom/"
+>
+<!ENTITY pl.h
+        "<olink targetdoc='&pl.href;'>&pl;</olink>"
+>
+
+
+
+<!ENTITY stella
+        "<productname>STELLA</productname>"
+>
+<!ENTITY stella.href
+        "http://www.isi.edu/isd/LOOM/Stella/index.html"
+>
+<!ENTITY stella.h
+        "<olink targetdoc='&stella.href;'>&stella;</productname>"
+>
