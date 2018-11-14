@@ -52,5 +52,5 @@
         "http://www.isi.edu/isd/LOOM/Stella/index.html"
 >
 <!ENTITY stella.h
-        "<olink targetdoc='&stella.href;'>&stella;</productname>"
+        "<olink targetdoc='&stella.href;'>&stella;</olink>"
 >
