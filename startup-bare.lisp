@@ -44,14 +44,24 @@
 
 (in-package #:cl-user)
 
-#+ccl
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  #+ccl
   (pushnew '#:mcl *features* :test #'eq)
+
+  #+(or sbcl ccl)
+  (trace cl:add-method) ;; vry informative
+
+  ;; prevent metacircular errors for print-object method definition
+  ;; during compile (may be required when loading this file with SBCL)
+  (setq *COMPILE-VERBOSE* nil)
+
 )
 
 ;; --
 
-(defvar *stella-verbose* t)
+(defvar *stella-verbose?* #-sbcl t #+sbcl nil)
+;; ^ try to prevent print methods during build with SBCL - cf. cl-primal
 
 (defvar *stella-compiler-optimization*
   '(optimize (debug 3) (safety 3) (space 1) (speed 1)))
@@ -237,7 +247,7 @@ hash tables grow large).")
   (stella-c&l-translated "cl-lib" "cl-setup")
 )
 
-;; --
+;; -- sourcing PL:native/lisp/stella/cl-lib/make-stella.lisp
 
 (in-package #:stella)
 
@@ -246,57 +256,79 @@ hash tables grow large).")
     (with-undefined-function-warnings-suppressed
       (CL:when CL-USER::*load-cl-struct-stella?*
 	(CL-USER::stella-c&l-translated "stella-system-structs"))
-      (CL-USER::stella-c&l-translated "hierarchy")
-      (CL-USER::stella-c&l-translated "streams")
-      (CL-USER::stella-c&l-translated "taxonomies")
-      (CL-USER::stella-c&l-translated "primal")
-      (CL-USER::stella-c&l-translated "cl-lib" "cl-primal")
-      (CL-USER::stella-c&l-translated "startup")
-      (CL-USER::stella-c&l-translated "type-predicates")
-      (CL-USER::stella-c&l-translated "conses")
-      (CL-USER::stella-c&l-translated "lists")
-      (CL-USER::stella-c&l-translated "collections")
-      (CL-USER::stella-c&l-translated "iterators")
-      (CL-USER::stella-c&l-translated "symbols")
-					;  (CL-USER::stella-c&l-translated "boot-symbols")
-      (CL-USER::stella-c&l-translated "literals")
-      (CL-USER::stella-c&l-translated "classes")
-      (CL-USER::stella-c&l-translated "methods")
-      (CL-USER::stella-c&l-translated "defclass")
-      (CL-USER::stella-c&l-translated "date-time")
-      (CL-USER::stella-c&l-translated "date-time-parser")
-      (CL-USER::stella-c&l-translated "stella-in")
-      (CL-USER::stella-c&l-translated "foreach")
-      (CL-USER::stella-c&l-translated "walk")
-      (CL-USER::stella-c&l-translated "dynamic-slots")
-      (CL-USER::stella-c&l-translated "dynamic-literal-slots")
-      (CL-USER::stella-c&l-translated "cl-translate")
-      (CL-USER::stella-c&l-translated "macros")
-      (CL-USER::stella-c&l-translated "memoize")
-      (CL-USER::stella-c&l-translated "describe")
-      (CL-USER::stella-c&l-translated "demons")
-      (CL-USER::stella-c&l-translated "more-demons")
-      (CL-USER::stella-c&l-translated "name-utility")
-      (CL-USER::stella-c&l-translated "modules")
-      (CL-USER::stella-c&l-translated "contexts")
-      (CL-USER::stella-c&l-translated "read")
-      (CL-USER::stella-c&l-translated "xml")
-      (CL-USER::stella-c&l-translated "translate-file")
-      (CL-USER::stella-c&l-translated "systems")
-      (CL-USER::stella-c&l-translated "cl-translate-file")
-      (CL-USER::stella-c&l-translated "cpp-translate")
-      (CL-USER::stella-c&l-translated "cpp-translate-file")
-      (CL-USER::stella-c&l-translated "cpp-class-out")
-      (CL-USER::stella-c&l-translated "cpp-output")
-      (CL-USER::stella-c&l-translated "java-translate")
-      (CL-USER::stella-c&l-translated "java-translate-file")
-      (CL-USER::stella-c&l-translated "java-class-out")
-      (CL-USER::stella-c&l-translated "java-output")
-      (CL-USER::stella-c&l-translated "idl-translate")
-      (CL-USER::stella-c&l-translated "idl-translate-file")
-      (CL-USER::stella-c&l-translated "idl-class-out")
-      (CL-USER::stella-c&l-translated "idl-output")
-      (CL-USER::stella-c&l-translated "tools")
-      (CL-USER::stella-c&l-translated "cl-lib" "stella-to-cl")
-      (CL-USER::stella-c&l-translated "startup-system")
-      )))
+      (cl:dolist (lib '("hierarchy"
+                        "streams"
+                        "taxonomies"
+                        "primal"
+                        ("cl-lib" "cl-primal")
+                        "startup" ;; NB: CL:DEFUN STELLA::STARTUP-STARTUP
+                        "type-predicates"
+                        "conses"
+                        "lists"
+                        "collections"
+                        "iterators"
+                        "symbols" ;; NB: CL:DEFUN STELLA::INITIALIZE-KERNEL-MODULES
+                        ;;  "boot-symbols"
+                        "literals"
+                        "classes"
+                        "methods"
+                        "defclass"
+                        "date-time"
+                        "date-time-parser"
+                        "stella-in"
+                        "foreach"
+                        "walk"
+                        "dynamic-slots"
+                        "dynamic-literal-slots"
+                        "cl-translate"
+                        "macros"
+                        "memoize"
+                        "describe"
+                        "demons"
+                        "more-demons"
+                        "name-utility"
+                        "modules"
+                        "contexts"
+                        "read"
+                        "xml"
+                        "translate-file"
+                        "systems"
+                        "cl-translate-file"
+                        "cpp-translate"
+                        "cpp-translate-file"
+                        "cpp-class-out"
+                        "cpp-output"
+                        "java-translate"
+                        "java-translate-file"
+                        "java-class-out"
+                        "java-output"
+                        "idl-translate"
+                        "idl-translate-file"
+                        "idl-class-out"
+                        "idl-output"
+                        "tools"
+                        ("cl-lib" "stella-to-cl")
+                        "startup-system"
+                        ))
+        ;; where is this output being dumped to?
+        (cl:when cl-user::*stella-verbose?*
+          (cl:terpri cl:*error-output*)
+          (cl:format cl:*error-output* "#-- Startup: Load ~A" lib)
+          (cl:terpri cl:*error-output*))
+
+        (cl:with-compilation-unit (:policy cl-user::*stella-compiler-optimization*)
+
+          (cl:etypecase lib
+            (cl:cons
+             (cl:apply #'CL-USER::stella-c&l-translated lib))
+            (cl:string
+             (CL-USER::stella-c&l-translated lib)))
+
+          ) ;; with-compilation-unit
+      ))))
+
+#| build failure in CCL ...
+
+STELLA::INITIALIZE-KERNEL-MODULES & STELLA::*STELLA-MODULE*
+|#
+
