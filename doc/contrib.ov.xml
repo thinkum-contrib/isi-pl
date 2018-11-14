@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE preface [
+<!ENTITY document.ent SYSTEM "document.ent">
+
+%document.ent;
+
+]>
+<preface xml:id="ov">
+  <title>Overview</title>
+
+  <simplesect xml:id="ov.intro">
+    <title>Introduction</title>
+
+    <para>
+      &pl.h; is a free/open source software (<acronym>FOSS</acronym>)
+      system developed originally at the &isi.h; (&isi.abv;) of the
+      &usc.h; (&usc.abv;).
+    </para>
+
+    <para>
+      This project represents a fork of &pl.h;, developed
+      independent of the original &pl.h;. As an independent
+      initiative, this is motivated principally for a purpose of
+      facilitating the ongoing development of &pl.h;, furthermore for
+      ensuring the continued availability of &pl.h; for free/open
+      source software (<acronym>FOSS</acronym>) development.
+    </para>
+  </simplesect>
+
+
+  <simplesect xml:id="ov.comp">
+    <title>Components</title>
+
+    <para>
+      The version <productnumber>4</productnumber> releases of &pl.h;
+      are distributed with software components including:
+      <simplelist>
+        <member>
+          The &stella.h; programming language, in <emphasis>functional
+          subset</emphasis> and <emphasis>knowledge representation
+          subset</emphasis>, with source code for implementation of
+          &stella.h; and the &pl.h; knowledge representation system in
+          <productname>Common Lisp</productname>,
+          <productname>C++</productname>, and
+          <productname>Java&#xAE;</productname> programming
+          languages
+        </member>
+        <member>
+          &pl.h; System Support Components, such as for the &pl.h;
+          server, <acronym>RDBMS</acronym> services for &pl.h;, and
+          <productname>Ontosaurus</productname>
+        </member>
+        <member>
+          Text of Example Knowledgebases
+        </member>
+        <member>
+          Documentation
+        </member>
+      </simplelist>
+    </para>
+  </simplesect> <!-- comp -->
+
+
+  <simplesect xml:id="ov.xw">
+    <title>Existing Works</title>
+    <para>
+      <simplelist>
+        <member>&pl.h;</member>
+        <member><acronym>OKBC</acronym></member>
+        <member><productname>Loom&#xAE;</productname></member>
+        <member><productname>KL-ONE</productname></member>
+      </simplelist>
+    </para>
+  </simplesect> <!-- xw -->
+
+
+  <simplesect xml:id="ov.lic">
+    <title>Licensing</title>
+
+    <para>
+      Quoting the page, <olink
+      targetdoc="http://www.isi.edu/isd/LOOM/PowerLoom/download.html"
+      >Download PowerLoom</olink> (December 2015):
+    </para>
+
+    <blockquote>
+      <para>
+        Since 2005, PowerLoom&#xAE; is available free-of-charge
+        under a triple disjunctive open-source licensing scheme that
+        allows you to pick the Mozilla Public License v. 1.1 (MPL), the
+        GNU General Public License v. 2.0 (GPL) or the the GNU Lesser
+        Public License v. 2.1 (LGPL) to fit your needs. This scheme is
+        similar to what's used for the Mozilla web browser and should
+        give people maximum flexibility to use PowerLoom even for
+        commercial development while still retaining the advantages of
+        open-source licensing.
+      </para>
+    </blockquote>
+
+
+    <para>
+      Except where denoted otherwise, this project retains those
+      licensing stipulations for all contributed files.
+    </para>
+
+  </simplesect> <!-- lic -->
+</preface>
+
+<!-- Local Variables: -->
+<!-- nxml-parent-document: "contrib.xml" -->
+<!-- ispell-buffer-session-localwords: ("LGPL" "MPL" "OKBC" "Ontosaurus" "PowerLoom" "RDBMS" "ent") -->
+<!-- End: -->
