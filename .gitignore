@@ -2,3 +2,7 @@
 .#*
 *#
 *.bak
+## CCL (Linux ARM)
+*.lafsl
+## SBCL
+*.fasl
