@@ -25,7 +25,7 @@
         <revdescription>
           <simplelist>
             <member>
-              Add adeitional document entity definitions
+              Add additional document entity definitions
               (<symbol>stella</symbol>, <symbol>emacs</symbol>); add
               <tag>productname</tag> markup to <symbol>pl</symbol>
               document entity definition
@@ -40,18 +40,92 @@
             <member>
               Add document section, <quote>Configuration for the
               &stella; Applications Environment - &emacs;</quote>
-              (TBD: xref syntax for document)
             </member>
           </simplelist>
         </revdescription>
       </revision>
       <revision>
         <date>2018-11-13</date>
-        <revremark>add remark about PL *.plm file type</revremark>
+        <revremark>
+          add remark about PL <phrase>*.plm</phrase> file type.
+          Section <xref linkend="contrib.ov"/> created, moved to external
+          document subset. Begin using XML includes, in document
+          source text
+        </revremark>
+      </revision>
+      <revision>
+        <date>2018-11-14</date>
+        <revremark>
+          Section <xref linkend="contrib.ov"/> updated after text of
+          contributed <phrase>readme</phrase>. Section outline created: <xref
+          linkend="contrib.ov"/>; <xref linkend="contrib.ref"/>; <xref
+          linkend="contrib.xtool"/>;  <xref
+          linkend="contrib.qa"/>
+        </revremark>
       </revision>
     </revhistory>
   </info>
 
   <xi:include href="contrib.ov.xml"/>
 
+  <!--   <xi:include href="contrib.ref.xml"/> -->
+  <part xml:id="contrib.ref">
+    <info>
+      <title>Contributed Reference</title>
+    </info>
+
+    <preface xml:id="contrib.ref.ov">
+      <title>Overview</title>
+
+      <remark>NB: Not to replace the PL Guide/Manual</remark>
+    </preface>
+  </part>
+
+  <!--   <xi:include href="contrib.xtool.xml"/> -->
+  <part xml:id="contrib.xtool">
+    <info>
+      <title>Tools and Extensions</title>
+    </info>
+
+    <preface xml:id="contrib.xtool.ov">
+      <title>Overview</title>
+
+      <remark>Demo Code, RDBMS and SOAP components, contrib tools for PL
+      applications - Introduction (contrib) to each</remark>
+
+      <remark>NB: Documentation abt ASDF-{for-}PL in this section of contrib.xml</remark>
+    </preface>
+
+    <chapter xml:id="contrib.xtool.srv">
+      <title>The &pl; <acronym>SOAP</acronym> Service</title>
+
+      <remark>
+        TBD: XML Schema and PL SOAP protocol forms
+      </remark>
+
+      <remark>
+        NB: SOAP service components and each PL Impl. (CL, C+??
+        cf. gsoap?, and Java)
+      </remark>
+
+    </chapter>
+  </part>
+
+  <!--   <xi:include href="contrib.qa.xml"/> -->
+  <part xml:id="contrib.qa">
+    <info>
+      <title>Quality Assurance</title>
+    </info>
+
+    <preface xml:id="contrib.qa.ov">
+      <title>Overview</title>
+
+      <remark>Introduction to the contrib source tree - origin, branches</remark>
+
+      <remark>NB: At least a temporary section for "Known Issues,"
+      within any singular PL impl/app environments
+      </remark>
+    </preface>
+
+  </part>
 </book>

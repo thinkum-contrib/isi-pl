@@ -5,10 +5,14 @@
 %document.ent;
 
 ]>
-<preface xml:id="ov">
+<preface xml:id="contrib.ov"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="https://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+  >
   <title>Overview</title>
 
-  <simplesect xml:id="ov.intro">
+  <simplesect xml:id="contrib.ov.intro">
     <title>Introduction</title>
 
     <para>
@@ -28,7 +32,7 @@
   </simplesect>
 
 
-  <simplesect xml:id="ov.comp">
+  <simplesect xml:id="contrib.ov.comp">
     <title>Components</title>
 
     <para>
@@ -61,7 +65,7 @@
   </simplesect> <!-- comp -->
 
 
-  <simplesect xml:id="ov.xw">
+  <simplesect xml:id="contrib.ov.xw">
     <title>Existing Works</title>
     <para>
       <simplelist>
@@ -74,7 +78,7 @@
   </simplesect> <!-- xw -->
 
 
-  <simplesect xml:id="ov.lic">
+  <simplesect xml:id="contrib.ov.lic">
     <title>Licensing</title>
 
     <para>
@@ -104,6 +108,26 @@
     </para>
 
   </simplesect> <!-- lic -->
+
+  <simplesect xml:id="contrib.ov.contrib">
+    <title>Summary of Contributions</title>
+    
+    <simplelist>
+      <member>
+        Ensure portability for CCL (CC> 1.11 and 1.12-dev, Linux ARM)
+      </member>
+      <member>
+        <remark>To Do</remark> Ensure conditional processing of &stella;
+        and broader &pl; system initialization forms (compile/load and
+        system runtime contexts) per <symbol>PL-ASDF</symbol> in
+        <symbol>CL:*FEATURES*</symbol> when source files are evaluated
+      </member>
+      <member>
+        <remark>To Do</remark> Porting onto Bordeaux Threads, SB BSD
+        Sockets (SBCL), usocket (Any impl)
+      </member>
+    </simplelist>
+  </simplesect>
 </preface>
 
 <!-- Local Variables: -->
