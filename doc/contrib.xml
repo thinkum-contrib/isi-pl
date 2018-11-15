@@ -25,21 +25,18 @@
         <revdescription>
           <simplelist>
             <member>
-              Add additional document entity definitions
-              (<symbol>stella</symbol>, <symbol>emacs</symbol>); add
+              Added additional document entity definitions
+              (<symbol>stella</symbol>, <symbol>emacs</symbol>); added
               <tag>productname</tag> markup to <symbol>pl</symbol>
-              document entity definition
+              document entity definition.
             </member>
             <member>
-              Add document section, <quote>Configuration for the
-              &stella; Applications Environment - Common Lisp</quote>
-              (TBD: xref syntax for document) (TBD: Syntax for denoting
-              ANSI CL as a well-known language, in document entity
-              definitions)
-            </member>
+              Added document section, <quote>Configuration for the
+              &stella; Applications Environment - Common Lisp</quote>.
+         </member>
             <member>
-              Add document section, <quote>Configuration for the
-              &stella; Applications Environment - &emacs;</quote>
+              Added document section, <quote>Configuration for the
+              &stella; Applications Environment - &emacs;</quote>.
             </member>
           </simplelist>
         </revdescription>
@@ -47,21 +44,19 @@
       <revision>
         <date>2018-11-13</date>
         <revremark>
-          add remark about PL <phrase>*.plm</phrase> file type.
+          Added remark about PL <phrase>*.plm</phrase> file type.
           Section <xref linkend="contrib.ov"/> created, moved to external
-          document subset. Begin using XML includes, in document
-          source text
+          document subset. Using XML includes, in document source text.
         </revremark>
       </revision>
       <revision>
         <date>2018-11-14</date>
         <revremark>
           Section <xref linkend="contrib.ov"/> updated after text of
-          contributed <phrase>readme</phrase>. Section outline created: <xref
-          linkend="contrib.ov"/>; <xref linkend="contrib.ref"/>; <xref
-          linkend="contrib.xtool"/>;  <xref
-          linkend="contrib.qa"/>; move main section outline elements
-          into separate documents
+          contributed <phrase>readme</phrase>. Section outline created: 
+          <xref linkend="contrib.ov"/>; <xref linkend="contrib.ref"/>; 
+          <xref linkend="contrib.xtool"/>;  <xref linkend="contrib.qa"/>.
+          Primary section outline elements moved into separate documents.
         </revremark>
       </revision>
     </revhistory>
