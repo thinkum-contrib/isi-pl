@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE preface [
+<!ENTITY document.ent SYSTEM "document.ent">
+
+%document.ent;
+
+]>
+<part xml:id="contrib.ref"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="https://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+  >
+  <info>
+    <title>Contributed Reference</title>
+  </info>
+
+  <preface xml:id="contrib.ref.ov">
+    <title>Overview</title>
+
+    <remark>NB: Not to replace the PL Guide/Manual</remark>
+  </preface>
+
+</part>
+
+<!-- Local Variables: -->
+<!-- nxml-parent-document: "contrib.xml" -->
+<!-- ispell-buffer-session-localwords: ("ent") -->
+<!-- End: -->

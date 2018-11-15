@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE preface [
+<!ENTITY document.ent SYSTEM "document.ent">
+
+%document.ent;
+
+]>
+<part xml:id="contrib.xtool"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="https://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+  >
+  <info>
+    <title>Tools and Extensions</title>
+  </info>
+
+  <preface xml:id="contrib.xtool.ov">
+    <title>Overview</title>
+
+    <remark>Demo Code, RDBMS and SOAP components, contrib tools for PL
+    applications - Introduction (contrib) to each</remark>
+
+    <remark>NB: Documentation abt ASDF-{for-}PL in this section of contrib.xml</remark>
+  </preface>
+
+  <chapter xml:id="contrib.xtool.srv">
+    <title>The &pl; <acronym>SOAP</acronym> Service</title>
+
+    <remark>
+      TBD: XML Schema and PL SOAP protocol forms
+    </remark>
+
+    <remark>
+      NB: SOAP service components and each PL Impl. (CL, C+??
+      cf. gsoap?, and Java)
+    </remark>
+
+  </chapter>
+
+</part>
+
+<!-- Local Variables: -->
+<!-- nxml-parent-document: "contrib.xml" -->
+<!-- ispell-buffer-session-localwords: ("ent") -->
+<!-- End: -->

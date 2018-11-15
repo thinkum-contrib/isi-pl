@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE preface [
+<!ENTITY document.ent SYSTEM "document.ent">
+
+%document.ent;
+
+]>
+<part xml:id="contrib.qa"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="https://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+  >
+  <info>
+    <title>Quality Assurance</title>
+  </info>
+
+  <preface xml:id="contrib.qa.ov">
+    <title>Overview</title>
+
+    <remark>Introduction to the contrib source tree - origin, branches</remark>
+
+    <remark>NB: At least a temporary section for "Known Issues,"
+    within any singular PL impl/app environments
+    </remark>
+  </preface>
+
+</part>
+
+<!-- Local Variables: -->
+<!-- nxml-parent-document: "contrib.xml" -->
+<!-- ispell-buffer-session-localwords: ("ent") -->
+<!-- End: -->
