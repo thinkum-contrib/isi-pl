@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<refentry xmlns="http://docbook.org/ns/docbook" >
+  <refnamediv>
+    <refname><productname>ASDF</productname></refname>
+    <refpurpose>Another System Definition Facility</refpurpose>
+    <refclass>Common Lisp Software</refclass>
+  </refnamediv>
+
+  <refsect1>
+    <title>Availability</title>
+
+    <segmentedlist>
+      <segtitle>Distribution</segtitle>
+      <segtitle>More Information</segtitle>
+
+      <seglistitem>
+        <seg>ASDF Project</seg>
+        <seg>... common-lisp.net</seg>
+      </seglistitem>
+
+      <seglistitem>
+        <seg>Ubuntu 18.04</seg>
+        <seg><symbol>cl-asdf</symbol></seg>
+      </seglistitem>
+
+      <!-- nope -->
+      <!-- <seglistitem> -->
+      <!--   <seg>Arch Linux</seg> -->
+      <!--   <seg>{TBD}</seg> -->
+      <!-- </seglistitem> -->
+
+
+      <!-- nope -->
+      <!-- <seglistitem> -->
+      <!--   <seg>Darwin Ports</seg> -->
+      <!--   <seg>{TBD}</seg> -->
+      <!-- </seglistitem> -->
+
+      <!-- checkmo -->
+      <seglistitem>
+        <seg>FreeBSD Ports</seg>
+        <seg>{TBD}</seg>
+      </seglistitem>
+
+      <!-- checkmo -->
+      <seglistitem>
+        <seg>pkgsrc-wip</seg>
+        <seg>{TBD}</seg>
+      </seglistitem>
+
+
+    </segmentedlist>
+  </refsect1>
+
+  <refsect1>
+    <title>Commentary</title>
+    <simplelist>
+      <member>Exists as subsequent to <productname>MK:DEFSYS</productname>  (CLOCC)</member>
+      <member>ASDF and QuickLisp Ports (??)</member>
+      <member>Entirely orthogonal: Common Lisp Controller</member>
+    </simplelist>
+  </refsect1>
+
+  <refsect1>
+    <title>Further Information</title>
+    <simplelist>
+      <member>ASDF Manual</member>
+      <member>...</member>
+    </simplelist>
+  </refsect1>
+</refentry>

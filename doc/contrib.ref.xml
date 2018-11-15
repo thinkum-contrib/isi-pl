@@ -20,6 +20,46 @@
     <remark>NB: Not to replace the PL Guide/Manual</remark>
   </preface>
 
+  <chapter>
+    <info>
+      <title>
+        Representation of &stella; Source Components
+      </title>
+    </info>
+
+    <remark>STELLA system definitions</remark>
+
+    <remark>Note commentary in pl:sources/stella/primal.ste</remark>
+  </chapter>
+
+  <chapter>
+    <info>
+      <title>
+        Structural Qualities in &stella; Knowledge
+        Representation
+      </title>
+    </info>
+
+    <remark>abox, tbox (concepts) NB KL-ONE and subsq.</remark>
+
+    <remark>concepts and examples for knowledge representation in PL STELLA</remark>
+
+    <section>
+      <title>&stella; Modules</title>
+
+      <remark>Conceptual Overview; xrefs to reference pages for common
+      top-level forms; a unified practical example onto (TBD: Domain
+      for a simple example)</remark>
+
+      <remark>NB references to
+      <symbol>DEFINE-MODULE-FROM-STRINGIFIED-SOURCE</symbol> in PL
+      <filename>startup-system.ste</filename> files e.g
+      <filename>PL:sources/logic/startup-system.ste</filename>
+      </remark>
+
+    </section>
+  </chapter>
+
 </part>
 
 <!-- Local Variables: -->

@@ -35,8 +35,108 @@
       cf. gsoap?, and Java)
     </remark>
 
-  </chapter>
+  </chapter
 
+  <chapter xml:id="contrib.xtool.l">
+    <title>Lisp Tools for &pl;</title>
+
+    <section>
+      <title>Configuration for the &stella; Editing Environment - &emacs;</title>
+
+      <remark>
+        Note the 'plm' file type, in STELLA and PowerLoom systems, and
+        corresponding structural semantics (STELLA KRS subset) with
+        examples in PL "Demo" applications; Note the 'ste' file type,
+        STELLA functional subset, and "STELLA Impl-Factory" Bootstrap;
+        Note synthesized CLOS-based *.lisp and struct-based *.slisp
+        files; iterators in STELLA impl-factory code
+      </remark>
+
+
+      <remark>
+        Note PL *.slisp filesystem and cl-user::*load-cl-struct-stella?*
+        runtime parameter
+      </remark>
+
+      <remark>
+        Rudimentary syntax support for STELLA Functional and KRS systems
+        - source code - must define this portably. Trivial form for the
+        Emacs user init file:
+
+        (elib:add-file-handler "ste" 'lisp-mode)</remark>
+
+        <remark>Interactive programming wih Emacs, ...,  and a Common
+        Lisp implementation. (.. necc. Mentioning what they called "SLIME" and
+        "Swank") (NB: Emacs SLIME and
+        Common Lisp Swank as 'Products', in a manner of a sense of agile
+        DevOps, distributed across networks of arbitrary systems) (Note also: Franz Inc's
+        privatized Common Graphics Product and IDE)</remark>
+
+    </section>
+
+    <section>
+      <title>Configuration for the &stella; Applications Environment - Common Lisp</title>
+
+      <remark>NB: FIRST, denote that &stella; is available in three
+      "well known" implementations: Common Lisp; C++; Java</remark>
+
+      <remark>NB: CBSE and ASDF, pkgsrc, ...  in the DevOps environment</remark>
+
+      <remark>TBD: DBMS suppprt for the &stella; Common Lisp implentation</remark>
+
+      <remark>Topic: Logical Pathnames in STELLA, PL, and PL extension
+      components; file <filename>PL:;translations.lisp</filename>; NB
+      interoperability onto ASDF pathname translations;
+      CL-USER::*POWERLOOM-ROOT-DIRECTORY* as a utility form (pre-load)</remark>
+
+      <section>
+        <title>"Bootstrapping" for STELLA - Common Lisp</title>
+
+        <remark>NB <filename>load-stella.lisp</filename>, <filename>load-powerloom.lisp</filename></remark>
+
+
+        <remark>
+          Note files sources/stella/startup-system.ste (STELLA::STARTUP)
+          and 
+          sources/powerloom/startup-system.ste
+          (STELLA::STARTUP-LOGIC-SYSTEM;
+          STELLA::STARTUP-POWERLOOM-EXTENSIONS-SYSTEM;
+          STELLA::STARTUP-POWERLOOM and STELLA::*STARTUP-TIME-PHASE* in
+          the STARTUP-POWERLOOM environment; refer to the system
+          definition's source code); TBD: Differentiate STELLA::STARTUP
+          and STELLA::STARTUP-LOGIC-SYSTEM; note other 
+          startup-system.ste files in the PL source tree -
+          ./sources/logic/startup-system.ste, 
+          ./sources/logic/extensions/startup-system.ste, ....
+        </remark>
+
+        <remark>
+          NB Runtime Parameters for STELLA bootstrap (effects during
+          source
+          synthesis, compile, and load)
+          <varname>CL-USER::*LOAD-CL-STRUCT-STELLA?*</varname> (and the
+          STELLA *.slisp filesystem),
+          <varname>CL-USER::*STELLA-VERBOSE?*</varname>;
+          <filename>load-stella.lisp</filename> and <varname>CL-USER::*STELLA-COMPILER-OPTIMIZATION*</varname>
+        </remark>
+
+        <remark>
+          NB: Threads; Sockets (PL impl. in Common Lisp; relevance for
+          "Portable code," as avl via the PL Common Lisp impl, avl to PL
+          applications) 
+        </remark>
+
+        <remark>NB: Segfaults when loading load-stella.lisp with CCL (armcl
+        xf 1.11-r16635 and 1.12-dev, Linux)</remark>
+
+        <remark>refer to ccl_segfault_notes.md (local file)</remark>
+
+      </section>
+
+    </section>
+
+
+  </chapter>
 </part>
 
 <!-- Local Variables: -->
