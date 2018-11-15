@@ -316,8 +316,8 @@ hash tables grow large).")
           (cl:format cl:*error-output* "#-- Startup: Load ~A" lib)
           (cl:terpri cl:*error-output*))
 
-        (cl:with-compilation-unit (:policy cl-user::*stella-compiler-optimization*)
-
+        (cl:with-compilation-unit #+sbcl (:policy cl-user::*stella-compiler-optimization*)
+                                  #-sbcl ()
           (cl:etypecase lib
             (cl:cons
              (cl:apply #'CL-USER::stella-c&l-translated lib))
@@ -330,5 +330,16 @@ hash tables grow large).")
 #| build failure in CCL ...
 
 STELLA::INITIALIZE-KERNEL-MODULES & STELLA::*STELLA-MODULE*
-|#
 
+NB: in CCL, when evaluating (trace add-method) before loading
+   load-stella.lisp it appears that the segfault in the main build is
+   occurring after the last defmethod for help-print-outline in
+  native/lisp/stella/tools.lisp
+
+NB: Refer to doc/contrib.qa.xml for further detail on debugging the segfault
+
+NB: STELLA::STARTUP is defined in native/lisp/stella/startup.lisp
+ and was a call-point in the initial failure when loading
+ startup-bare.lisp with CCL
+
+|#
