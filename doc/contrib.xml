@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!DOCTYPE book [
 
 <!ENTITY document.ent SYSTEM "document.ent">
@@ -53,8 +52,8 @@
         <date>2018-11-14</date>
         <revremark>
           Section <xref linkend="contrib.ov"/> updated after text of
-          contributed <phrase>readme</phrase>. Section outline created: 
-          <xref linkend="contrib.ov"/>; <xref linkend="contrib.ref"/>; 
+          contributed <phrase>readme</phrase>. Section outline created:
+          <xref linkend="contrib.ov"/>; <xref linkend="contrib.ref"/>;
           <xref linkend="contrib.xtool"/>;  <xref linkend="contrib.qa"/>.
           Primary section outline elements moved into separate documents.
         </revremark>
@@ -64,9 +63,9 @@
 
   <xi:include href="contrib.ov.xml"/>
 
-  <xi:include href="contrib.ref.xml"/> 
+  <xi:include href="contrib.ref.xml"/>
 
-  <xi:include href="contrib.xtool.xml"/> 
+  <xi:include href="contrib.xtool.xml"/>
 
-  <xi:include href="contrib.qa.xml"/> 
+  <xi:include href="contrib.qa.xml"/>
 </book>
