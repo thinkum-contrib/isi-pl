@@ -24,9 +24,161 @@
     </remark>
   </preface>
 
+  <chapter xml:id="contrib.qa.iss">
+    <title>Known Issues</title>
+
+    <section xml:id="contrib.qa.iss.segccl">
+      <title>
+        Segmentation Fault When Initializing &pl; in &ccl; versions
+        <productnumber>11.1</productnumber>
+        <productnumber>11.2-dev</productnumber> &linux; &arm;
+      </title>
+
+      <sidebar>
+        <title>Editor's Note</title>
+        <para>
+          This issue remains principally unresolved, at this time,
+          for those &ccl; versions denoted on &linux; &arm;
+          platforms.
+        </para>
+        <para>
+          This issue is not known to affect other &ccl;
+          distributions, except those denoted
+        </para>
+      </sidebar>
+
+      <simplesect>
+        <title>Overview</title>
+
+        <para>
+          The issue appears to originate from within
+          <function>STELLA::STARTUP-PRIMAL</function> when evaluated at
+          <emphasis>phase</emphasis> number zero &mdash; i.e with
+          <varname>STELLA::*STARTUP-TIME-PHASE*</varname> bound to
+          <emphasis>zero</emphasis>, <quote>0</quote>, in the calling
+          lexical environment. The issue might not occur when that
+          function is evaluated directly from source form, but this has
+          not yet been thoroughly tested.
+        </para>
+
+        <para>
+          When the function <function>STELLA::STARTUP-PRIMAL</function>
+          is evaluated from compiled form, within normal &stella;
+          startup procedures, in &ccl; versions
+          <productnumber>11.1</productnumber>  or
+          <productnumber>11.2-dev</productnumber> on &linux; &arm;
+          platforms, the &ccl; session exits with a segmentation violation
+          (segfault)
+        </para>
+
+        <para>
+          This issue affects the evaluation of top-level forms in
+          <filename>pl:load-stella.lisp</filename> and other programs
+          evaluating the function
+          <function>STELLA::STARTUP-PRIMAL</function> for a
+          <emphasis>zero</emphasis> value of
+          <varname>STELLA::*STARTUP-TIME-PHASE*</varname>, on those
+          platforms.
+        </para>
+
+
+        <example>
+          <title>Output from a Pristine &pl; &stella; build with &ccl; (&linux; &arm;)</title>
+
+<screen><prompt>[user@host ~/pl ]$ </prompt><userinput>rlwrap ccl</userinput>
+<computeroutput>Clozure Common Lisp Version 1.12-dev (v1.12-dev.3-26-gc9156894) LinuxARM32
+
+For more information about CCL, please see http://ccl.clozure.com.
+
+CCL is free software.  It is distributed under the terms of the Apache
+Licence, Version 2.0.</computeroutput>
+<prompt>? </prompt><userinput>(load "load-stella.lisp")</userinput>
+
+<computeroutput><![CDATA[;Compiler warnings for "home:pl;native;lisp;stella;hierarchy.lisp.newest" :
+;   In (VALUE-SETTER (DICTIONARY-ITERATOR COMMON-LISP:T)) inside an anonymous lambda form: Unused lexical variable VALUE
+;   In (KEY-SETTER (DICTIONARY-ITERATOR COMMON-LISP:T)) inside an anonymous lambda form: Unused lexical variable KEY
+;   In HELP-STARTUP-HIERARCHY7: Unused lexical variable CLASS
+;Compiler warnings for "home:pl;native;lisp;stella;primal.lisp.newest" :
+;   In an anonymous lambda form at position 55762: Duplicate definitions of (:METHOD SUBSTITUTE-CHARACTERS (COMMON-LISP:STRING COMMON-LISP:T COMMON-LISP:T)), in this file
+;   In an anonymous lambda form at position 78778: Duplicate definitions of (:METHOD FIRST (COMMON-LISP:STRING)), in this file
+;   In an anonymous lambda form at position 80176: Duplicate definitions of (:METHOD SECOND (COMMON-LISP:STRING)), in this file
+;   In an anonymous lambda form at position 81578: Duplicate definitions of (:METHOD THIRD (COMMON-LISP:STRING)), in this file
+;   In an anonymous lambda form at position 82976: Duplicate definitions of (:METHOD FOURTH (COMMON-LISP:STRING)), in this file
+;   In an anonymous lambda form at position 84378: Duplicate definitions of (:METHOD FIFTH (COMMON-LISP:STRING)), in this file
+;   In an anonymous lambda form at position 85740: Duplicate definitions of (:METHOD NTH (COMMON-LISP:STRING COMMON-LISP:T)), in this file
+;   In an anonymous lambda form at position 86857: Duplicate definitions of (:METHOD LENGTH (COMMON-LISP:STRING)), in this file
+;   In JAVA-LIST-DIRECTORY-FILES: Unused lexical variable DIRECTORY
+;Compiler warnings for "home:pl;native;lisp;stella;collections.lisp.newest" :
+;   In (KEY-SETTER (STELLA-HASH-TABLE-ITERATOR COMMON-LISP:T)) inside an anonymous lambda form: Unused lexical variable KEY
+;Compiler warnings for "home:pl;native;lisp;stella;symbols.lisp.newest" :
+;   In an anonymous lambda form at position 9052: Duplicate definitions of GET-SGT, in this file and in "home:pl;native;lisp;stella;cl-lib;cl-setup.lisp.newest"
+;Compiler warnings for "home:pl;native;lisp;stella;literals.lisp.newest" :
+;   In an anonymous lambda form at position 18483: Duplicate definitions of (:METHOD WRAP-LITERAL (COMMON-LISP:STRING)), in this file
+;Compiler warnings for "home:pl;native;lisp;stella;classes.lisp.newest" :
+;   In UNINHERIT-SLOTS: Unused lexical variable SLOT
+;Compiler warnings for "home:pl;native;lisp;stella;defclass.lisp.newest" :
+;   In REDUCE-RECYCLE-LIST-SIZE: Unused lexical variable I
+;Compiler warnings for "home:pl;native;lisp;stella;describe.lisp.newest" :
+;   In SEARCH-FOR-OBJECT: Unused lexical variable MODULE
+;Compiler warnings for "home:pl;native;lisp;stella;read.lisp.newest" :
+;   In QUALIFIED-STELLA-NAME?: Unused lexical variable TOK_STELLALOGICALSTATENAME_
+;Compiler warnings for "home:pl;native;lisp;stella;systems.lisp.newest" :
+;   In PROCESS-COMMAND-LINE-ARGUMENTS: Unused lexical variable I
+]]></computeroutput>
+
+<computeroutput>rlwrap: warning: ccl crashed, killed by SIGSEGV.
+rlwrap itself has not crashed, but for transparency,
+it will now kill itself (without dumping core) with the same signal
+
+warnings can be silenced by the --no-warnings (-n) option
+Segmentation fault</computeroutput>
+      </simplesect>
+
+      <simplesect>
+        <title>Analysis</title>
+
+        <para>
+          The occurrence of the segfault event may be traced, such that
+          it appears to occur within a top level form in the file,
+          <filename>PL:native;lisp;stella;load-stella.lisp</filename>,
+          as loaded from a top-level form in the file,
+          <filename>PL:load-stella.lisp</filename>. Subsequently, the
+          occurrence can be traced as to the call to
+          <function>CL-USER::STELLA-LOAD-TRANSLATED</function> evaluated
+          for the file
+          <filename>PL:native;lisp;stella;cl-lib;make-stella.lisp</filename>
+        </para>
+
+        <para>
+          From there, the occurrence may be traced to the function
+          <function>STELLA::STARTUP-STELLA-SYSTEM</function>, whence the
+          call to <function>STELLA::STARTUP</function>, and subsequently
+          the call to <function>STELLA::STARTUP-KERNEL</function> as
+          transitively occurring from a top-level form in the file
+          <filename>PL:load-stella.lisp</filename>.
+        </para>
+
+        <para>
+          For a purpose of debugging the behaviors of the &stella;
+          system in evaluation of the forms within
+          <function>STELLA::STARTUP-KERNEL</function>, the latter was
+          redefined locally such as to permit for a conditional evaluation
+          in a manner of stepping through different values of
+          <varname>STELLA::*STARTUP-TIME-PHASE*</varname>. The forms
+          were then stepped through, manually, after preliminary
+          initialization of the &stella; system. Subsequently,
+          it was discovered that the segfault is occurring within
+          <function>STELLA::STARTUP-PRIMAL</function> for
+          <varname>STELLA::*STARTUP-TIME-PHASE*</varname> of
+          <quote>0</quote> i.e "Zero", on the denoted platform.
+        </para> 
+      </simplesect>
+
+    </section>
+  </chapter>
 </part>
 
 <!-- Local Variables: -->
 <!-- nxml-parent-document: "contrib.xml" -->
-<!-- ispell-buffer-session-localwords: ("ent") -->
+<!-- ispell-buffer-session-localwords: ("Clozure" "Licence" "LinuxARM" "SIGSEGV" "STARTUP" "ccl" "contrib" "dev" "ent" "impl" "rlwrap" "startup" "stella") -->
 <!-- End: -->
