@@ -161,10 +161,10 @@ in `*STARTUP-TIME-PHASES*'.  999 means no phasing at all.")
 ;;
 ;; see also: startup.ste
 ;;
-(cl:defun %%startup-kernel-internal (phase cl:&optional (module *STELLA-MODULE*)))
+(cl:defun %%startup-kernel-internal (phase cl:&optional (module *STELLA-MODULE*))
   (CL:DECLARE (CL:TYPE CL:FIXNUM PHASE))
   (cl:let ((*STARTUP-TIME-PHASE* phase)
-           (*STELLA-MODULE* module)))
+           (*STELLA-MODULE* module))
     (STARTUP-STARTUP)
     (STARTUP-CL-PRIMAL)
     (STARTUP-PRIMAL)
