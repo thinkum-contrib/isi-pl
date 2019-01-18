@@ -71,9 +71,9 @@ This functions uses the convention that a `null' or negative value of
 `depth-limit' means the depth is unlimited.  In those cases it always
 returns false."
   (CL:DECLARE (CL:TYPE CL:FIXNUM CURRENT-DEPTH DEPTH-LIMIT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CURRENT-DEPTH CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DEPTH-LIMIT CL:FIXNUM)
   (CL:RETURN-FROM OUTLINE-DEPTH-EXCEEDED? (CL:AND (CL:NOT (CL:= DEPTH-LIMIT NULL-INTEGER)) (CL:>= DEPTH-LIMIT 0) (CL:>= CURRENT-DEPTH DEPTH-LIMIT))))
 
@@ -84,7 +84,7 @@ returns false."
 `current-depth' on `stream' using the value of the global
 variable `*OUTLINE-INDENT-STRING*'"
   (CL:DECLARE (CL:TYPE CL:FIXNUM CURRENT-DEPTH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CURRENT-DEPTH CL:FIXNUM)
   (CL:LET* ((I NULL-INTEGER) (ITER-000 1) (UPPER-BOUND-000 CURRENT-DEPTH) (UNBOUNDED?-000 (CL:= UPPER-BOUND-000 NULL-INTEGER)))
    (CL:DECLARE (CL:TYPE CL:FIXNUM I ITER-000 UPPER-BOUND-000))
@@ -103,7 +103,7 @@ This function is intended to be used on things like modules, contexts,
 concepts, etc. that have hierarchical structure.  If `thing' doesn't
 have a hierarchical structure, it will just be printed."
   (CL:DECLARE (CL:TYPE CL:FIXNUM DEPTH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DEPTH CL:FIXNUM)
   (HELP-PRINT-OUTLINE THING STREAM 0 DEPTH NAMED?)
   :VOID)
@@ -131,9 +131,9 @@ have a hierarchical structure, it will just be printed."
 (%%DEFCONSMETHOD HELP-PRINT-OUTLINE ((TOP OBJECT) STREAM CURRENT-DEPTH DEPTH NAMED?)
   "Helper method for `print-outline'"
   (CL:DECLARE (CL:TYPE CL:FIXNUM CURRENT-DEPTH DEPTH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CURRENT-DEPTH CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DEPTH CL:FIXNUM)
   (CL:PROGN (CL:SETQ NAMED? NAMED?) (CL:SETQ CURRENT-DEPTH CURRENT-DEPTH) (CL:SETQ DEPTH DEPTH))
   (%%PRINT-STREAM (%NATIVE-STREAM STREAM) TOP EOL)
@@ -144,9 +144,9 @@ have a hierarchical structure, it will just be printed."
 (CL:DEFMETHOD HELP-PRINT-OUTLINE ((TOP CONTEXT) STREAM CURRENT-DEPTH DEPTH NAMED?)
   "Helper method for `print-outline'"
   (CL:DECLARE (CL:TYPE CL:FIXNUM CURRENT-DEPTH DEPTH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CURRENT-DEPTH CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DEPTH CL:FIXNUM)
   (CL:WHEN NAMED? (CL:RETURN-FROM HELP-PRINT-OUTLINE))
   (INDENT-OUTLINE CURRENT-DEPTH STREAM)
@@ -162,9 +162,9 @@ have a hierarchical structure, it will just be printed."
 (CL:DEFMETHOD HELP-PRINT-OUTLINE ((TOP MODULE) STREAM CURRENT-DEPTH DEPTH NAMED?)
   "Helper method for `print-outline'"
   (CL:DECLARE (CL:TYPE CL:FIXNUM CURRENT-DEPTH DEPTH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CURRENT-DEPTH CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DEPTH CL:FIXNUM)
   (INDENT-OUTLINE CURRENT-DEPTH STREAM)
   (%%PRINT-STREAM (%NATIVE-STREAM STREAM) (NAME TOP) EOL)
@@ -179,9 +179,9 @@ have a hierarchical structure, it will just be printed."
 (CL:DEFMETHOD HELP-PRINT-OUTLINE ((TOP CLASS) STREAM CURRENT-DEPTH DEPTH NAMED?)
   "Helper method for `print-outline'"
   (CL:DECLARE (CL:TYPE CL:FIXNUM CURRENT-DEPTH DEPTH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CURRENT-DEPTH CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DEPTH CL:FIXNUM)
   (INDENT-OUTLINE CURRENT-DEPTH STREAM)
   (%%PRINT-STREAM (%NATIVE-STREAM STREAM) (NAME TOP) EOL)
@@ -196,9 +196,9 @@ have a hierarchical structure, it will just be printed."
 (CL:DEFMETHOD HELP-PRINT-OUTLINE ((TOP SLOT) STREAM CURRENT-DEPTH DEPTH NAMED?)
   "Helper method for `print-outline'"
   (CL:DECLARE (CL:TYPE CL:FIXNUM CURRENT-DEPTH DEPTH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CURRENT-DEPTH CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DEPTH CL:FIXNUM)
   (INDENT-OUTLINE CURRENT-DEPTH STREAM)
   (%%PRINT-STREAM (%NATIVE-STREAM STREAM) (NAME TOP) EOL)

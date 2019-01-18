@@ -254,7 +254,7 @@
 (CL:DEFUN MAKE-STRING (SIZE INITCHAR)
   "Return a new string filled with 'size' 'initchar's."
   (CL:DECLARE (CL:TYPE CL:FIXNUM SIZE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SIZE CL:FIXNUM)
   (CL:RETURN-FROM MAKE-STRING (CL:MAKE-STRING SIZE :INITIAL-ELEMENT INITCHAR)))
 
@@ -265,9 +265,9 @@
   "Return a new string representing the concatenation of
 'string1' and 'string2'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING1 STRING2))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING1 CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING2 CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING-CONCATENATE (CL:CONCATENATE (CL:QUOTE CL:STRING) STRING1 STRING2)))
 
@@ -277,7 +277,7 @@
 (CL:DEFUN STRING-UPCASE (STRING)
   "Return an upper-case copy of 'string'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING-UPCASE (CL:STRING-UPCASE STRING)))
 
@@ -287,7 +287,7 @@
 (CL:DEFUN STRING-DOWNCASE (STRING)
   "Return a lower-case copy of 'string'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING-DOWNCASE (CL:STRING-DOWNCASE STRING)))
 
@@ -297,7 +297,7 @@
 (CL:DEFUN STRING-CAPITALIZE (STRING)
   "Return a capitalized version of 'string'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING-CAPITALIZE (CL:STRING-CAPITALIZE STRING)))
 
@@ -306,7 +306,7 @@
 (CL:DEFMETHOD COPY ((STRING CL:STRING))
   "Return a copy of 'string'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
   (CL:RETURN-FROM COPY (CL:COPY-SEQ STRING)))
 
@@ -315,7 +315,7 @@
 (CL:DEFMETHOD REMOVE ((STRING CL:STRING) CHAR)
   "Remove all occurences of 'char' from 'string'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
   (CL:RETURN-FROM REMOVE (CL:REMOVE CHAR STRING)))
 
@@ -325,7 +325,7 @@
   "Substitute all occurences of oldChar with newChar
 in the string 'self'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM SUBSTITUTE (CL:SUBSTITUTE NEWCHAR OLDCHAR SELF)))
 
@@ -333,7 +333,7 @@ in the string 'self'."
 
 (CL:DEFMETHOD MEMBER? ((SELF CL:STRING) CHAR)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM MEMBER? (CL:NOT (CL:NULL (CL:FIND CHAR SELF)))))
 
@@ -341,7 +341,7 @@ in the string 'self'."
 
 (CL:DEFMETHOD REST ((SELF CL:STRING))
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM REST (CL:SUBSEQ SELF 1)))
 
@@ -359,9 +359,9 @@ If 'start' was supplied as non-NULL, only consider the substring starting
 at 'start', however, the returned position will always be relative to the
 entire string."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING) (CL:TYPE CL:FIXNUM START))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
   (CL:WHEN (CL:= START NULL-INTEGER) (CL:SETQ START 0))
   (CL:RETURN-FROM POSITION (CL:OR (CL:POSITION CHARACTER STRING :START START) NULL-INTEGER)))
@@ -380,9 +380,9 @@ If 'end' was supplied as non-NULL, only consider the substring ending
 at 'end', however, the returned position will always be relative to the
 entire string."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING) (CL:TYPE CL:FIXNUM END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
   (CL:IF (CL:= END NULL-INTEGER) (CL:SETQ END (CL:THE CL:FIXNUM (CL:LENGTH STRING))) (CL:SETQ END (CL:1+ END)))
   (CL:RETURN-FROM LAST-POSITION (CL:OR (CL:POSITION CHARACTER STRING :END END :FROM-END CL:T) NULL-INTEGER)))
@@ -394,11 +394,11 @@ entire string."
   "Return start position of the left-most occurrence right of
 'start' of 'substring' in 'string'.  Return NULL if it is not a substring."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING SUBSTRING) (CL:TYPE CL:FIXNUM START))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SUBSTRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
   (CL:WHEN (CL:= START NULL-INTEGER) (CL:SETQ START 0))
   (CL:RETURN-FROM STRING-SEARCH (CL:OR (CL:SEARCH SUBSTRING STRING :START2 START) NULL-INTEGER)))
@@ -410,11 +410,11 @@ entire string."
 and ending up to but not including position 'end', counting from zero.  An
 'end' value of NULL stands for the rest of the string."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING) (CL:TYPE CL:FIXNUM START END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
   (CL:LET* ((NULLEND? (CL:= END NULL-INTEGER))) (CL:RETURN-FROM SUBSEQUENCE (CL:SUBSEQ STRING START (CL:IF NULLEND? CL:NIL END)))))
 
@@ -443,7 +443,7 @@ and ending up to but not including position 'end', counting from zero.  An
 
 (CL:DEFUN OLD-CL-READ-S-EXPRESSION-FROM-STRING (STRING)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
   (CL:LET* ((CASESENSITIVE? (%CASE-SENSITIVE? *MODULE*)))
    (CL:RETURN-FROM OLD-CL-READ-S-EXPRESSION-FROM-STRING
@@ -459,7 +459,7 @@ and ending up to but not including position 'end', counting from zero.  An
   "Return a string representation of `integer' in `base'.
 Helping function for `integer-to-string' and `integer-to-hex-string'"
   (CL:DECLARE (CL:TYPE CL:FIXNUM BASE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE BASE CL:FIXNUM)
   (CL:RETURN-FROM INTEGER-TO-STRING-IN-BASE (CL:let ((buffer (CL:make-string 32 :initial-element #\Space))
                 (table "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -505,7 +505,7 @@ Helping function for `integer-to-string' and `integer-to-hex-string'"
 (CL:DEFUN FLOAT-TO-STRING (FLOAT)
   "Return a string representation of 'float'."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT FLOAT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FLOAT CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM FLOAT-TO-STRING (CL:let ((CL:*read-default-float-format* 'CL:double-float))
          (CL:with-output-to-string (s)
@@ -517,9 +517,9 @@ Helping function for `integer-to-string' and `integer-to-hex-string'"
 (CL:DEFUN FORMAT-FLOAT (VALUE NDECIMALS)
   "Return a string representation of 'float' with 'nDecimals' decimal places."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT VALUE) (CL:TYPE CL:FIXNUM NDECIMALS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VALUE CL:DOUBLE-FLOAT)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NDECIMALS CL:FIXNUM)
   (CL:RETURN-FROM FORMAT-FLOAT (CL:FORMAT CL-NIL "~,vF" NDECIMALS VALUE)))
 
@@ -529,7 +529,7 @@ Helping function for `integer-to-string' and `integer-to-hex-string'"
   "Convert the 'string' representation of an integer into an
 integer and return the result."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING-TO-INTEGER (CL:PARSE-INTEGER STRING)))
 
@@ -540,7 +540,7 @@ integer and return the result."
   "Convert the 'string' representation of a float into a
 float and return the result."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING-TO-FLOAT (CL:LET ((CL:*read-default-float-format* (CL:quote CL:double-float)))
                (CL:float (CL:read-from-string string) 0.0d0))))
@@ -549,7 +549,7 @@ float and return the result."
 
 (CL:DEFUN CL-SYMBOL-TO-STELLA-SYMBOL (NAME)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE *MODULE*) (BARENAME NAME)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING BARENAME))
    (CL:WHEN (QUALIFIED-STELLA-NAME? NAME) (CL:MULTIPLE-VALUE-SETQ (MODULE BARENAME) (COMPUTE-MODULE-AND-BARE-NAME NAME))
