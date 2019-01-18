@@ -233,7 +233,7 @@ in `*STARTUP-TIME-PHASES*'.  999 means no phasing at all.")
           (startup-kernel-finalize-slots)
           (CL:GO :CONTINUE))
          (cl:t
-          (%%startup-kernel-internal phase)))
+          (startup-kernel-internal phase)))
      :CONTINUE)
     (CL:SETQ ITER-000 (CL:1+ ITER-000))))
   :VOID)
