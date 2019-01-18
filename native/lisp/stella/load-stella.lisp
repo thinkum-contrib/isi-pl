@@ -97,6 +97,24 @@ hash tables grow large).")
 ;;; If this is T, Stella will compile/load/startup verbosely:
 (defvar *stella-verbose?* *load-verbose*)
 
+(defvar *stella-default-external-format* ;; TL contrib [spchamp]
+  ;; FIXME Ensure Unicode compat, per implementation
+  ;;
+  ;; - see also: STELLA-CHARSET, ./streams.lisp, pl:sources/stella/streams.ste
+  ;; -- note redefinition (??) of STELLA-CHARSET in streams.lisp
+  ;; --- initially in CL:DEFVAR STELLA-CHARSET
+  ;; --- subsq. in eval of DEFINE-STELLA-GLOBAL-VARIABLE-FROM-STRINGIFIED-SOURCE
+  ;;
+  #+allegro
+  (CL:ignore-errors (excl::find-external-format :iso-8859-1))
+  #-allegro
+  (cond
+    ;; ensure portability with SWANK streams
+    ((find :swank *features* :test #'eq) (values :default))
+    ;; NB This may break in some instances when *STANDARD-OUTPUT* is a
+    ;; stream of a type not recognized by the local implementation
+    (t (stream-external-format *standard-output*))))
+
 ;;; This loading scheme still tries to deal with Lisps that do not support
 ;;; logical pathnames.  But, are there still any "healthy" Lisps like that?
 
@@ -211,9 +229,11 @@ hash tables grow large).")
       (declare (ignore options))
       `(progn ,@body))))
 
+
 (cond
  ((and (find-package "STELLA")
        (fboundp (find-symbol "STARTUP" (find-package "STELLA"))))
+  ;; FIXME Not always true e.g when debugging
   (format t "~%STELLA has already been loaded.~%"))
  (t
   (stella-c&l-translated "cl-lib" "cl-setup")

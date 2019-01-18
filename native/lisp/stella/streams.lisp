@@ -1813,8 +1813,7 @@ or :EOL to print a line terminator.\" :PUBLIC? TRUE)" (CL:FUNCTION LOGMSG) NULL)
 \" :DOCUMENTATION \"A string constant containing the character sequence
 necessary to generate a newline.\" :PUBLIC? TRUE)")
     (DEFINE-STELLA-GLOBAL-VARIABLE-FROM-STRINGIFIED-SOURCE
-     "(DEFGLOBAL STELLA-CHARSET NATIVE-CHARSET-ENCODING (VERBATIM :JAVA \"java.nio.charset.Charset.forName(\\\"ISO-8859-1\\\")\" :COMMON-LISP \"#+allegro (CL:ignore-errors (excl::find-external-format :iso-8859-1))
-                          #-allegro (CL:stream-external-format CL:*standard-output*)\" :OTHERWISE NULL) :DOCUMENTATION \"For STELLA we always assume an 8-bit transparent mapping from bytes to STRING characters
+     "(DEFGLOBAL STELLA-CHARSET NATIVE-CHARSET-ENCODING (VERBATIM :JAVA \"java.nio.charset.Charset.forName(\\\"ISO-8859-1\\\")\" :COMMON-LISP \"CL-USER::*stella-default-external-format*\" :OTHERWISE NULL) :DOCUMENTATION \"For STELLA we always assume an 8-bit transparent mapping from bytes to STRING characters
 such as ISO-8859-1 (ISO-LATIN-1), since that's what C++ natively supports.  For Java and some Lisps, we have
 to do some extra work to enforce this encoding when creating streams.  This is just a first iteration towards
 this handling this, for example, in Lisp we'd also have to configure compile and load streams to properly encode
