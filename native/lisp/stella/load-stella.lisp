@@ -115,6 +115,9 @@ hash tables grow large).")
     ;; stream of a type not recognized by the local implementation
     (t (stream-external-format *standard-output*))))
 
+
+(defvar *stella-memoization-default* nil) ;; cf. STELLA::*MEMOIZATION-ENABLED*, memoize.lisp, memoize.ste
+
 ;;; This loading scheme still tries to deal with Lisps that do not support
 ;;; logical pathnames.  But, are there still any "healthy" Lisps like that?
 

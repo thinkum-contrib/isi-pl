@@ -145,7 +145,7 @@ maintenance and clearance purposes.")
 
 ;;; (DEFGLOBAL *MEMOIZATION-ENABLED?* ...)
 
-(CL:DEFVAR *MEMOIZATION-ENABLED?* CL:NIL)
+(CL:DEFVAR *MEMOIZATION-ENABLED?* cl-user::*stella-memoization-default*)
 
 ;;; (DEFUN ENABLE-MEMOIZATION ...)
 
