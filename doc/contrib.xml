@@ -10,6 +10,7 @@
 <book xmlns="http://docbook.org/ns/docbook"
       xmlns:xlink="https://www.w3.org/1999/xlink"
       xmlns:xi="http://www.w3.org/2001/XInclude"
+      version="kbbook 1.0 DocBook 5.1"
       >
   <info>
     <title>&thinkum; Contributor's Manual for &isi.abv; &pl;</title>
@@ -55,7 +56,9 @@
           contributed <phrase>readme</phrase>. Section outline created:
           <xref linkend="contrib.ov"/>; <xref linkend="contrib.ref"/>;
           <xref linkend="contrib.xtool"/>;  <xref linkend="contrib.qa"/>.
-          Primary section outline elements moved into separate documents.
+          Primary section outline elements moved into separate
+          documents. Subsequently, document revisions texts may be
+          developed in each individual source document.
         </revremark>
       </revision>
     </revhistory>

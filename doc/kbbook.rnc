@@ -1,0 +1,20 @@
+default namespace db = "http://docbook.org/ns/docbook"
+
+
+include "docbookxi.rnc" {
+    db.version.attribute = attribute version { "kbbook 1.0 DocBook 5.1" }
+
+## TD: disab. sect1/... elements (??) except w/i refentry
+
+}
+
+
+## NB: The following may not be necc. with DocBook 5.1 XI
+##     but are retained here, for purpose of portability
+
+db.set.components
+        |= db.xi.include
+db.toc.components
+        |= db.xi.include
+db.setindex.components
+        |= db.xi.include

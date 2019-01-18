@@ -1,4 +1,4 @@
-<!-- Shared Document Entity Metadata			-*- dtd -*- -->
+<!-- Shared Document Entity Metadata			-*- xml -*- -->
 
 <!ENTITY thinkum
         "<orgname>Thinkum Labs&#x2122;</orgname>"
@@ -6,7 +6,7 @@
 
 <!ENTITY isi.abv
 	"<orgname><acronym>ISI</acronym></orgname>"
-> <!-- i.e USC ISI -->
+> <!-- NB: USC ISI -->
 <!ENTITY isi.full
          "<orgname>Information Sciences Institute</orgname>"
 >
@@ -44,13 +44,64 @@
 >
 
 
+<!ENTITY loom
+        "<productname>Loom&#xAE;</productname>"
+>
+<!ENTITY loom.href
+        "http://www.isi.edu/isd/LOOM/"
+>
+<!ENTITY loom.h
+        "<olink targetdoc='&loom.href;'>&loom;</olink>"
+>
+
+
+<!ENTITY okbc.abv
+        "<productname><acronym>OKBC</acronym></productname>"
+>
+<!ENTITY okbc.full
+        "<productname>Open Knowledge Base Connectivity</productname>"
+>
+<!ENTITY okbc.href
+        "http://www.ai.sri.com/~okbc/"
+>
+<!ENTITY okbc.h
+        "<olink targetdoc='&okbc.href;'>&okbc.full;</olink>"
+>
+
 
 <!ENTITY stella
         "<productname>STELLA</productname>"
->
+> <!-- alternately, could be denoted as a glossterm -->
 <!ENTITY stella.href
         "http://www.isi.edu/isd/LOOM/Stella/index.html"
 >
 <!ENTITY stella.h
         "<olink targetdoc='&stella.href;'>&stella;</olink>"
+>
+
+
+<!ENTITY ccl
+	"<productname>Clozure Common Lisp</productname>"
+>
+
+
+<!ENTITY linux
+	"<productname>Linux</productname>"
+>
+
+
+<!ENTITY arm
+	"<productname>ARM</productname>"
+>
+
+
+<!ENTITY asdf
+	"<productname>ASDF</productname>"
+>
+
+
+<!-- -->
+
+<!ENTITY mdash
+	"&#x2014;"
 >

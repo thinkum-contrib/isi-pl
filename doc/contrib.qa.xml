@@ -17,12 +17,17 @@
   <preface xml:id="contrib.qa.ov">
     <title>Overview</title>
 
-    <remark>Introduction to the contrib source tree - origin, branches</remark>
+    <remark>Introduction to the contrib source tree - origin, branches -
+    refer to below</remark>
 
     <remark>NB: At least a temporary section for "Known Issues,"
     within any singular PL impl/app environments
     </remark>
-  </preface>
+
+    <remark>TBD Publishing for this contributed documentation; Systems
+    Management for same publishing</remark>
+
+  </preface> <!-- Overview -->
 
   <chapter xml:id="contrib.qa.iss">
     <title>Known Issues</title>
@@ -30,8 +35,8 @@
     <section xml:id="contrib.qa.iss.segccl">
       <title>
         Segmentation Fault When Initializing &pl; in &ccl; versions
-        <productnumber>11.1</productnumber>
-        <productnumber>11.2-dev</productnumber> &linux; &arm;
+        <productnumber>11.1</productnumber> and
+        <productnumber>11.2-dev</productnumber> (&linux; &arm;)
       </title>
 
       <sidebar>
@@ -47,7 +52,7 @@
         </para>
       </sidebar>
 
-      <simplesect>
+      <simplesect xml:id="contrib.qa.iss.segccl.ov">
         <title>Overview</title>
 
         <para>
@@ -131,10 +136,11 @@ rlwrap itself has not crashed, but for transparency,
 it will now kill itself (without dumping core) with the same signal
 
 warnings can be silenced by the --no-warnings (-n) option
-Segmentation fault</computeroutput>
-      </simplesect>
+Segmentation fault</computeroutput></screen>
+        </example>
+      </simplesect> <!-- #contrib.qa.iss.segccl.ov -->
 
-      <simplesect>
+      <simplesect xml:id="contrib.qa.iss.segccl.asys">
         <title>Analysis</title>
 
         <para>
@@ -170,15 +176,331 @@ Segmentation fault</computeroutput>
           it was discovered that the segfault is occurring within
           <function>STELLA::STARTUP-PRIMAL</function> for
           <varname>STELLA::*STARTUP-TIME-PHASE*</varname> of
-          <quote>0</quote> i.e "Zero", on the denoted platform.
-        </para> 
-      </simplesect>
+          <quote>0</quote> i.e <quote>Zero</quote>, on the denoted platform.
+        </para>
+      </simplesect> <!-- contrib.qa.iss.segccl.asys -->
 
-    </section>
-  </chapter>
+      <simplesect xml:id="contrib.qa.iss.segccl.chg">
+        <title>
+          Summary of Changes
+        </title>
+
+        <para>
+          In order to facilitate debugging for the behaviors of forms
+          called by <function>STELLA::STARTUP-KERNEL</function> under
+          monotonically increasing values of
+          <varname>STELLA::*STARTUP-TIME-PHASE*</varname>, the function
+          <function>STELLA::STARTUP-KERNEL</function> may be redefined in
+          the &stella; Common Lisp implementation source code. The
+          function may be redefined such as
+          to <emphasis>externalize</emphasis> some behaviors of the function,
+          insofar as with regards to functions not called for individual
+          values of <emphasis>phase</emphasis>, within the original
+          function definition.
+        </para>
+        <para>
+          The function,
+          <function>STELLA::%%STARTUP-KERNEL-INTERNAL</function> may be
+          defined newly, such as to permit for dispatching of control flow
+          under lexically scoped values of
+          <varname>STELLA::*STARTUP-TIME-PHASE*</varname>. The function
+          may be defined so as to require that the <emphasis>phase</emphasis>
+          will be provided as the first argument to the
+          function. Subsequently, the function may establishes a new
+          lexically scoped binding for
+          <varname>STELLA::*STARTUP-TIME-PHASE*</varname>, as per the
+          value of the provided <emphasis>phase</emphasis>
+          parameter. This, in effect, may allow for single-stepping in
+          analysis onto increasing values of the <emphasis>phase</emphasis>
+          qualifier, during systems debugging.
+        </para>
+
+        <para>
+          In addition to the development of this preliminary modification of the
+          <acronym>API</acronym> for the &stella; Common Lisp
+          implementation, pursuant to analyzing this concern, the file
+          <filename>startup-bare.lisp</filename> was created. The file was
+          created such that the contents of the file would
+          represent principally a concatenation of top-level forms,
+          such that an evaluation of the file may serve to represent the &pl;
+          program control flow for the &pl; Common Lisp implementation,
+          to some point approximate to the
+          original point of failure. In effect, the file represents a
+          control flow up to and including top-level forms of
+          <filename>PL:native;lisp;stella;cl-lib;make-stella.lisp</filename>,
+          but there excluding the calls to
+          <function>STELLA::STARTUP-STELLA-SYSTEM</function> and
+          <function>STELLA::STARTUP-STELLA-TO-CL</function> in the
+          top-level forms of of the latter file, as originally
+          distributed.
+        </para>
+
+        <sidebar>
+          <title>Interoperability onto ASDF</title>
+          <remark>Notes (abridged) : do not start STELLA logic system
+          services when #+STELLA-ASDF; ... ; do not use CL-USER (TBD: PL-USER)</remark>
+        </sidebar>
+
+<example xml:id="contrib.qa.iss.segccl.excalls">
+  <title>Top-Level Forms for is Reproducing This Issue</title>
+  <programlistingco>
+    <!-- NB: assuming the DocBook callout-area coords are zero indexed -->
+    <areaspec>
+      <area units="linerange" coords="6 6"
+            xml:id="contrib.qa.iss.segccl.excalls.1" />
+     <area units="linerange" coords="7 7"
+           xml:id="contrib.qa.iss.segccl.excalls.2" />
+    </areaspec>
+   <programlisting><![CDATA[(in-package #:cl-user)
+
+(load "startup-bare.lisp")
+
+(let ((stella::*startup-time-phase* 0))
+   (stella::startup-startup)
+   (stella::startup-primal) ;; NB
+   (stella::startup-type-predicates) ;; ??
+   (stella::startup-conses)
+   (stella::startup-hierarchy)
+   (stella::startup-taxonomies)
+   (stella::startup-lists)
+   (stella::startup-collections)
+   (stella::startup-iterators)
+   ;; ...
+   )]]></programlisting>
+   <calloutlist>
+     <callout arearefs="contrib.qa.iss.segccl.excalls.1">
+       <para>segfault may appear to occur here</para>
+     </callout>
+     <callout arearefs="contrib.qa.iss.segccl.excalls.2">
+       <para>
+         further emulating behaviors of
+         <function>STELLA::STARTUP-KERNEL</function>
+       </para>
+     </callout>
+   </calloutlist>
+  </programlistingco>
+</example>
+
+      </simplesect> <!-- #contrib.qa.iss.segccl.chg -->
+
+      <simplesect xml:id="contrib.qa.iss.segccl.obsv">
+        <title>Further Observations</title>
+
+        <para>
+          Although this issue may be mildly concerning, such as for &pl;
+          applications within certain Common Lisp multithreaded
+          programming environments on &linux; &arm; platforms, the
+          process of tracing the issue has served as a nonetheless
+          informative endeavor.
+        </para>
+        <para>
+          As with regards to the internal structure of &pl; &stella;
+          logic system services, such as may be portably available for
+          Common Lisp applications in the Common Lisp implementation of
+          &pl;: No doubt, the analysis of this issue may have afforded
+          only a cursory, if not in some ways rudimentary study of such
+          &pl; &stella; implementation source forms as would comprise a
+          certain subset of functional forms in the Common Lisp
+          implementation of &pl;. Regardless, in a manner of
+          generalization, and with some further study about the &stella;
+          system source forms from which these implementation source
+          forms have been produced, the analysis may serve to have
+          provided some further insight about the overall design of the
+          &pl; framework.
+        </para>
+        <para>
+          As with regards to contribution of an <emphasis>interoperability
+          layer</emphasis>, towards systems management with ASDF:
+          Analysis of this issue has been facilitated with a
+          moderate adaptation &mdash; albeit, as developed principally in an
+          <foreignphrase>ad hoc</foreignphrase> and informal manner
+          &mdash; adaptation of some &pl; &stella; implementation source
+          code, such that the adapted subset of source forms may serve
+          to provide something of a minimum subset of interactive
+          functionality, while retaining such structural forms as would
+          be necessary for later initialization within a &pl;
+          application.
+        </para>
+        <para>
+          Towards documenting the design of &pl;, the internal structure
+          of &pl; logic system services may be more apparent after such
+          principally task-oriented reflection about the &pl; &stella;
+          Common Lisp implementation as may be entailed in an analysis of
+          this issue &mdash; that, as in a manner beside any particular
+          concerns as with regards to individual Common Lisp
+          implementations, <foreignphrase>per se</foreignphrase>,
+          on <emphasis>less common</emphasis> computing platforms.
+        </para>
+
+         <remark>NB See following, in this document's source text; NB GNU
+          Dia or libreoffice or ..., and UML sequence diagrams</remark>
+<!--
+A partial list of STELLA logic system components - to which, a
+STARTUP-{thing} function called from the original STELLA::STARTUP-KERNEL
+.. EXCEPTING the following, as conditional branches of program control
+flow exdcution, within STARTUP-KERNEL :
+ * at PHASE 6 : (STELLA::FINALIZE-CLASSES) (CL:SETQ *CLASS-HIERARCHY-BOOTED?* CL:T)
+ * at PHASE 8 : (FINALIZE-SLOTS) (CLEANUP-UNFINALIZED-CLASSES)
+
+NB: This needs a manner of systematic diagram. Although Modelio may not
+be very "Light Footprint," in manner, as a Java modeling tools platform
+but Modelio's SysML and UML support may serve to provide such
+functionality as could be applied, broadly, for "Diagramming PowerLoom"
+
+...
+
+STARTUP
+CL-PRIMAL
+PRIMAL
+TYPE-PREDICATES
+CONSES
+HIERARCHY
+TAXONOMIES
+LISTS
+COLLECTIONS
+ITERATORS
+LITERALS
+SYMBOLS
+CLASSES
+METHODS
+DEFCLASS
+STELLA-IN
+FOREACH
+WALK
+DYNAMIC-SLOTS
+DYNAMIC-LITERAL-SLOTS
+SYSTEMS
+CL-TRANSLATE
+MACROS
+MEMOIZE
+STREAMS
+DESCRIBE
+DEMONS
+MORE-DEMONS
+NAME-UTILITY
+MODULES
+CONTEXTS
+READ
+XML
+DATE-TIME
+DATE-TIME-PARSER
+
+Note that each corresponds to a STELLA system source file under
+pl:sources;stella;*.ste
+
+Note also, strings and other forms in STELLA::STARTUP-KERNEL and the
+numeric (effective fixnum-enum) values of STELLA::*STARTUP-TIME-PHASE*
+
+- Phase 0: (Not Labeled)
+- Phase 1: (Not Labeled)
+- Phase 2: Kernel Startup Code (NB: May be inclusive of phases 0 and 1)
+- Phase 3: Quoted Constants
+- Phase 4: Global Variables
+- Phase 5: Class Objects
+- Phase 6: Class Finalization
+- Phase 7: Method Objects
+- Phase 8: Method, Slot Finalization
+- Phase 9: Other/Non-Phased Startup Code
+
+and subsq, the ad hoc STELLA::%%STARTUP-KERNEL-INTERNAL dispatch
+
+-->
+
+      </simplesect> <!-- Further Observations - #contrib.qa.iss.segccl.obsv -->
+
+    </section> <!-- #contrib.qa.iss.segccl -->
+
+  </chapter> <!-- Known Issues - #contrib.qa.iss -->
+
+  <chapter xml:id="contrib.qa.dvmt">
+    <title>Development of the &thinkum; Contributions for &pl;</title>
+
+    <section xml:id="contrib.qa.dvmt.motv">
+      <title>General Motivations</title>
+      <remark>
+        Principal Motivations: Interoperability; Transparent change
+        management; Availability for Adaptation in Distributed
+        Development and for Distribution in Packages and Port Systems,
+        thus also for QA for same packages and ports. Secondly:
+        Management and Bundled Distribution of contributed patches, onto
+        releases of the original free/open source &pl; software system.
+      </remark>
+    </section> <!-- General Motiv. - #contrib.qa.dvmt.motv -->
+
+    <section xml:id="contrib.qa.dvmt.src">
+      <title>Structure of the Source Code Repository at &github;</title>
+
+      <section>
+        <title>&pl; Origin Release Branches</title>
+
+        <remark>These branches of the repository should be considered, in
+        effect, "Locked," as in a manner, "Read Only"</remark>
+      </section>
+
+      <section>
+        <title>Development Branches</title>
+
+        <remark>At this time, singularly the
+        <symbol>thinkum_contrib</symbol> branch
+        </remark>
+
+      </section>
+
+      <section>
+        <title>Repository Maintenance Branches</title>
+
+        <remark>In effect, the <symbol>master</symbol> branch of the
+        repository has served only in a manner of a role for repository
+        maintenance, pursuant to storage of the individual release
+        branches
+        </remark>
+      </section>
+    </section> <!-- Structure of the Source Code Repository - #contrib.qa.dvmt.src -->
+
+    <!-- T.D: Structure of the contribured ports for PL applications
+         onto FresBSD and pkgsrc port systems; Corresponding structure
+         and repository management (PPAs w/ Launchpad??) for
+         distribution to Debian and RPM-based package environments; NB
+         Debian -dev and -doc pkgs
+
+TBD: pl-mgr (??) tools cf. STELLA->impl source transform & impl mgmt (SysMgmt)
+    -->
+
+    <section xml:id="contrib.qa.dvmt.doc">
+      <title>Documentation in the &thinkum; Contributions for &pl;</title>
+
+      <remark>DocBook 5.1 schema (RELAX NG Compat model) with xinclude
+      suppt; nXML; DocBook XSL; libxslt and jadetex tools</remark>
+
+      <remark>NB: some Emacs customizations; aspell; no ostentatious
+      editing process</remark>
+
+      <remark>TBD: CSS and "Editor/Maint. Review" for DocBook XML - avl
+      at least insofar as the DocBook 4.1.2 grammar
+      https://github.com/thinkum-contrib/docbook-xmetal</remark> 
+
+      <remark>publishing - processing and bundling in ports, pkgs; ASDF
+      and XSL - general model and ext. onto DocBook, TEI P5, and NB
+      Topic Maps (ISO) and OAC ORE (LANL, Auselit) (NB: Parameterization in DocBook
+      stylesheet process); tools interface for running ASDF from
+      makefiles (NB: Attn to source files and output translations;
+      analogy of "Makefile target" cf. ASDF operation classes); 
+      adaptations for ASDF onto Makefile-oriented development
+      workflows; publishing for this documentation, at GitHub pages; no
+      ostentatious reference to TL LTP code cf. asdf-utils, asdf-mk-utils</remark>
+
+      <remark>TBD: Integrating the PL TeX documentation as core
+      reference documentation integrated into this document during
+      document processing. See also: TeX By Topic. NB TeX xrefs, TeX
+      sections and section header macros</remark>
+
+    </section> <!-- #contrib.qa.dvmt.doc -->
+
+  </chapter> <!-- #contrib.qa.dvmt -->
+
 </part>
 
 <!-- Local Variables: -->
 <!-- nxml-parent-document: "contrib.xml" -->
-<!-- ispell-buffer-session-localwords: ("Clozure" "Licence" "LinuxARM" "SIGSEGV" "STARTUP" "ccl" "contrib" "dev" "ent" "impl" "rlwrap" "startup" "stella") -->
+<!-- ispell-buffer-session-localwords: ("API" "ASDF" "Clozure" "Dia" "Interoperability" "Licence" "LinuxARM" "QA" "SIGSEGV" "STARTUP" "TBD" "UML" "ccl" "contrib" "dev" "ent" "hoc" "impl" "interoperability" "lexically" "libreoffice" "multithreaded" "portably" "rlwrap" "se" "startup" "stella" "thinkum") -->
 <!-- End: -->

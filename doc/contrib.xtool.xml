@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE preface [
 <!ENTITY document.ent SYSTEM "document.ent">
-
 %document.ent;
-
 ]>
 <part xml:id="contrib.xtool"
-         xmlns="http://docbook.org/ns/docbook"
+xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="https://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
   >
@@ -17,11 +15,62 @@
   <preface xml:id="contrib.xtool.ov">
     <title>Overview</title>
 
-    <remark>Demo Code, RDBMS and SOAP components, contrib tools for PL
-    applications - Introduction (contrib) to each</remark>
+    <remark>pl STELLA src ("*.ste"); PL STELLA implementations; PL
+    Services (NB: Not officially denoted as such) - RDBMS and
+    SOAP components for individual PL implementations; contrib
+    components - system integration for the PL Common Lisp
+    implementation w/ ASDF, etc - Introduction (contrib) to each (see
+    subsq.)</remark>
 
-    <remark>NB: Documentation abt ASDF-{for-}PL in this section of contrib.xml</remark>
+    <remark>NB: Documentation for ASDF-{for-}PL in this section of contrib.xml</remark>
   </preface>
+
+  <chapter xml:id="contrib.xtool.plcli">
+    <title>&pl; Listener</title>
+
+    <para>
+      Each implementation of &pl; provides a &pl; read/evel/print loop
+      (<acronym>REPL</acronym>)  service, such that offers an
+      interactive interface for evaluation of arbitrary &pl; &stella;
+      forms.
+
+      <remark>In some regards, this interactive <acronym>REPL</acronym>
+      may be correlted with such that has been denoted as
+      <acronym>PLI</acronym>, in some &pl; documentation.
+    </para>
+    <para>
+      Pursuant of successful initialization of &pl;
+      logic services, subsequently the <acronym>REPL</acronym> may be
+      initialized &mdash; specifically, in the <productname>Common
+      Lisp</productname> implementation &mdash;
+      by calling the function <function>stella::powerloom</function>
+
+      <example>
+        <title>Initializing the &pl; Listener</title>
+
+        <screen><prompt>CL-USER></prompt> <userinput>(stella:powerloom)</userinput>
+<computeroutput>
+    Welcome to PowerLoom 4.0.10
+
+Copyright (C) USC Information Sciences Institute, 1997-2018.
+PowerLoom is a trademark of the University of Southern California.
+PowerLoom comes with ABSOLUTELY NO WARRANTY!
+Type `(copyright)' for detailed copyright information.
+Type `(help)' for a list of available commands.
+Type `(demo)' for a list of example applications.
+Type `bye', `exit', `halt', `quit', or `stop', to exit.
+
+</computeroutput>
+<prompt>PL-USER |= </prompt></screen>
+        </example>
+
+        <remark>
+        SLIME may not function as expected, when the PL REPL is running
+        (This needs to be analyzed as a QA issue)
+        </remark>
+
+    </para>
+  </chapter>
 
   <chapter xml:id="contrib.xtool.srv">
     <title>The &pl; <acronym>SOAP</acronym> Service</title>
@@ -35,7 +84,8 @@
       cf. gsoap?, and Java)
     </remark>
 
-  </chapter
+  </chapter> <!-- The &pl; SOAP Service -->
+
 
   <chapter xml:id="contrib.xtool.l">
     <title>Lisp Tools for &pl;</title>
@@ -65,12 +115,9 @@
 
         (elib:add-file-handler "ste" 'lisp-mode)</remark>
 
-        <remark>Interactive programming wih Emacs, ...,  and a Common
-        Lisp implementation. (.. necc. Mentioning what they called "SLIME" and
-        "Swank") (NB: Emacs SLIME and
-        Common Lisp Swank as 'Products', in a manner of a sense of agile
-        DevOps, distributed across networks of arbitrary systems) (Note also: Franz Inc's
-        privatized Common Graphics Product and IDE)</remark>
+        <remark>Interactive programming with Emacs ... and any one or
+        more Common Lisp implementations. (.. Mentioning "SLIME" and
+        "Swank", also Franz' Emacs Hacks)</remark>
 
     </section>
 
@@ -82,7 +129,7 @@
 
       <remark>NB: CBSE and ASDF, pkgsrc, ...  in the DevOps environment</remark>
 
-      <remark>TBD: DBMS suppprt for the &stella; Common Lisp implentation</remark>
+      <remark>TBD: DBMS support for the &stella; Common Lisp implementation</remark>
 
       <remark>Topic: Logical Pathnames in STELLA, PL, and PL extension
       components; file <filename>PL:;translations.lisp</filename>; NB
@@ -92,54 +139,284 @@
       <section>
         <title>"Bootstrapping" for STELLA - Common Lisp</title>
 
-        <remark>NB <filename>load-stella.lisp</filename>, <filename>load-powerloom.lisp</filename></remark>
+        <remark>
+          Notice &mdash; as denoted, albeit passingly, in <xref
+          linkend="contrib.qa.iss.segccl"/> &mdash; functions such as
+          <function>STELLA::STARTUP-PRIMAL</function> and the binding of
+          the variable
+          <varname>STELLA::*STARTUP-TIME-PHASE*</varname> within the
+          lexical environment in which that and similar STELLA
+          startup-thing functions are evaluated. Notice the effective
+          (human readable) labels developed in
+          <function>STELLA::STARTUP-KERNEL</function>
+        </remark>
 
+        <remark>
+          NB <filename>load-stella.lisp</filename>,
+          <filename>load-powerloom.lisp</filename> - convenience
+          forms for top-level evaluation
+        </remark>
 
         <remark>
           Note files sources/stella/startup-system.ste (STELLA::STARTUP)
-          and 
+          and
           sources/powerloom/startup-system.ste
-          (STELLA::STARTUP-LOGIC-SYSTEM;
+          (Note also STELLA::STARTUP-LOGIC-SYSTEM;
           STELLA::STARTUP-POWERLOOM-EXTENSIONS-SYSTEM;
-          STELLA::STARTUP-POWERLOOM and STELLA::*STARTUP-TIME-PHASE* in
-          the STARTUP-POWERLOOM environment; refer to the system
+          STELLA::STARTUP-POWERLOOM et c.; refer to the system
           definition's source code); TBD: Differentiate STELLA::STARTUP
-          and STELLA::STARTUP-LOGIC-SYSTEM; note other 
-          startup-system.ste files in the PL source tree -
-          ./sources/logic/startup-system.ste, 
+          (Top-level form cf. make-stella.lisp)
+          and STELLA::STARTUP-LOGIC-SYSTEM (example of a modular PL system service)
+        </remark>
+
+        <remark>
+          note other  startup-system.ste files in the PL source tree -
+          ./sources/logic/startup-system.ste,
           ./sources/logic/extensions/startup-system.ste, ....
         </remark>
 
         <remark>
-          NB Runtime Parameters for STELLA bootstrap (effects during
-          source
-          synthesis, compile, and load)
+          Note Runtime "Convenience Parameters" for STELLA bootstrap,
+          and effects during compile and load
+          phases, if not also during  source synthesis &mdash; e.g
           <varname>CL-USER::*LOAD-CL-STRUCT-STELLA?*</varname> (and the
           STELLA *.slisp filesystem),
           <varname>CL-USER::*STELLA-VERBOSE?*</varname>;
-          <filename>load-stella.lisp</filename> and <varname>CL-USER::*STELLA-COMPILER-OPTIMIZATION*</varname>
+          <filename>load-stella.lisp</filename> and
+          <varname>CL-USER::*STELLA-COMPILER-OPTIMIZATION*</varname>
         </remark>
 
         <remark>
           NB: Threads; Sockets (PL impl. in Common Lisp; relevance for
           "Portable code," as avl via the PL Common Lisp impl, avl to PL
-          applications) 
+          applications); Existing implementation support in PL
         </remark>
 
-        <remark>NB: Segfaults when loading load-stella.lisp with CCL (armcl
-        xf 1.11-r16635 and 1.12-dev, Linux)</remark>
-
-        <remark>refer to ccl_segfault_notes.md (local file)</remark>
+        <remark>
+          NB: Segfaults when loading load-stella.lisp with CCL (armcl
+          xf 1.11-r16635 and 1.12-dev, Linux). Refer to
+          <xref linkend="contrib.qa.iss.segccl"/> and local source code
+        </remark>
 
       </section>
 
     </section>
 
+  </chapter> <!-- Lisp Tools for &pl; -->
 
-  </chapter>
+  <chapter xml:id="contrib.xtool.asdpl">
+    <title>
+      &asdf; Interoperability for &pl;
+    </title>
+
+    <section>
+      <title>Notes</title>
+
+      <remark>
+        The <phrase>*features*</phrase> symbol,
+        <phrase>:ASDF-PL</phrase>. Description of updates for
+        facilitating interoperability with ASDF - synopsis: Do not
+        initialize services or load files when that
+        feature is enabled within the reader environment.
+      </remark>
+
+
+      <remark>Portable logical pathnames and &asdf; interoperability for &pl;</remark>
+
+      <remark>
+        Class STELLA-LISP-SOURCE-FILE (ASDF source-component class); STELLA
+        *.lisp and *.slisp filesystems
+      </remark>
+
+      <remark>
+        Class STELLA-C++-SOURCE-FILE (...)
+      </remark>
+
+      <remark>
+        Class STELLA-C++-HEADER-FILE (...) (TBD: STELLA-ELF-LIBRARY/...;
+        pkg-config integr; toolchain interop onto LLVM, GCC)
+      </remark>
+
+      <remark>
+        Class STELLA-JAVA-SOURCE-FILE (...) (TBD: STELLA-JAR)
+      </remark>
+
+      <remark>
+        Class STELLA-SYSTEM (ASDF module, and ASDF-for-STELLA component
+        wrapper class - ASDF) for STELLA system definitions (but not
+        addressing all *.ste files. See also: stella-source-file)
+      </remark>
+
+      <remark>
+        Class STELLA-KB-MODULE (ASDF module and ASDF-for-STELLA component
+        wrapper class) for STELLA knowledgebase module definitions (and
+        application build-time/run-time operations onto *.plm files)
+        (NB: Source files in the PowerLoom *.plm format should
+        not require any transformation, for evaluation within
+        normative PowerLoom systems)
+      </remark>
+
+      <remark>
+        Class STELLA-SOURCE-FILE (source file wrapper class - ASDF) for STELLA
+        system source files, i.e *.ste files; SOURCE-TRANSFORM-OP for ASDF
+      </remark>
+
+      <remark>Volatility of STELLA "main tree" source files under default
+      configuration for STELLA pathnames vis a vis SOURCE-TRANSFORM-OP</remark>
+
+      <remark>Licensing and SOURCE-TRANSFORM-OP (Note the
+      :copyright-header argument for the STELLA::DEFSYSTEM cmd, TBD:
+      Parameterization in PL)</remark>
+
+      <remark>Non-Common Lisp Systems (i.e C++ or Java, and correlated
+      compiler/application toolchains) and SOURCE-TRANSFORM-OP</remark>
+
+    </section>
+
+    <section>
+      <title>System Definitions in &stella;</title>
+
+      <remark>
+        Perhaps in no particular irony, it may be that the
+        high-level STELLA functions STELLA::DEFSYSTEM and
+        STELLA::DEFINE-SYSTEM have not been used anywhere within the PL
+        STELLA boostrap code, or anywhere else in
+        PowerLoom. These forms should be documented in this guide,
+        regardless
+      </remark>
+
+      <remark>
+        STELLA::MAKE-SYSTEM itself is called directly -- quite a number
+        of times -- throughout the PL Common Lisp implementation code
+      </remark>
+    </section>
+
+  </chapter> <!-- &asdf; Interoperability for &pl; -->
+
+  <reference xml:id="contrib.xtool.sys">
+    <title>System Definition Dictionary</title>
+
+    <!-- <xi:include href="refx/stella.defsystem.fn.xml"/> -->
+    <refentry xml:id="ref.stella.defsystem.fn">
+      <refnamediv>
+        <refname><function>STELLA::DEFSYSTEM</function></refname>
+        <refpurpose>Define a system of files that collectively define
+        a &stella; application.</refpurpose>
+        <refclass>&stella; Commands</refclass>
+      </refnamediv>
+
+      <refsect1>
+        <title>See Also</title>
+        <simplelist>
+          <member><xref linkend="ref.stella.make-system.fn"/></member>
+        </simplelist>
+      </refsect1>
+
+      <refsect1 xml:id="ref.stella.defsystem.fn.src">
+        <title>Source Reference</title>
+
+        <para>
+          <function>STELLA::DEFSYSTEM</function> is defined in the
+          &stella; source file, <filename>pl:sources;stella;systems.ste</filename>
+        </para>
+      </refsect1>
+
+    </refentry> <!-- @id="ref.stella.defsystem.fn" -->
+
+
+    <!-- <xi:include href="refx/stella.define-system.fn.xml"/> -->
+    <refentry xml:id="ref.stella.define-system.fn">
+      <refnamediv>
+        <refname><function>STELLA::DEFINE-SYSTEM</function></refname>
+        <refpurpose>Define a &stella; System</refpurpose>
+        <refclass>&stella; Functions</refclass>
+      </refnamediv>
+
+
+      <refsect1>
+        <title>See Also</title>
+        <simplelist>
+          <member><xref linkend="ref.stella.defsystem.fn"/></member>
+          <member><xref linkend="ref.stella.make-system.fn"/></member>
+        </simplelist>
+      </refsect1>
+
+      <refsect1 xml:id="ref.stella.define-system.fn.src">
+        <title>Source Reference</title>
+
+        <para>
+          <function>STELLA::DEFINE-SYSTEM</function> is defined in the
+          &stella; source file, <filename>pl:sources;stella;systems.ste</filename>
+        </para>
+      </refsect1>
+
+    </refentry> <!-- @id="ref.stella.define-system.fn" -->
+
+
+    <!-- <xi:include href="refx/stella.make-system.fn.xml"/> -->
+    <refentry xml:id="ref.stella.make-system.fn">
+      <refnamediv>
+        <refname><function>STELLA::MAKE-SYSTEM</function></refname>
+        <refpurpose>Transform a system of &stella; source files into a
+        system of implementation source files</refpurpose>
+        <refclass>&stella; Commands</refclass>
+      </refnamediv>
+
+      <refsect1>
+        <title>See Also</title>
+        <simplelist>
+          <member><xref linkend="ref.stella.defsystem.fn"/></member>
+        </simplelist>
+
+        <remark>NB: IDL in Powerloom</remark>
+
+      </refsect1>
+
+      <refsect1 xml:id="ref.stella.make-system.fn.src">
+        <title>Source Reference</title>
+
+        <para>
+          <function>STELLA::MAKE-SYSTEM</function>
+          is defined in the  &stella; source file,
+          <filename>pl:sources;stella;systems.ste</filename>
+        </para>
+      </refsect1>
+
+    </refentry> <!-- @id="ref.stella.make-system.fn" -->
+
+
+    <!-- <xi:include href="refx/stella.get-system-definition.fn.xml"/> -->
+    <refentry xml:id="ref.stella.get-system-definition.fn">
+      <refnamediv>
+        <refname><function>STELLA::GET-SYSTEM-DEFINITION</function></refname>
+        <refpurpose>Locate the system definition for a provided system name</refpurpose>
+        <refclass>&stella; Functions</refclass>
+      </refnamediv>
+
+      <refsect1>
+        <title>See Also</title>
+        <simplelist>
+          <member><xref linkend="ref.stella.defsystem.fn"/></member>
+          <member><xref linkend="ref.stella.define-system.fn"/></member>
+        </simplelist>
+      </refsect1>
+
+      <refsect1 xml:id="ref.stella.get-system-definition.fn.src">
+        <title>Source Reference</title>
+
+        <para>
+          <function>STELLA::GET-SYSTEM-DEFINITION</function> is defined in the
+          &stella; source file, <filename>pl:sources;stella;systems.ste</filename>
+        </para>
+      </refsect1>
+
+    </refentry> <!-- @id="ref.stella.get-system-definition.fn" -->
+
+  </reference> <!-- System Definition Dictionary -->
+
 </part>
 
 <!-- Local Variables: -->
 <!-- nxml-parent-document: "contrib.xml" -->
-<!-- ispell-buffer-session-localwords: ("ent") -->
+<!-- ispell-buffer-session-localwords: ("IDL" "Parameterization" "boostrap" "cmd" "evalaution" "filesystem" "filesystems" "gsoap" "impl" "init" "integr" "interop" "interoperability" "knowledgebase" "pathname" "pathnames" "pkgsrc" "plm" "portably" "powerloom" "pre" "runtime" "slisp" "startup" "ste" "stella" "struct" "toolchain" "toolchains" "toolchains" "vis" "vis" "xml" "xml") -->
 <!-- End: -->

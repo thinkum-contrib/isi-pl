@@ -70,8 +70,8 @@
     <para>
       <simplelist>
         <member>&pl.h;</member>
-        <member><acronym>OKBC</acronym></member>
-        <member><productname>Loom&#xAE;</productname></member>
+        <member>&okbc.h;</member>
+        <member>&loom.h;</member>
         <member><productname>KL-ONE</productname></member>
       </simplelist>
     </para>
