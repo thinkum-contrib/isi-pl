@@ -135,7 +135,7 @@ in `*STARTUP-TIME-PHASES*'.  999 means no phasing at all.")
 
 (CL:DEFUN CURRENT-STARTUP-TIME-PHASE? (PHASE)
   (CL:DECLARE (CL:TYPE CL:FIXNUM PHASE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PHASE CL:FIXNUM)
   (CL:RETURN-FROM CURRENT-STARTUP-TIME-PHASE? (CL:OR (CL:= *STARTUP-TIME-PHASE* 999) (CL:= PHASE *STARTUP-TIME-PHASE*))))
 
@@ -159,7 +159,7 @@ in `*STARTUP-TIME-PHASES*'.  999 means no phasing at all.")
 ;; NB: This may be overwritten when the system is rebuilt from STELLA
 ;; sources
 ;;
-;; see also: startup.ste
+;; see also: startup.ste; all startup-time-progn in *.ste cf. STARTUP-STARTUP (e.g :globals)
 ;;
 (cl:defun startup-kernel-internal (phase)
   (CL:DECLARE (CL:TYPE CL:FIXNUM PHASE))
@@ -203,7 +203,9 @@ in `*STARTUP-TIME-PHASES*'.  999 means no phasing at all.")
 
 (cl:defun startup-kernel-finalize-classes (cl:&optional (phase 6))
           (cl:let ((*STARTUP-TIME-PHASE* phase))
-                  (FINALIZE-CLASSES) (CL:SETQ *CLASS-HIERARCHY-BOOTED?* CL:T)))
+                  (FINALIZE-CLASSES)
+                  ;; NB: Following variable is defined via type-predicates.lisp [spchamp]
+                  (CL:SETQ *CLASS-HIERARCHY-BOOTED?* CL:T)))
 
 (cl:defun startup-kernel-finalize-slots (cl:&optional (phase 8))
           (cl:let ((*STARTUP-TIME-PHASE* phase))
@@ -228,10 +230,10 @@ in `*STARTUP-TIME-PHASES*'.  999 means no phasing at all.")
        (CL:COND
          ((CL:= PHASE 6)
           (startup-kernel-finalize-classes)
-          (CL:GO :CONTINUE))
+          #-(and) (CL:GO :CONTINUE))
          ((CL:= PHASE 8)
           (startup-kernel-finalize-slots)
-          (CL:GO :CONTINUE))
+          #-(and)(CL:GO :CONTINUE))
          (cl:t
           (startup-kernel-internal phase)))
      :CONTINUE)
@@ -282,9 +284,9 @@ in `*STARTUP-TIME-PHASES*'.  999 means no phasing at all.")
 (CL:DEFUN INTERPRET-COMMAND-LINE-ARGUMENTS (COUNT ARGUMENTS)
   "Old name for `process-command-line-arguments' (which see)."
   (CL:DECLARE (CL:TYPE CL:FIXNUM COUNT) (CL:TYPE CL:SIMPLE-VECTOR ARGUMENTS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE COUNT CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARGUMENTS CL:SIMPLE-VECTOR)
   (PROCESS-COMMAND-LINE-ARGUMENTS COUNT ARGUMENTS KWD-STARTUP-WARN)
   :VOID)
@@ -294,9 +296,9 @@ in `*STARTUP-TIME-PHASES*'.  999 means no phasing at all.")
 (CL:DEFUN CONSIFY-COMMAND-LINE-ARGUMENTS (COUNT ARGUMENTS)
   "Convert `count' command line `arguments' into a CONS list."
   (CL:DECLARE (CL:TYPE CL:FIXNUM COUNT) (CL:TYPE CL:SIMPLE-VECTOR ARGUMENTS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE COUNT CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARGUMENTS CL:SIMPLE-VECTOR)
   (CL:LET* ((RESULT NIL))
    (CL:LET* ((I NULL-INTEGER) (ITER-000 0) (UPPER-BOUND-000 (CL:1- COUNT)) (COLLECT-000 NULL)) (CL:DECLARE (CL:TYPE CL:FIXNUM I ITER-000 UPPER-BOUND-000))
