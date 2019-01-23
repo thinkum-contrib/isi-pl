@@ -75,19 +75,19 @@
 Returns an object representing the returned XML-encoded answer from
 the server."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING HOST QUERY-ID TASK-ID SUBTASK-ID DATABASE PARAMETERS) (CL:TYPE CL:FIXNUM PORT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE HOST CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PORT CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE QUERY-ID CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TASK-ID CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SUBTASK-ID CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DATABASE CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PARAMETERS CL:SIMPLE-STRING)
   (CL:LET* ((*PRINTREADABLY?* CL:NIL)) (CL:DECLARE (CL:SPECIAL *PRINTREADABLY?*))
    (CL:LET* ((URL (NEW-OUTPUT-STRING-STREAM)) (REPLY NULL)) (%%PRINT-STREAM (%NATIVE-STREAM URL) "/agent/runner?plan=")
@@ -280,7 +280,7 @@ the server."
 
 (CL:DEFUN START-FETCH-EDB-GATEWAY (PORT)
   (CL:DECLARE (CL:TYPE CL:FIXNUM PORT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PORT CL:FIXNUM)
   (CL:LET*
    ((LISPFORMS "#+:aserve
@@ -387,7 +387,7 @@ the database table `table-name' and uses it to generate an assertion
 for an appropriate relation for inclusion in `module'.  The database
 meta information is found in `db-module'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING TABLE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TABLE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((TABLE-RELATION (GET-TABLE-RELATION TABLE-NAME DB-MODULE)) (ASSERTIONS NIL))
    (CL:WHEN
@@ -428,17 +428,17 @@ is made to a remote http query server running on `host' port number `port'.
 Returns a set of assertions for `target-module' using the information in `db-module'
 to find the appropriate relations."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING HOST TASK-ID SUBTASK-ID DATABASE PARAMETER-VALUE) (CL:TYPE CL:FIXNUM PORT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE HOST CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PORT CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TASK-ID CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SUBTASK-ID CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DATABASE CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PARAMETER-VALUE CL:SIMPLE-STRING)
   (CL:LET*
    ((DB-TABLE (LOOKUP-STRING-VALUE (PLI::GET-RELATION "QUERY-TABLE-NAME" DB-MODULE NULL) FETCH-QUERY DB-MODULE))

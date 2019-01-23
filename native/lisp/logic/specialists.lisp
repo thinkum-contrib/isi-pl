@@ -367,9 +367,9 @@ keyword indicating success or failure of a proof."
 
 (CL:DEFUN NEW-SUBSTRING-POSITION-ITERATOR (SUPER-STRING SUB-STRING)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SUPER-STRING SUB-STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SUPER-STRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SUB-STRING CL:SIMPLE-STRING)
   (CL:LET* ((SELF NULL)) (CL:SETQ SELF (CL:MAKE-INSTANCE (CL:QUOTE SUBSTRING-POSITION-ITERATOR))) (CL:SETF (%SUPER-STRING SELF) SUPER-STRING)
    (CL:SETF (%SUB-STRING SELF) SUB-STRING) (CL:SETF (%FIRST-ITERATION? SELF) CL:T) (CL:SETF (%VALUE SELF) NULL)
@@ -418,9 +418,9 @@ keyword indicating success or failure of a proof."
 
 (CL:DEFUN ARGUMENT-TARGET-TYPE (PARAMETERTYPES NINPUTTYPES ARGINDEX)
   (CL:DECLARE (CL:TYPE CL:FIXNUM NINPUTTYPES ARGINDEX))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NINPUTTYPES CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARGINDEX CL:FIXNUM)
   (CL:LET* ((TARGETTYPE (NTH PARAMETERTYPES (MIN ARGINDEX (CL:1- NINPUTTYPES)))))
    (CL:COND
@@ -2317,7 +2317,7 @@ specialists.")
 
 (CL:DEFUN HELP-PROJECT-NTH-COLUMN (N TUPLELIST)
   (CL:DECLARE (CL:TYPE CL:FIXNUM N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:FIXNUM)
   (CL:WHEN (CL:EQ TUPLELIST NULL) (CL:RETURN-FROM HELP-PROJECT-NTH-COLUMN NULL))
   (CL:LET* ((PROJECTEDLIST (NEW-LIST)) (ITEM NULL))
@@ -2490,7 +2490,7 @@ specialists.")
 and the underlying programming languages supports such lookups.  Uses the signature
 of a specialist function."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NATIVE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NATIVE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((CODE NULL)) (cl:setq code (cl:symbol-function (cl:read-from-string native-name)))
    (CL:WHEN (CL:EQ CODE NULL)
@@ -2508,7 +2508,7 @@ in `code' needs to accept a CONTROL-FRAME and KEYWORD as arguments and
 return a KEYWORD.  Side effects on elements of the proposition in the
 control frame can be used to bind and thus return values."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (DEFINE-FUNCTION-OBJECT (CONCATENATE " " NAME) (CONCATENATE "(DEFUN (" NAME " KEYWORD) ((FRAME CONTROL-FRAME) (LASTMOVE KEYWORD)))") CODE NULL))
 
@@ -2519,9 +2519,9 @@ control frame can be used to bind and thus return values."
 for the particular programming language in question.  Use of this command makes
 the resulting code or knowledge bases non-portable to other target languages."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STELLA-NAME NATIVE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STELLA-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NATIVE-NAME CL:SIMPLE-STRING)
   (REGISTER-SPECIALIST-FUNCTION STELLA-NAME (LOOKUP-NATIVE-SPECIALIST NATIVE-NAME)))
 
@@ -2544,9 +2544,9 @@ the resulting code or knowledge bases non-portable to other target languages."
 and the underlying programming languages supports such lookups.  It is looked up
 using the signature of a computation function supported by the computation specialist."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NATIVE-NAME) (CL:TYPE CL:FIXNUM ARITY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NATIVE-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARITY CL:FIXNUM)
   (CL:LET* ((CODE NULL)) (cl:setq code (cl:symbol-function (cl:read-from-string native-name)))
    (CL:WHEN (CL:EQ CODE NULL)
@@ -2565,9 +2565,9 @@ accept ARITY Stella OBJECTs as arguments and return a Stella OBJECT
 suitable for PowerLoom use.  (These are generally LOGIC-OBJECTs and the
 literal wrappers FLOAT-WRAPPER, INTEGER-WRAPPER and STRING-WRAPPER.)"
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME) (CL:TYPE CL:FIXNUM ARITY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARITY CL:FIXNUM)
   (CL:LET* ((DEFINITION-STRING "(DEFUN (")) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING DEFINITION-STRING))
    (CL:SETQ DEFINITION-STRING (CONCATENATE DEFINITION-STRING NAME " OBJECT) ("))
@@ -2584,11 +2584,11 @@ literal wrappers FLOAT-WRAPPER, INTEGER-WRAPPER and STRING-WRAPPER.)"
 for the particular programming language in question.  Use of this command makes
 the resulting code or knowledge bases non-portable to other target languages."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STELLA-NAME NATIVE-NAME) (CL:TYPE CL:FIXNUM ARITY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STELLA-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NATIVE-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARITY CL:FIXNUM)
   (REGISTER-COMPUTATION-FUNCTION STELLA-NAME (LOOKUP-NATIVE-COMPUTATION NATIVE-NAME ARITY) ARITY))
 

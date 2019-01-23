@@ -115,7 +115,7 @@ that URL as specified below.  Missing elements return the empty string \"\".
 
 References:  http://www.gbiv.com/protocols/uri/rfc/rfc3986.html"
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING URL))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE URL CL:SIMPLE-STRING)
   (CL:LET*
    ((FIELD-START 0) (FIELD-END (STRING-SEARCH URL (MAKE-STRING 1 #\:) 0)) (PROTOCOL "") (USER-INFORMATION "") (DOMAIN-NAME "") (PORT-NUMBER "") (PATH "") (QUERY "")
@@ -154,19 +154,19 @@ References:  http://www.gbiv.com/protocols/uri/rfc/rfc3986.html"
   "The inverse to `decompose-internet-url'.  Builds a URL string from the supplied
 components.  Undefined portions can be supplied as NULL or the empty string."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PROTOCOL USERINFO HOST PATH QUERY FRAGMENT) (CL:TYPE CL:FIXNUM PORT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PROTOCOL CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE USERINFO CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE HOST CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PORT CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE QUERY CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FRAGMENT CL:SIMPLE-STRING)
   (CL:LET* ((URL (NEW-OUTPUT-STRING-STREAM))) (CL:WHEN (CL:NOT (BLANK-STRING? PROTOCOL)) (%%PRINT-STREAM (%NATIVE-STREAM URL) PROTOCOL "://"))
    (CL:WHEN (CL:NOT (BLANK-STRING? USERINFO)) (%%PRINT-STREAM (%NATIVE-STREAM URL) USERINFO "@"))
@@ -182,7 +182,7 @@ components.  Undefined portions can be supplied as NULL or the empty string."
 (CL:DEFUN URL-PATH-TO-FILENAME (PATH)
   "Transform a URL `path' into a valid native filename for the local OS."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PATH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
   (CL:LET* ((SEPARATOR (DIRECTORY-SEPARATOR)))
    (CL:IF (CL:EQL SEPARATOR #\/) (UNESCAPE-URL-STRING PATH)
@@ -203,7 +203,7 @@ components.  Undefined portions can be supplied as NULL or the empty string."
 
 (CL:DEFUN NEW-HTTP-EXCEPTION (MESSAGE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING MESSAGE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MESSAGE CL:SIMPLE-STRING)
   (CL:LET* ((SELF NULL)) (CL:SETQ SELF (CL:MAKE-CONDITION (CL:QUOTE HTTP-EXCEPTION) *CONDITION-MESSAGE-KEYWORD* (REPLACE-SUBSTRINGS MESSAGE "~~" "~")))
    (CL:SETF (%ERROR-CODE SELF) NULL-INTEGER) SELF))
@@ -223,7 +223,7 @@ line is inserted into `fields' fields with the empty string key \"\"
 This is a low-level utility routine that can be used to build custom
 message parsing code."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING LINE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE LINE CL:SIMPLE-STRING)
   (CL:LET* ((SPACE1 (POSITION LINE #\  0)) (SPACE2 (CL:IF (CL:= SPACE1 NULL-INTEGER) NULL-INTEGER (POSITION LINE #\  (CL:1+ SPACE1)))))
    (CL:DECLARE (CL:TYPE CL:FIXNUM SPACE1 SPACE2))
@@ -241,7 +241,7 @@ Each such line is inserted into `fields' as keyword value pairs.
 This is a low-level utility routine that can be used to build custom
 message parsing code."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING LINE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE LINE CL:SIMPLE-STRING)
   (CL:LET* ((COLON-POSITION (POSITION LINE #\: 0))) (CL:DECLARE (CL:TYPE CL:FIXNUM COLON-POSITION))
    (CL:IF (CL:= COLON-POSITION NULL-INTEGER)
@@ -309,9 +309,9 @@ The request is sent to `url-path' at `host'.  The `stream' must be a TCP-stream
 that is connected to `host' at the appropriate port.  `content' can be a string or
 an input stream to read from."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING HOST URL-PATH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE HOST CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE URL-PATH CL:SIMPLE-STRING)
   (CL:LET* ((CONTENTLENGTH 0))
    (%%PRINT-STREAM (%NATIVE-STREAM STREAM) (%SYMBOL-NAME METHOD) " " URL-PATH " HTTP/1.0
@@ -348,11 +348,11 @@ an input stream to read from."
 standard http servers is 80.  Returns the body of the reply message as a stream,
 if successful.  Otherwise an HTTP-EXCEPTION is signaled."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING HOST URL-PATH) (CL:TYPE CL:FIXNUM PORT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE HOST CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PORT CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE URL-PATH CL:SIMPLE-STRING)
   (CL:LET* ((RETURN-HEADERS (NEW-KEY-VALUE-LIST)))
    (CL:LET* ((*PRINTREADABLY?* CL:NIL)) (CL:DECLARE (CL:SPECIAL *PRINTREADABLY?*))
@@ -374,11 +374,11 @@ if successful.  Otherwise an HTTP-EXCEPTION is signaled."
   "Just like `http-post-data' (which see) but returns the reply as a string.
 CAUTION: String conversion will not do the right thing for binary data in Java."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING HOST URL-PATH) (CL:TYPE CL:FIXNUM PORT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE HOST CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PORT CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE URL-PATH CL:SIMPLE-STRING)
   (CL:LET* ((STREAM (HTTP-POST-DATA HOST PORT URL-PATH HEADERS CONTENT)) (DATA (STREAM-TO-STRING STREAM))) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING DATA))
    (CLOSE-STREAM STREAM) DATA))
@@ -391,11 +391,11 @@ The port value for standard http servers is 80.  If successful, returns the body
 of the web message as a stream.  The headers from the reply message will be set
 in `return-headers' if not null'.  If an error occurs an HTTP-EXCEPTION is signaled."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING HOST URL-PATH) (CL:TYPE CL:FIXNUM PORT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE HOST CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PORT CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE URL-PATH CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ RETURN-HEADERS NULL) (CL:SETQ RETURN-HEADERS (NEW-KEY-VALUE-LIST)))
   (CL:LET* ((*PRINTREADABLY?* CL:NIL)) (CL:DECLARE (CL:SPECIAL *PRINTREADABLY?*))
@@ -416,11 +416,11 @@ in `return-headers' if not null'.  If an error occurs an HTTP-EXCEPTION is signa
   "Just like `http-get-data' (which see) but returns the result as a string.
 CAUTION: String conversion will not do the right thing for binary data in Java."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING HOST URL-PATH) (CL:TYPE CL:FIXNUM PORT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE HOST CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PORT CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE URL-PATH CL:SIMPLE-STRING)
   (CL:LET* ((STREAM (HTTP-GET-DATA HOST PORT URL-PATH RETURN-HEADERS)) (DATA (STREAM-TO-STRING STREAM))) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING DATA))
    (CLOSE-STREAM STREAM) DATA))
@@ -432,7 +432,7 @@ CAUTION: String conversion will not do the right thing for binary data in Java."
 Currently only http: with no user name or password and file: urls on the local
 host with absolute pathnames are supported."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING URL))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE URL CL:SIMPLE-STRING)
   (CL:LET*
    ((PROTOCOL STELLA::NULL-STRING) (USER-INFO STELLA::NULL-STRING) (HOST STELLA::NULL-STRING) (PORT STELLA::NULL-STRING) (PATH STELLA::NULL-STRING)
@@ -486,9 +486,9 @@ Syntax is `(WITH-INPUT-URL (var url) body+)'."
 (CL:DEFUN %DOWNLOAD-URL (URL FILE)
   "Download the data at `url' and save it to `file'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING URL FILE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE URL CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILE CL:SIMPLE-STRING)
   (CL:LET* ((OUT NULL))
    (CL:UNWIND-PROTECT
@@ -514,7 +514,7 @@ Syntax is `(WITH-INPUT-URL (var url) body+)'."
   "Download the data at `url' and return it as a string.
 CAUTION: String conversion will not do the right thing for binary data in Java."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING URL))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE URL CL:SIMPLE-STRING)
   (CL:LET* ((RESULT STELLA::NULL-STRING)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING RESULT))
    (CL:LET* ((IN NULL))
@@ -539,7 +539,7 @@ CAUTION: String conversion will not do the right thing for binary data in Java."
 (CL:DEFUN %DO-HTTP-REQUEST (URI OPTIONS)
   "Send an http request to `uri' and return a string representing the result."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING URI))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE URI CL:SIMPLE-STRING)
   (CL:LET*
    ((PROPLIST (VET-OPTIONS OPTIONS (GET-QUOTED-TREE "((:METHOD :HEADERS :CONTENT) \"/HTTP\")" "/HTTP")))

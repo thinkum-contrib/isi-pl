@@ -127,7 +127,7 @@ a server instance running, it will be stopped first.  If `port' is <= 0 or
 NULL, use the value of `*default-http-server-port*'.  Returns the listening
 address of the started server instance."
   (CL:DECLARE (CL:TYPE CL:FIXNUM PORT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PORT CL:FIXNUM)
   (CL:WHEN (CL:EQ *HTTP-SERVER-IMPLEMENTATION* NULL) (AUTOLOAD "HTTP-SERVER-IMPL-SYSTEM" (GET-DEFAULT-HTTP-SERVER-IMPL CL:T) NULL CL:NIL)
    (CL:WHEN (CL:EQ *HTTP-SERVER-IMPLEMENTATION* NULL) (CL:ERROR (NEW-STELLA-EXCEPTION "start-http-server: no HTTP server implementation loaded"))))
@@ -154,7 +154,7 @@ address of the started server instance."
 
 (CL:DEFMETHOD START-HTTP-SERVER-IMPL ((SERVER HTTP-SERVER) PORT)
   (CL:DECLARE (CL:TYPE CL:FIXNUM PORT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PORT CL:FIXNUM)
   (CL:SETQ PORT PORT)
   (CL:LET* ((STREAM-000 (NEW-OUTPUT-STRING-STREAM))) (%%PRINT-STREAM (%NATIVE-STREAM STREAM-000) "start-http-server-impl: not implemented on `" SERVER "'")
@@ -214,7 +214,7 @@ If there are multiple values, an arbitrary one will be returned."
 (CL:DEFUN SET-REPLY-HEADER-VALUE (XCHG KEY VALUE)
   "Set the value associated with `key' in `xchg's reply headers to `value'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING VALUE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VALUE CL:SIMPLE-STRING)
   (SET-REPLY-HEADER-VALUE-IMPL *HTTP-SERVER-IMPLEMENTATION* XCHG KEY VALUE))
 
@@ -222,7 +222,7 @@ If there are multiple values, an arbitrary one will be returned."
 
 (CL:DEFMETHOD SET-REPLY-HEADER-VALUE-IMPL ((SERVER HTTP-SERVER) XCHG KEY VALUE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING VALUE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VALUE CL:SIMPLE-STRING)
   (CL:PROGN (CL:SETQ XCHG XCHG) (CL:SETQ KEY KEY) (CL:SETQ VALUE VALUE))
   (CL:LET* ((STREAM-000 (NEW-OUTPUT-STRING-STREAM))) (%%PRINT-STREAM (%NATIVE-STREAM STREAM-000) "set-reply-header-value-impl: not implemented on `" SERVER "'")
@@ -406,7 +406,7 @@ Note that different implementations have slightly different behavior."
 
 (CL:DEFUN HTTP-SUCCESS-RESPONSE-CODE? (CODE)
   (CL:DECLARE (CL:TYPE CL:FIXNUM CODE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CODE CL:FIXNUM)
   (CL:AND (CL:>= CODE 200) (CL:<= CODE 205)))
 
@@ -427,7 +427,7 @@ Note that different implementations have slightly different behavior."
 (CL:DECLAIM (CL:FTYPE (CL:FUNCTION (CL:SIMPLE-STRING) CL:SIMPLE-STRING) GET-HTTP-MIME-TYPE-FROM-EXTENSION))
 (CL:DEFUN GET-HTTP-MIME-TYPE-FROM-EXTENSION (EXTENSION)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING EXTENSION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE EXTENSION CL:SIMPLE-STRING)
   (CL:LET* ((ENTRY NULL) (ITER-000 *HTTP-MIME-TYPES*))
    (CL:LOOP WHILE (CL:NOT (CL:EQ ITER-000 NIL)) DO (CL:SETQ ENTRY (%%VALUE ITER-000))
@@ -444,7 +444,7 @@ Note that different implementations have slightly different behavior."
 (CL:DECLAIM (CL:FTYPE (CL:FUNCTION (CL:SIMPLE-STRING) CL:SIMPLE-STRING) GUESS-FILE-CONTENT-TYPE))
 (CL:DEFUN GUESS-FILE-CONTENT-TYPE (FILE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING FILE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILE CL:SIMPLE-STRING)
   (GET-HTTP-MIME-TYPE-FROM-EXTENSION (SUBSEQUENCE (STRING-DOWNCASE (FILE-EXTENSION FILE)) 1 NULL-INTEGER)))
 
@@ -454,7 +454,7 @@ Note that different implementations have slightly different behavior."
   "Given the `arguments' following the `?' character in a URL, split them at
 `separator' and return them as a list of properly decoded strings."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING ARGUMENTS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARGUMENTS CL:SIMPLE-STRING)
   (CL:WHEN (BLANK-STRING? ARGUMENTS) (CL:RETURN-FROM PARSE-AND-DECODE-URL-ARGUMENTS NIL))
   (CL:LET* ((RESULT (SPLIT-STRING ARGUMENTS SEPARATOR)) (CURSOR RESULT))
@@ -470,7 +470,7 @@ a key-value-list.  NOTE: values will not be trimmed and empty values will be rep
 string rather than NULL.  Also, if the same input name occurs more than once, only the value of the
 last input will be recorded in the resulting key-value-list."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING VALUES))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VALUES CL:SIMPLE-STRING)
   (CL:LET* ((RESULT (NEW-KEY-VALUE-LIST)) (BAREENTRY STELLA::NULL-STRING) (SPLIT 0)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING BAREENTRY) (CL:TYPE CL:FIXNUM SPLIT))
    (CL:SETQ VALUES (SUBSTITUTE VALUES #\  #\+))
@@ -492,7 +492,7 @@ string rather than NULL.  Keys will be inserted into the result in the order the
 If they are non-unique, multiple entries per key will result which can be iterated over, however,
 standard `lookup' calls will return the value of the first key only."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING VALUES))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VALUES CL:SIMPLE-STRING)
   (CL:LET* ((RESULT NIL) (BAREENTRY STELLA::NULL-STRING) (SPLIT 0)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING BAREENTRY) (CL:TYPE CL:FIXNUM SPLIT))
    (CL:SETQ VALUES (SUBSTITUTE VALUES #\  #\+))
@@ -521,7 +521,7 @@ standard `lookup' calls will return the value of the first key only."
   "Set the document root to `root'.  Important: this needs to be
 called before any handlers are published, otherwise it won't be effective."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING ROOT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ROOT CL:SIMPLE-STRING)
   (CL:SETQ *HTTP-DOCUMENT-ROOT* ROOT))
 
@@ -535,7 +535,7 @@ called before any handlers are published, otherwise it won't be effective."
   "Simple default handler lookup implementation.  Return the registered
 handler whose path is identical to `path' or is the longest prefix of `path'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PATH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ *HTTP-SERVER-IMPLEMENTATION* NULL) (CL:ERROR (NEW-STELLA-EXCEPTION "lookup-handler: no HTTP server implementation loaded")))
   (CL:LET* ((HANDLER (LOOKUP *HTTP-HANDLER-REGISTRY* (WRAP-STRING PATH))) (HANDLERPATH STELLA::NULL-STRING) (HANDLERPATHLENGTH 0))
@@ -590,9 +590,9 @@ This is run every time a server is started with `start-http-server'."
 If :content-type is supplied, it will be used when serving `file', otherwise, a content
 type is guessed from `file's extension."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PATH FILE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILE CL:SIMPLE-STRING)
   (CL:SETQ FILE (TRANSLATE-LOGICAL-PATHNAME FILE))
   (ENSURE-FILE-EXISTS FILE "publish-file")
@@ -613,9 +613,9 @@ type is guessed from `file's extension."
 
 (CL:DEFMETHOD PUBLISH-FILE-IMPL ((SERVER HTTP-SERVER) PATH FILE OPTIONS)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PATH FILE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILE CL:SIMPLE-STRING)
   (CL:PROGN (CL:SETQ PATH PATH) (CL:SETQ FILE FILE) (CL:SETQ OPTIONS OPTIONS))
   (CL:LET* ((STREAM-000 (NEW-OUTPUT-STRING-STREAM))) (%%PRINT-STREAM (%NATIVE-STREAM STREAM-000) "publish-file-impl: not implemented on `" SERVER "'")
@@ -630,9 +630,9 @@ This is very rudimentary right now and does not provide any sophisticated access
 control.  It recurses into subdirectories of `directory', prevents escape via `..'
 and does not (yet) support directory listings."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PATH DIRECTORY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIRECTORY CL:SIMPLE-STRING)
   (CL:SETQ DIRECTORY (TRANSLATE-LOGICAL-PATHNAME DIRECTORY))
   (CL:SETQ DIRECTORY (FILE-NAME-AS-DIRECTORY DIRECTORY))
@@ -653,9 +653,9 @@ and does not (yet) support directory listings."
 
 (CL:DEFMETHOD PUBLISH-DIRECTORY-IMPL ((SERVER HTTP-SERVER) PATH DIRECTORY OPTIONS)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PATH DIRECTORY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIRECTORY CL:SIMPLE-STRING)
   (CL:PROGN (CL:SETQ PATH PATH) (CL:SETQ DIRECTORY DIRECTORY) (CL:SETQ OPTIONS OPTIONS))
   (CL:LET* ((STREAM-000 (NEW-OUTPUT-STRING-STREAM))) (%%PRINT-STREAM (%NATIVE-STREAM STREAM-000) "publish-directory-impl: not implemented on `" SERVER "'")
@@ -669,7 +669,7 @@ take a single argument of type HTTP-EXCHANGE and use the API functions to read r
 information and generate a result page.  If :content-type is supplied, it will be used as
 the content type of the resulting page, otherwise, text/html will be used by default."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PATH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
   (CL:LET* ((ARGLIST-000 NIL))
    (CL:LET* ((ARG-000 NULL) (ITER-000 OPTIONS) (COLLECT-000 NULL))
@@ -688,7 +688,7 @@ the content type of the resulting page, otherwise, text/html will be used by def
 
 (CL:DEFMETHOD PUBLISH-HANDLER-IMPL ((SERVER HTTP-SERVER) PATH HANDLER OPTIONS)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PATH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
   (CL:PROGN (CL:SETQ PATH PATH) (CL:SETQ HANDLER HANDLER) (CL:SETQ OPTIONS OPTIONS))
   (CL:LET* ((STREAM-000 (NEW-OUTPUT-STRING-STREAM))) (%%PRINT-STREAM (%NATIVE-STREAM STREAM-000) "publish-handler-impl: not implemented on `" SERVER "'")
@@ -717,7 +717,7 @@ This includes required as well as optional arguments.  This will never return NU
 
 (CL:DEFUN GENERATE-ERROR-RESPONSE (XCHG CODE MESSAGE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING MESSAGE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MESSAGE CL:SIMPLE-STRING)
   (CL:LET* ((STREAM (GET-REPLY-STREAM XCHG))) (SET-RESPONSE-CODE XCHG CODE)
    (SET-REPLY-HEADER-VALUE XCHG KWD-HTTP-SERVER-CONTENT-TYPE (GET-HTTP-MIME-TYPE KWD-HTTP-SERVER-HTML NULL))

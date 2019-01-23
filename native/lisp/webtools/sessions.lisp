@@ -119,7 +119,7 @@ If a session was found but has timed out, raise an error if `errorIfTimeout?' is
 otherwise, return the timed-out session.  Bumps the timestamp on existing sessions that
 haven't yet timed out."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((SESSION (LOOKUP *SESSION-TABLE* (WRAP-STRING NAME))))
    (CL:WHEN (CL:NOT (CL:EQ SESSION NULL))
@@ -133,9 +133,9 @@ haven't yet timed out."
 sessions with the same name).  If `name' is NULL, generate a random UUID for it.
 Timeout after `timeout' seconds or never in case the value is <= 0 or undefined."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME) (CL:TYPE CL:FIXNUM TIMEOUT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TIMEOUT CL:FIXNUM)
   (CL:LET* ((SESSION (NEW-SESSION))) (CL:WHEN (CL:EQ NAME STELLA::NULL-STRING) (CL:SETQ NAME (GENERATE-RANDOM-UUID))) (CL:SETF (%NAME SESSION) NAME)
    (CL:WHEN (CL:> TIMEOUT 0) (CL:SETF (%TIMEOUT SESSION) (MAKE-TIME-DURATION 0 (CL:* TIMEOUT 1000))))
@@ -149,9 +149,9 @@ If `name' is NULL, generate a random UUID for it.  If an existing object was fou
 out, raise an error if `errorIfTimeout?' is true.  If a new object is created, initialize its
 timeout field with `timeout' seconds (0 or undefined means no timeout)."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME) (CL:TYPE CL:FIXNUM TIMEOUT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TIMEOUT CL:FIXNUM)
   (CL:IF (CL:EQ NAME STELLA::NULL-STRING) (CREATE-SESSION STELLA::NULL-STRING TIMEOUT)
    (CL:LET* ((SESSION (LOOKUP-SESSION NAME ERRORIFTIMEOUT?))) (CL:WHEN (CL:EQ SESSION NULL) (CL:SETQ SESSION (CREATE-SESSION NAME TIMEOUT))) SESSION)))

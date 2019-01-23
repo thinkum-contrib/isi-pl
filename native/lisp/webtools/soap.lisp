@@ -68,7 +68,7 @@
 
 (CL:DEFUN NEW-SOAP-FAULT-EXCEPTION (MESSAGE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING MESSAGE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MESSAGE CL:SIMPLE-STRING)
   (CL:LET* ((SELF NULL)) (CL:SETQ SELF (CL:MAKE-CONDITION (CL:QUOTE SOAP-FAULT-EXCEPTION) *CONDITION-MESSAGE-KEYWORD* (REPLACE-SUBSTRINGS MESSAGE "~~" "~")))
    (CL:SETF (%FAULT SELF) NULL) SELF))
@@ -79,7 +79,7 @@
   "'envelope' is a string-representation of SOAP envelope containing an
 RPC request.  This functions writes a SOAP envelope containing a service response to `stream'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SOAPSTRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SOAPSTRING CL:SIMPLE-STRING)
   (CL:LET* ((SOAPOBJECT (FROM-XML-STRING SOAPSTRING)) (RESULTOBJECT (DISPATCH-RPC-CALL SOAPOBJECT)))
    (CL:LET* ((*SUPRESS-NAMESPACES?* SUPRESSNAMESPACES?)) (CL:DECLARE (CL:SPECIAL *SUPRESS-NAMESPACES?*)) (PRINT-XML-EXPRESSION STREAM (TO-XML RESULTOBJECT NIL) 0))))
@@ -128,11 +128,11 @@ RPC request.  This functions writes a SOAP envelope containing a service respons
 \"SOAP-ENV:VersionMismatch\", \"SOAP-ENV:MustUnderstand\" \"SOAP-ENV:Client\" or
 \"SOAP-ENV:Server\".  These may change to keywords in the future."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING FCODE FSTRING FACTOR))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FCODE CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FSTRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FACTOR CL:SIMPLE-STRING)
   (CL:LET* ((SELF-000 (|new-Fault|))) (CL:LET* ((SELF-001 (|new-FaultCode|))) (CL:SETF (|%textContent| SELF-001) FCODE) (CL:SETF (|%faultcode| SELF-000) SELF-001))
    (CL:LET* ((SELF-002 (|new-FaultString|))) (CL:SETF (|%textContent| SELF-002) FSTRING) (CL:SETF (|%faultstring| SELF-000) SELF-002))
@@ -154,7 +154,7 @@ command, unpack the envelope, dispatch the request, and return the result as SOA
 (CL:DEFUN CALL-WEBSERVICE (CALLOBJECT URL)
   "Package `callObject' into a SOAP envelope, send it to the webservice at `url'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING URL))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE URL CL:SIMPLE-STRING)
   (CL:LET*
    ((DEBUG? CL:T) (REQUESTENVELOPEOBJECT (CREATE-SOAP-ENVELOPE CALLOBJECT)) (REQUESTSTRING (TO-XML-STRING REQUESTENVELOPEOBJECT))

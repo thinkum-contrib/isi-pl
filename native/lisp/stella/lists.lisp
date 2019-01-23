@@ -151,7 +151,7 @@
 (CL:DEFMETHOD NTH ((SELF LIST) POSITION)
   "Return the nth item in the list `self', or NULL if empty."
   (CL:DECLARE (CL:TYPE CL:FIXNUM POSITION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE POSITION CL:FIXNUM)
   (CL:RETURN-FROM NTH (NTH (%THE-CONS-LIST SELF) POSITION)))
 
@@ -196,7 +196,7 @@
 
 (CL:DEFMETHOD NTH-SETTER ((SELF LIST) VALUE POSITION)
   (CL:DECLARE (CL:TYPE CL:FIXNUM POSITION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE POSITION CL:FIXNUM)
   (CL:RETURN-FROM NTH-SETTER (NTH-SETTER (%THE-CONS-LIST SELF) VALUE POSITION)))
 
@@ -215,7 +215,7 @@
 consider the sublist starting at `start', however, the returned position 
 will always be relative to the entire list."
   (CL:DECLARE (CL:TYPE CL:FIXNUM START))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
   (CL:RETURN-FROM POSITION (POSITION (%THE-CONS-LIST SELF) OBJECT START)))
 
@@ -228,7 +228,7 @@ will always be relative to the entire list."
 consider the sublist ending at `end', however, the returned position 
 will always be relative to the entire list."
   (CL:DECLARE (CL:TYPE CL:FIXNUM END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
   (CL:RETURN-FROM LAST-POSITION (LAST-POSITION (%THE-CONS-LIST SELF) OBJECT END)))
 

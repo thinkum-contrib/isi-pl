@@ -165,7 +165,7 @@
 
 (CL:DEFUN GET-NAMESPACE-URI (|namespacePrefix|)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING |namespacePrefix|))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |namespacePrefix| CL:SIMPLE-STRING)
   (CL:LET* ((|uri| (LOOKUP *NAMESPACE-PREFIX-URI-TABLE* (WRAP-STRING |namespacePrefix|)))) (CL:IF (CL:NOT (CL:EQ |uri| NULL)) |uri| NULL)))
 
@@ -192,7 +192,7 @@
 
 (CL:DEFUN MAKE-NAMESPACE-ATTRIBUTE (|namespaceName|)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING |namespaceName|))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |namespaceName| CL:SIMPLE-STRING)
   (CL:LET* ((SELF-000 (NEW-XML-GLOBAL-ATTRIBUTE))) (CL:SETF (%SURFACE-FORM SELF-000) (CONCATENATE "xmlns:" |namespaceName|)) (CL:SETF (%NAME SELF-000) |namespaceName|)
    (CL:SETF (%NAMESPACE-NAME SELF-000) "xmlns") (CL:LET* ((VALUE-000 SELF-000)) VALUE-000)))
@@ -213,7 +213,7 @@
 (CL:DECLAIM (CL:FTYPE (CL:FUNCTION (CL:SIMPLE-STRING) CL:SIMPLE-STRING) GET-VALUE-NAMESPACE-PREFIX))
 (CL:DEFUN GET-VALUE-NAMESPACE-PREFIX (|valueString|)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING |valueString|))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |valueString| CL:SIMPLE-STRING)
   (CL:LET* ((|colonPos| (STRING-SEARCH |valueString| ":" 0))) (CL:DECLARE (CL:TYPE CL:FIXNUM |colonPos|))
    (CL:WHEN (CL:NOT (CL:= |colonPos| NULL-INTEGER)) (CL:RETURN-FROM GET-VALUE-NAMESPACE-PREFIX (SUBSEQUENCE |valueString| 0 |colonPos|))) STELLA::NULL-STRING))
@@ -257,7 +257,7 @@
 (CL:DEFUN FROM-XML-STRING (|xmlString|)
   "Convert XML into an object."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING |xmlString|))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |xmlString| CL:SIMPLE-STRING)
   (FROM-XML (PARSE-XML |xmlString| CL:T)))
 
@@ -490,7 +490,7 @@
 
 (CL:DEFUN HELP-SIMULATE-MULTIREF-OUTPUT (|node| |parent| |indent|)
   (CL:DECLARE (CL:TYPE CL:FIXNUM |indent|))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |indent| CL:FIXNUM)
   (CL:LET* ((|nodeName| (GET-ELEMENT-NAME-FROM-OBJECT |node|)) (|children| (GET-CHILDREN |node|))) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING |nodeName|))
    (CL:LET* ((I NULL-INTEGER) (ITER-000 1) (UPPER-BOUND-000 |indent|) (UNBOUNDED?-000 (CL:= UPPER-BOUND-000 NULL-INTEGER)))
@@ -529,7 +529,7 @@
 
 (CL:DEFUN PARSE-XML (|string| |skipFrontmatter?|)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING |string|))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |string| CL:SIMPLE-STRING)
   (PARSE-XML-FROM-STREAM (NEW-INPUT-STRING-STREAM |string|) |skipFrontmatter?|))
 
@@ -537,7 +537,7 @@
 
 (CL:DEFUN FIND-SLOT (|name| |slots| |useParametricType?| |useType?|)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING |name|))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |name| CL:SIMPLE-STRING)
   (CL:WHEN (CL:AND |useType?| (CL:= (LENGTH |slots|) 1) (CL:EQ (SLOT-BASE-AND-PARAMETER-TYPE (FIRST |slots|)) |SGT-MARSHALLER-XML-OBJECTS-XMLObject|))
    (CL:RETURN-FROM FIND-SLOT (FIRST |slots|)))
@@ -591,7 +591,7 @@ specific namespace-mapping defined.")
 
 (CL:DEFUN LOOKUP-OBJECT-CREATION-MODULE (|namespacePrefix|)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING |namespacePrefix|))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |namespacePrefix| CL:SIMPLE-STRING)
   (CL:LET* ((|creationModule| NULL))
    (CL:WHEN (CL:AND (CL:NOT (CL:EQ |namespacePrefix| STELLA::NULL-STRING)) (CL:NOT (STRING-EQL? |namespacePrefix| "")))
@@ -604,11 +604,11 @@ specific namespace-mapping defined.")
 
 (CL:DEFUN MAKE-XML-OBJECT (|className| |namespacePrefix| |namespaceURI|)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING |className| |namespacePrefix| |namespaceURI|))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |className| CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |namespacePrefix| CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |namespaceURI| CL:SIMPLE-STRING)
   (CL:SETQ |namespaceURI| |namespaceURI|)
   (CL:LET* ((|theType| (LOOKUP-SURROGATE-IN-MODULE |className| (LOOKUP-OBJECT-CREATION-MODULE |namespacePrefix|) CL:T)))
@@ -716,7 +716,7 @@ specific namespace-mapping defined.")
 (CL:DEFUN BASE64-ENCODE-STRING (|input|)
   "Base-64 encode `input' and return the result."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING |input|))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |input| CL:SIMPLE-STRING)
   (CL:LET*
    ((|inputLength| (CL:THE CL:FIXNUM (CL:LENGTH |input|))) (|codeLength| (CL:* (CEILING (CL:/ |inputLength| 3.0d0)) 4)) (|nofLines| (CEILING (CL:/ |codeLength| 76.0d0)))
@@ -830,7 +830,7 @@ specific namespace-mapping defined.")
 (CL:DEFUN BASE64-DECODE-STRING (|input|)
   "Base-64 decode `input' and return the result."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING |input|))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |input| CL:SIMPLE-STRING)
   (CL:LET*
    ((|inputLength| (CL:THE CL:FIXNUM (CL:LENGTH |input|)))
@@ -938,7 +938,7 @@ specific namespace-mapping defined.")
 
 (CL:DEFUN READ-XML (|xmlString|)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING |xmlString|))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE |xmlString| CL:SIMPLE-STRING)
   (CL:LET* ((|inputStream| (NEW-INPUT-STRING-STREAM |xmlString|))) (READ-XML-EXPRESSION |inputStream| NULL)))
 

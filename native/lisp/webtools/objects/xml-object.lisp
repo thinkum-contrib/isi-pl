@@ -129,7 +129,7 @@ a value.  If both are present, only the textContent slot is returned."
   "Sets either the textContent or cdataContent slot, depending on
 whether `CONTENT' needs to be encoded as CDATA or not."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING CONTENT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CONTENT CL:SIMPLE-STRING)
   (CL:LET* ((FOUND?-000 CL:NIL))
    (CL:LET* ((CH NULL-CHARACTER) (VECTOR-000 CONTENT) (INDEX-000 0) (LENGTH-000 (CL:THE CL:FIXNUM (CL:LENGTH VECTOR-000))))

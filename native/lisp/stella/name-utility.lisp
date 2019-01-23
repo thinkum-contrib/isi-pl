@@ -132,7 +132,7 @@ appropriate transforms.  The arguments are used as follows:
                    normally only makes sense when using one of the title case values
                    for the case keyword."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING ORIGINAL))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ORIGINAL CL:SIMPLE-STRING)
   (CL:LET* ((SELF-000 (NEW-PROPERTY-LIST)))
    (CL:LET* ((ARGLIST-000 NIL))
@@ -197,7 +197,7 @@ input STRING.  The arguments are used as follows:
                          the input word.  This is used to determine how to break
                    the name into individual words.  Defaults are space, '-' and '_'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAMESTRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAMESTRING CL:SIMPLE-STRING)
   (CL:LET* ((SELF-000 (NEW-PROPERTY-LIST)))
    (CL:LET* ((ARGLIST-000 NIL))
@@ -277,19 +277,19 @@ input STRING.  The arguments are used as follows:
   "Non-keyword version of `make-matching-name', which will probably be
 easier to use when called from non-Lisp languages."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING ORIGINALNAME BREAKONSEPARATORS REMOVEPREFIX REMOVESUFFIX ADDPREFIX ADDSUFFIX OUTPUTSEPARATOR))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ORIGINALNAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE BREAKONSEPARATORS CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE REMOVEPREFIX CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE REMOVESUFFIX CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ADDPREFIX CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ADDSUFFIX CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE OUTPUTSEPARATOR CL:SIMPLE-STRING)
   (CL:LET*
    ((PREFIXLENGTH (CL:THE CL:FIXNUM (CL:LENGTH REMOVEPREFIX))) (SUFFIXLENGTH (CL:THE CL:FIXNUM (CL:LENGTH REMOVESUFFIX))) (RESULT-STRING ORIGINALNAME) (RESULT-LENGTH 0))
@@ -314,9 +314,9 @@ easier to use when called from non-Lisp languages."
   "Non-keyword version of `decompose-namestring', which will probably be
 easier to use when called from non-Lisp languages."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAMESTRING BREAK-ON-SEPARATORS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAMESTRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE BREAK-ON-SEPARATORS CL:SIMPLE-STRING)
   (CL:LET* ((LEN (CL:THE CL:FIXNUM (CL:LENGTH NAMESTRING))) (RESULT NIL) (LAG 0) (LEAD 0) (INCAPRUN? CL:NIL) (INNUMBER? CL:NIL))
    (CL:DECLARE (CL:TYPE CL:FIXNUM LEN LAG LEAD))
@@ -380,9 +380,9 @@ easier to use when called from non-Lisp languages."
 
 (CL:DEFUN SUFFIX-MATCHES? (TESTSTRING SUFFIX)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING TESTSTRING SUFFIX))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TESTSTRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SUFFIX CL:SIMPLE-STRING)
   (CL:LET* ((STRINGLENGTH (CL:THE CL:FIXNUM (CL:LENGTH TESTSTRING))) (SUFFIXLENGTH (CL:THE CL:FIXNUM (CL:LENGTH SUFFIX))))
    (CL:DECLARE (CL:TYPE CL:FIXNUM STRINGLENGTH SUFFIXLENGTH))
@@ -393,7 +393,7 @@ easier to use when called from non-Lisp languages."
 
 (CL:DEFUN ORDINAL-NUMBER-STRING? (TESTSTRING)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING TESTSTRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TESTSTRING CL:SIMPLE-STRING)
   (CL:LET*
    ((LEN (CL:THE CL:FIXNUM (CL:LENGTH TESTSTRING)))
@@ -427,7 +427,7 @@ easier to use when called from non-Lisp languages."
 
 (CL:DEFUN HEURISTIC-ACRONYM? (ITEMSTRING)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING ITEMSTRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ITEMSTRING CL:SIMPLE-STRING)
   (CL:LET* ((LETTERFOUND? CL:NIL) (NUMBERFOUND? CL:NIL))
    (CL:LET* ((C NULL-CHARACTER) (VECTOR-000 ITEMSTRING) (INDEX-000 0) (LENGTH-000 (CL:THE CL:FIXNUM (CL:LENGTH VECTOR-000))))
@@ -450,11 +450,11 @@ easier to use when called from non-Lisp languages."
   "Non-keyword version of `compose-namestring', which will probably be
 easier to use when called from non-Lisp languages."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PREFIX SUFFIX OUTPUTSEPARATOR))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PREFIX CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SUFFIX CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE OUTPUTSEPARATOR CL:SIMPLE-STRING)
   (CL:LET*
    ((N 0) (I 0) (OUT STELLA::NULL-STRING)

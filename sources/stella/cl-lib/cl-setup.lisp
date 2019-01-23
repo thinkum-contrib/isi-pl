@@ -971,7 +971,7 @@
   ;; systems:
   #+Allegro   (MP:MAKE-PROCESS-LOCK)
   #+Lispworks (MP:MAKE-LOCK)
-  #+MCL       (CCL:MAKE-LOCK)
+  #+(or MCL OpenMCL)       (CCL:MAKE-LOCK)
   #+CMU       (MULTIPROCESSING:MAKE-LOCK)
   #+SBCL      (SB-THREAD:MAKE-MUTEX)
   #-(or Allegro Lispworks MCL CMU SBCL) 'NO-LOCK)
@@ -981,7 +981,7 @@
   ;; for supported Lisp systems:
   `(#+Allegro   MP:WITH-PROCESS-LOCK
     #+Lispworks MP:WITH-LOCK
-    #+MCL       CCL:WITH-LOCK-GRABBED
+    #+(or MCL OpenMCL)       CCL:WITH-LOCK-GRABBED
     #+CMU       MULTIPROCESSING:WITH-LOCK-HELD
     #+SBCL      SB-THREAD:WITH-RECURSIVE-LOCK
     #+(or Allegro Lispworks MCL CMU SBCL) (,lock)

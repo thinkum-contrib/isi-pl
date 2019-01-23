@@ -118,11 +118,11 @@
 `yyyy' is the year.  `mm' is the month.  `dd' is the day of month.
 Negative years are B.C.  Remember there is no year zero."
   (CL:DECLARE (CL:TYPE CL:FIXNUM YYYY MM DD))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE YYYY CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MM CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DD CL:FIXNUM)
   (CL:LET* ((JUL 0) (JA 0) (JY 0) (JM 0)) (CL:DECLARE (CL:TYPE CL:FIXNUM JUL JA JY JM))
    (CL:WHEN (CL:= YYYY 0) (CL:ERROR (NEW-STELLA-EXCEPTION "There is no year zero.")))
@@ -151,7 +151,7 @@ Negative years are B.C.  Remember there is no year zero."
 (CL:DEFUN JULIAN-DAY-TO-MODIFIED-JULIAN-DAY (JULIAN-DAY)
   "Returns the modified Julian day during which `julian-day'starts at noon."
   (CL:DECLARE (CL:TYPE CL:FIXNUM JULIAN-DAY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE JULIAN-DAY CL:FIXNUM)
   (CL:RETURN-FROM JULIAN-DAY-TO-MODIFIED-JULIAN-DAY (CL:- JULIAN-DAY 2400000)))
 
@@ -161,7 +161,7 @@ Negative years are B.C.  Remember there is no year zero."
 (CL:DEFUN MODIFIED-JULIAN-DAY-TO-JULIAN-DAY (MODIFIED-JULIAN-DAY)
   "Returns the modified Julian day during which `julian-day'starts at noon."
   (CL:DECLARE (CL:TYPE CL:FIXNUM MODIFIED-JULIAN-DAY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODIFIED-JULIAN-DAY CL:FIXNUM)
   (CL:RETURN-FROM MODIFIED-JULIAN-DAY-TO-JULIAN-DAY (CL:+ MODIFIED-JULIAN-DAY 2400000)))
 
@@ -170,7 +170,7 @@ Negative years are B.C.  Remember there is no year zero."
 (CL:DEFUN COMPUTE-DAY-OF-WEEK-JULIAN (JULIAN-DAY)
   "Returns the day of the week for julian-day"
   (CL:DECLARE (CL:TYPE CL:FIXNUM JULIAN-DAY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE JULIAN-DAY CL:FIXNUM)
   (CL:ECASE (CL:THE CL:FIXNUM (CL:REM JULIAN-DAY 7)) (0 (CL:RETURN-FROM COMPUTE-DAY-OF-WEEK-JULIAN KWD-DATE-TIME-MONDAY))
    (1 (CL:RETURN-FROM COMPUTE-DAY-OF-WEEK-JULIAN KWD-DATE-TIME-TUESDAY)) (2 (CL:RETURN-FROM COMPUTE-DAY-OF-WEEK-JULIAN KWD-DATE-TIME-WEDNESDAY))
@@ -182,11 +182,11 @@ Negative years are B.C.  Remember there is no year zero."
 (CL:DEFUN COMPUTE-DAY-OF-WEEK (YYYY MM DD)
   "Returns the day of the week for yyyy-mm-dd."
   (CL:DECLARE (CL:TYPE CL:FIXNUM YYYY MM DD))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE YYYY CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MM CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DD CL:FIXNUM)
   (CL:RETURN-FROM COMPUTE-DAY-OF-WEEK (COMPUTE-DAY-OF-WEEK-JULIAN (COMPUTE-JULIAN-DAY YYYY MM DD))))
 
@@ -198,7 +198,7 @@ Negative years are B.C.  Remember there is no year zero."
 since January 1, 1900 of moon PHASE.  PHASE is one of :NEW-MOON, :FIRST-QUARTER,
 :FULL-MOON, :LAST-QUARTER"
   (CL:DECLARE (CL:TYPE CL:FIXNUM N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:FIXNUM)
   (CL:LET* ((I 0) (AM 0.0d0) (AS 0.0d0) (C 0.0d0) (X 0.0d0) (X2 0.0d0) (EXTRA 0.0d0) (RAD (CL:/ PI 180.0d0)) (JULIAN-DAY 0))
    (CL:DECLARE (CL:TYPE CL:FIXNUM I JULIAN-DAY) (CL:TYPE CL:DOUBLE-FLOAT AM AS C X X2 EXTRA RAD))
@@ -236,7 +236,7 @@ since January 1, 1900 of moon PHASE.  PHASE is one of :NEW-MOON, :FIRST-QUARTER,
   "Returns the YEAR, MONTH, DAY, DAY-OF-WEEK on which the given
 `julian-day' begins at noon."
   (CL:DECLARE (CL:TYPE CL:FIXNUM JULIAN-DAY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE JULIAN-DAY CL:FIXNUM)
   (CL:LET* ((JA JULIAN-DAY) (JALPHA 0) (JB 0) (JC 0) (JD 0) (JE 0) (IGREG 2299161) (YYYY 0) (MM 0) (DD 0))
    (CL:DECLARE (CL:TYPE CL:FIXNUM JA JALPHA JB JC JD JE IGREG YYYY MM DD))
@@ -295,17 +295,17 @@ that is applicable to the given date.  Assumes that the date is one
 that is valid for the underlying programming language.  If not, then
 returns 0.0"
   (CL:DECLARE (CL:TYPE CL:FIXNUM YEAR MONTH DAY HOUR MINUTE SECOND))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE YEAR CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MONTH CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DAY CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE HOUR CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MINUTE CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SECOND CL:FIXNUM)
   (CL:LET* ((OFFSET 0.0d0)) (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT OFFSET)) (cl:when (cl:>= year 1900)
          (cl:multiple-value-bind 
@@ -323,7 +323,7 @@ returns 0.0"
 (CL:DEFUN TIME-ZONE-FORMAT60 (TIMEZONE INCLUDE-COLON?)
   "Format `zone' as an hh:mm or hhmm string depending on `include-colon?'"
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT TIMEZONE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TIMEZONE CL:DOUBLE-FLOAT)
   (CL:LET* ((SIGN "+") (HOURS 0)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SIGN) (CL:TYPE CL:FIXNUM HOURS))
    (CL:WHEN (CL:< TIMEZONE 0) (CL:SETQ SIGN "-") (CL:SETQ TIMEZONE (CL:- 0 TIMEZONE))) (CL:SETQ HOURS (ROUND TIMEZONE))
@@ -494,7 +494,7 @@ be included (if present) if a time value is given."
 
 (CL:DEFMETHOD HELP-MERGE-NULL-FIELDS ((SELF DECODED-DATE-TIME) DEFAULT INDEX)
   (CL:DECLARE (CL:TYPE CL:FIXNUM INDEX))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE INDEX CL:FIXNUM)
   (CL:WHEN (CL:AND (CL:= (%DATE-TIME-YEAR SELF) NULL-INTEGER) (CL:>= INDEX 0)) (CL:SETF (%DATE-TIME-YEAR SELF) (%DATE-TIME-YEAR DEFAULT)))
   (CL:WHEN (CL:AND (CL:= (%DATE-TIME-MONTH SELF) NULL-INTEGER) (CL:>= INDEX 1)) (CL:SETF (%DATE-TIME-MONTH SELF) (%DATE-TIME-MONTH DEFAULT)))
@@ -641,7 +641,7 @@ English abbreviation of the month if `numeric-month?' is `false' and a two
 digit numeric value if `numeric-month?' is `true'.  The value `false' is
 recommended."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT TIMEZONE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TIMEZONE CL:DOUBLE-FLOAT)
   (CL:LET* ((YEAR NULL-INTEGER) (MONTH NULL-INTEGER) (DAY NULL-INTEGER) (DOW NULL)) (CL:DECLARE (CL:TYPE CL:FIXNUM YEAR MONTH DAY))
    (CL:MULTIPLE-VALUE-SETQ (YEAR MONTH DAY DOW) (GET-CALENDAR-DATE DATE TIMEZONE)) (CL:SETQ DOW DOW)
@@ -664,7 +664,7 @@ Milliseconds will be included if `include-millis?' is `true'.
 Hours will be zero-padded to length 2 if `pad-hours?' is `true'.
 "
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT TIMEZONE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TIMEZONE CL:DOUBLE-FLOAT)
   (CL:LET* ((HOURS NULL-INTEGER) (MINUTES NULL-INTEGER) (SECONDS NULL-INTEGER) (MILLI NULL-INTEGER)) (CL:DECLARE (CL:TYPE CL:FIXNUM HOURS MINUTES SECONDS MILLI))
    (CL:MULTIPLE-VALUE-SETQ (HOURS MINUTES SECONDS MILLI) (GET-TIME DATE TIMEZONE))
@@ -689,7 +689,7 @@ float offset z.z is included if `include-timezone?' is `true'.
 
 Recommended values for the flags are `false' and `true' respectively."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT TIMEZONE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TIMEZONE CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM CALENDAR-DATE-TO-STRING
    (CONCATENATE (CALENDAR-DATE-TO-DATE-STRING DATE TIMEZONE NUMERIC-MONTH?) " " (CALENDAR-DATE-TO-TIME-STRING DATE TIMEZONE INCLUDE-TIMEZONE? CL:T CL:NIL))))
@@ -703,7 +703,7 @@ hh:mm is included if `include-timezone?' is `true'.
 
 Recommended values for the flag is `true'."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT TIMEZONE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TIMEZONE CL:DOUBLE-FLOAT)
   (CL:LET* ((TZ-STRING "")) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING TZ-STRING))
    (CL:WHEN INCLUDE-TIMEZONE? (CL:IF (CL:= TIMEZONE 0.0d0) (CL:SETQ TZ-STRING "Z") (CL:SETQ TZ-STRING (TIME-ZONE-FORMAT60 TIMEZONE CL:T))))
@@ -799,7 +799,7 @@ as a number of days and the time in milliseconds."))
 The syntax for time duration strings is \"{plus|minus} N days[; M ms]\" where N and M are
 integer values for days and milliseconds.  If no valid parse is found, `null' is returned."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING DURATION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DURATION CL:SIMPLE-STRING)
   (CL:LET*
    ((N-DAYS 0) (N-MILLIS 0) (NEGATIVE? (CL:NOT (CL:= (STRING-SEARCH DURATION "minus" 0) NULL-INTEGER))) (DAY-START-POSITION 0) (DAY-END-POSITION 0) (MS-START-POSITION 0)
@@ -831,21 +831,21 @@ the complete year (i.e., a year of 98 is 98 A.D in the 1st century).
 `timezone' is a real number in the range -12.0 to +14.0 where UTC is zone 0.0;  The number
 is the number of hours to add to UTC to arrive at local time."
   (CL:DECLARE (CL:TYPE CL:FIXNUM YEAR MONTH DAY HOUR MINUTE SECOND MILLIS) (CL:TYPE CL:DOUBLE-FLOAT TIMEZONE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE YEAR CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MONTH CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DAY CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE HOUR CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MINUTE CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SECOND CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MILLIS CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TIMEZONE CL:DOUBLE-FLOAT)
   (CL:LET* ((TIME (CL:+ (CL:* HOUR MILLIS-PER-HOUR) (CL:* MINUTE 60000) (CL:* SECOND 1000) MILLIS))) (CL:DECLARE (CL:TYPE CL:FIXNUM TIME))
    (CL:SETQ TIME (CL:TRUNCATE (CL:- TIME (CL:* TIMEZONE MILLIS-PER-HOUR))))
@@ -865,9 +865,9 @@ is the number of hours to add to UTC to arrive at local time."
 
 (CL:DEFUN MAKE-CALENDAR-DATE (DAY TIME)
   (CL:DECLARE (CL:TYPE CL:FIXNUM DAY TIME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DAY CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TIME CL:FIXNUM)
   (CL:LOOP WHILE (CL:< TIME 0) DO (CL:SETQ TIME (CL:+ TIME MILLIS-PER-DAY)) (CL:SETQ DAY (CL:1- DAY)))
   (CL:LOOP WHILE (CL:> TIME MILLIS-PER-DAY) DO (CL:SETQ TIME (CL:- TIME MILLIS-PER-DAY)) (CL:SETQ DAY (CL:1+ DAY)))
@@ -878,9 +878,9 @@ is the number of hours to add to UTC to arrive at local time."
 
 (CL:DEFUN MAKE-TIME-DURATION (DAYS MILLIS)
   (CL:DECLARE (CL:TYPE CL:FIXNUM DAYS MILLIS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DAYS CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MILLIS CL:FIXNUM)
   (CL:LOOP WHILE (CL:< MILLIS (CL:- 0 MILLIS-PER-DAY)) DO (CL:SETQ MILLIS (CL:+ MILLIS MILLIS-PER-DAY)) (CL:SETQ DAYS (CL:1- DAYS)))
   (CL:LOOP WHILE (CL:> MILLIS MILLIS-PER-DAY) DO (CL:SETQ MILLIS (CL:- MILLIS MILLIS-PER-DAY)) (CL:SETQ DAYS (CL:1+ DAYS)))
@@ -896,7 +896,7 @@ is the number of hours to add to UTC to arrive at local time."
   "Returns multiple values of hours, minutes, seconds, milliseconds for
 `time' specified in milliseconds."
   (CL:DECLARE (CL:TYPE CL:FIXNUM TIME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TIME CL:FIXNUM)
   (CL:LET*
    ((MILLIS (CL:THE CL:FIXNUM (CL:REM TIME 1000)))
@@ -916,7 +916,7 @@ is the number of hours to add to UTC to arrive at local time."
 in `timezone'.  `timezone' is the number of hours added to UTC to get local time.  It
 is in the range -12.0 to +14.0 where UTC is zone 0.0"
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT TIMEZONE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TIMEZONE CL:DOUBLE-FLOAT)
   (CL:WHEN (CL:= TIMEZONE NULL-FLOAT) (CL:WARN "Timezone not specified in GET-CALENDAR-DATE  Using local zone.")
    (CL:LET* ((YEAR NULL-INTEGER) (MONTH NULL-INTEGER) (DAY NULL-INTEGER) (DOW NULL)) (CL:DECLARE (CL:TYPE CL:FIXNUM YEAR MONTH DAY))
@@ -934,7 +934,7 @@ is in the range -12.0 to +14.0 where UTC is zone 0.0"
 the calendar date `date' in `timezone'.  `timezone' is the number of hours added to UTC
 to get local time.  It is in the range -12.0 to +14.0 where UTC is zone 0.0"
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT TIMEZONE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TIMEZONE CL:DOUBLE-FLOAT)
   (CL:WHEN (CL:= TIMEZONE NULL-FLOAT) (CL:WARN "Timezone not specified in GET-TIME.  Using local zone.")
    (CL:LET* ((YEAR NULL-INTEGER) (MONTH NULL-INTEGER) (DAY NULL-INTEGER) (DOW NULL)) (CL:DECLARE (CL:TYPE CL:FIXNUM YEAR MONTH DAY))
@@ -956,7 +956,7 @@ to get local time.  It is in the range -12.0 to +14.0 where UTC is zone 0.0"
 `timezone' is the number of hours added to UTC to get local time.  It is 
 in the range -12.0 to +14.0 where UTC is zone 0.0"
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT TIMEZONE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TIMEZONE CL:DOUBLE-FLOAT)
   (CL:LET* ((HOUR NULL-INTEGER) (MIN NULL-INTEGER) (SEC NULL-INTEGER) (MILLIS NULL-INTEGER)) (CL:DECLARE (CL:TYPE CL:FIXNUM HOUR MIN SEC MILLIS))
    (CL:MULTIPLE-VALUE-SETQ (HOUR MIN SEC MILLIS) (GET-TIME DATE TIMEZONE))
@@ -1433,11 +1433,11 @@ date and time.  See `add-date-substitution' for details."
 
 (CL:DEFUN FORMAT-DATE-PRINT-STRING (STRING FLAG START END STREAM)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING) (CL:TYPE CL:FIXNUM START END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
   (CL:WHEN (CL:< END 0) (CL:SETQ END (CL:THE CL:FIXNUM (CL:LENGTH STRING))))
   (CL:SETQ END (CL:1- END))
@@ -1499,7 +1499,7 @@ date and time.  See `add-date-substitution' for details."
 
 (CL:DEFUN FORMAT-DATE-PRINT-TWO-DIGIT-NUMBER (NUMBER FLAG STREAM)
   (CL:DECLARE (CL:TYPE CL:FIXNUM NUMBER))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NUMBER CL:FIXNUM)
   (CL:WHEN (CL:<= NUMBER 9)
    (CL:CASE FLAG (#\_ (%%PRINT-STREAM (%NATIVE-STREAM STREAM) " ")) ((#\0 NULL-CHARACTER) (%%PRINT-STREAM (%NATIVE-STREAM STREAM) "0")) (CL:OTHERWISE)))
@@ -1712,7 +1712,7 @@ By default, numeric fields are padded with zeroes. The following optional flags 
        ^      use upper case if possible
        ,      use lower case if possible"
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING CONTROL))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CONTROL CL:SIMPLE-STRING)
   (CL:LET* ((DECODEDZONE (GET-LOCAL-TIME-ZONE)) (DECODEDDATE NULL) (END (CL:1- (CL:THE CL:FIXNUM (CL:LENGTH CONTROL)))) (I 0) (CH NULL-CHARACTER) (FLAG NULL-CHARACTER))
    (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT DECODEDZONE) (CL:TYPE CL:FIXNUM END I))
@@ -1767,7 +1767,7 @@ By default, numeric fields are padded with zeroes. The following optional flags 
 (CL:DEFUN FORMAT-DATE (DATE TIMEZONE CONTROL)
   "Format `date' just like `format-date-to-stream' (which see), but return the result as a string."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING CONTROL))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CONTROL CL:SIMPLE-STRING)
   (CL:LET* ((OUT (NEW-OUTPUT-STRING-STREAM))) (FORMAT-DATE-TO-STREAM DATE TIMEZONE CONTROL OUT) (CL:RETURN-FROM FORMAT-DATE (THE-STRING-READER OUT))))
 

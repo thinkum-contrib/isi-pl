@@ -259,7 +259,7 @@ from that stream; if `output' and/or `error' are defined, copy `commands' standa
 error to those streams.  It is the responsibility of the caller to close the supplied
 streams (if any) and do any shell error handling based on exit status or error output."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING DIRECTORY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIRECTORY CL:SIMPLE-STRING)
   (CL:LET* ((SELF-000 (NEW-SHELL-PROCESS))) (CL:SETF (%COMMAND SELF-000) (PARSE-SHELL-COMMAND COMMAND))
    (CL:SETF (%DIRECTORY SELF-000) (CL:IF (CL:NOT (CL:EQ DIRECTORY STELLA::NULL-STRING)) DIRECTORY ".")) (CL:SETF (%INPUT-STREAM SELF-000) INPUT)

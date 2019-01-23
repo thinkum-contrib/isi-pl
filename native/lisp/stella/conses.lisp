@@ -97,7 +97,7 @@
 consider the sublist starting at `start', however, the returned position 
 will always be relative to the entire list."
   (CL:DECLARE (CL:TYPE CL:FIXNUM START))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
   (CL:WHEN (CL:= START NULL-INTEGER) (CL:SETQ START 0))
   (CL:LET* ((ELEMENT NULL) (ITER-000 (NTH-REST SELF START)) (POSITION NULL-INTEGER) (ITER-001 START)) (CL:DECLARE (CL:TYPE CL:FIXNUM POSITION ITER-001))
@@ -114,7 +114,7 @@ will always be relative to the entire list."
 consider the sublist ending at `end', however, the returned position 
 will always be relative to the entire list."
   (CL:DECLARE (CL:TYPE CL:FIXNUM END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
   (CL:LET* ((LAST-POS NULL-INTEGER)) (CL:DECLARE (CL:TYPE CL:FIXNUM LAST-POS)) (CL:WHEN (CL:= END NULL-INTEGER) (CL:SETQ END (CL:1- (LENGTH SELF))))
    (CL:LET* ((ELEMENT NULL) (ITER-000 SELF) (POSITION NULL-INTEGER) (ITER-001 0) (UPPER-BOUND-000 END) (UNBOUNDED?-000 (CL:= UPPER-BOUND-000 NULL-INTEGER)))
@@ -327,7 +327,7 @@ of `self' can be set with `setf'.  Note, that '(fifth NIL)' = `null'."
   "Return the element of `self' at `position'.  The nth element
 of `self' can be set with `setf'.  Note, that '(nth NIL <pos>)' = `null'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM POSITION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE POSITION CL:FIXNUM)
   (CL:LET* ((I -1)) (CL:DECLARE (CL:TYPE CL:FIXNUM I))
    (CL:LET* ((VALUE NULL) (ITER-000 SELF))
@@ -340,7 +340,7 @@ of `self' can be set with `setf'.  Note, that '(nth NIL <pos>)' = `null'."
 (%%DEFCONSMETHOD NTH-REST ((SELF CL:CONS) POSITION)
   "Apply `rest' `position' times to `self'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM POSITION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE POSITION CL:FIXNUM)
   (CL:WHEN (CL:< POSITION 0) (CL:RETURN-FROM NTH-REST NULL))
   (CL:LET* ((CURSOR SELF))
@@ -386,7 +386,7 @@ of `self' can be set with `setf'.  Note, that '(nth NIL <pos>)' = `null'."
 
 (%%DEFCONSMETHOD NTH-SETTER ((SELF CL:CONS) VALUE POSITION)
   (CL:DECLARE (CL:TYPE CL:FIXNUM POSITION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE POSITION CL:FIXNUM)
   (CL:WHEN (CL:< POSITION 0) (CL:WARN "Can't apply nth setter to negative position `~A'." POSITION) (CL:RETURN-FROM NTH-SETTER NULL))
   (CL:LET* ((CURSOR SELF))
@@ -410,7 +410,7 @@ of `self' can be set with `setf'.  Note, that '(nth NIL <pos>)' = `null'."
 
 (%%DEFCONSMETHOD NTH-REST-SETTER ((SELF CL:CONS) VALUE POSITION)
   (CL:DECLARE (CL:TYPE CL:FIXNUM POSITION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE POSITION CL:FIXNUM)
   (CL:WHEN (CL:<= POSITION 0) (CL:WARN "Can't apply nth-rest setter to negative position `~A'." POSITION))
   (CL:LET* ((CURSOR SELF))
@@ -714,7 +714,7 @@ element types are GENERALIZED-SYMBOL, STRING, INTEGER, and FLOAT)."
 
 (CL:DEFUN HELP-SORT-CONS-LIST (LIST LENGTH PREDICATE)
   (CL:DECLARE (CL:TYPE CL:FIXNUM LENGTH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE LENGTH CL:FIXNUM)
   (CL:WHEN (CL:< LENGTH 2) (CL:RETURN-FROM HELP-SORT-CONS-LIST LIST))
   (CL:LET* ((FRONTLENGTH (FLOOR (CL:/ LENGTH 2.0d0))) (TEMP LIST) (BACK NIL)) (CL:DECLARE (CL:TYPE CL:FIXNUM FRONTLENGTH))
@@ -847,7 +847,7 @@ element types are GENERALIZED-SYMBOL, STRING, INTEGER, and FLOAT)."
   "Just like `sort' but assumes each element of `self' is a tuple (a cons)
 whose `n'-th element (0-based) will be used for comparison."
   (CL:DECLARE (CL:TYPE CL:FIXNUM N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:FIXNUM)
   (CL:WHEN (CL:AND (CL:EQ PREDICATE NULL) (CL:NOT (CL:EQ SELF NIL))) (CL:SETQ PREDICATE (CHOOSE-SORT-PREDICATE (NTH (%%VALUE SELF) N))))
   (CL:LET* ((*SORT-TUPLE-COMPARE-PREDICATE* PREDICATE) (*SORT-TUPLE-COMPARE-INDEX* N))
@@ -1094,9 +1094,9 @@ pretty-printed parse tree.")
 
 (CL:DEFUN PRINT-CONS (TREE STREAM LPAREN RPAREN)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING LPAREN RPAREN))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE LPAREN CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE RPAREN CL:SIMPLE-STRING)
   (CL:WHEN *PRINTREADABLY?* (CL:SETQ LPAREN "(") (CL:SETQ RPAREN ")"))
   (CL:WHEN *PRINTPRETTY?* (PPRINT-CONS TREE STREAM LPAREN RPAREN) (CL:RETURN-FROM PRINT-CONS))
@@ -1117,9 +1117,9 @@ pretty-printed parse tree.")
 
 (CL:DEFUN PPRINT-CONS (TREE STREAM LPAREN RPAREN)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING LPAREN RPAREN))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE LPAREN CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE RPAREN CL:SIMPLE-STRING)
   #-lispworks
        (CL:let ((CL:*print-pretty* CL:t)
@@ -1186,9 +1186,9 @@ file translation, but it also makes translated output very unreadable.")
 (CL:DECLAIM (CL:FTYPE (CL:FUNCTION (CL:T CL:FIXNUM CL:FIXNUM) CL:FIXNUM) SAFELY-COMPUTE-TREE-SIZE))
 (CL:DEFUN SAFELY-COMPUTE-TREE-SIZE (TREE DEPTHCOUNT CUTOFF)
   (CL:DECLARE (CL:TYPE CL:FIXNUM DEPTHCOUNT CUTOFF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DEPTHCOUNT CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CUTOFF CL:FIXNUM)
   (CL:LET* ((COUNT 1) (VALUE NULL)) (CL:DECLARE (CL:TYPE CL:FIXNUM COUNT))
    (CL:WHEN (CL:> DEPTHCOUNT *DEPTHCUTOFF*) (CL:SETQ *DEPTHEXCEEDED?* CL:T) (CL:RETURN-FROM SAFELY-COMPUTE-TREE-SIZE 1))

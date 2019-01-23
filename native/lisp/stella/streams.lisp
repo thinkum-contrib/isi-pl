@@ -326,9 +326,9 @@ and terminating with a newline."
 type `NO-SUCH-FILE-EXCEPTION' is thrown with `context' supplying
 context for the error message."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING FILENAME CONTEXT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILENAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CONTEXT CL:SIMPLE-STRING)
   (CL:WHEN (CL:NOT (PROBE-FILE? FILENAME))
    (CL:LET* ((SELF-000 (NEW-NO-SUCH-FILE-EXCEPTION (CONCATENATE CONTEXT ": file " FILENAME " does not exist")))) (CL:SETF (%FILENAME SELF-000) FILENAME)
@@ -342,9 +342,9 @@ context for the error message."
 an exception of type `FILE-ALREADY-EXISTS-EXCEPTION' is thrown
 with `context' supplying context for the error message."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING FILENAME CONTEXT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILENAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CONTEXT CL:SIMPLE-STRING)
   (CL:WHEN (PROBE-FILE? FILENAME)
    (CL:LET* ((SELF-000 (NEW-FILE-ALREADY-EXISTS-EXCEPTION (CONCATENATE CONTEXT ": file " FILENAME " already exists")))) (CL:SETF (%FILENAME SELF-000) FILENAME)
@@ -490,7 +490,7 @@ value is `:CREATE', the file will simply be created.  If the value is
 `:ERROR' then an error will be signaled.  If it is `:ABORT' or `:PROBE' the
 opening operation will be aborted and NULL will be returned."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING FILENAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILENAME CL:SIMPLE-STRING)
   (CL:LET* ((STREAM (NEW-OUTPUT-FILE-STREAM STELLA::NULL-STRING)))
    (CL:LET* ((ARGLIST-000 NIL))
@@ -565,7 +565,7 @@ specifies what to do in case the file does not exist.  If its value is
 `:ERROR' then an error will be signaled.  If it is `:ABORT' or `:PROBE'
 the opening operation will be aborted and NULL will be returned."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING FILENAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILENAME CL:SIMPLE-STRING)
   (CL:LET* ((STREAM (NEW-INPUT-FILE-STREAM STELLA::NULL-STRING)))
    (CL:LET* ((ARGLIST-000 NIL))
@@ -685,9 +685,9 @@ the opening operation will be aborted and NULL will be returned."
   "Open a TCP/IP network stream to `host' at `port' and return the result
 as an input/output stream pair."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING HOST) (CL:TYPE CL:FIXNUM PORT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE HOST CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PORT CL:FIXNUM)
   (CL:LET* ((IN NULL) (OUT NULL)) (CL:progn
          (CL:setq in (%%open-network-stream host port))
@@ -946,7 +946,7 @@ same as the one following the most recent token."
 
 (CL:DEFUN WRITE-HTML-QUOTING-SPECIAL-CHARACTERS (STREAM INPUT)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING INPUT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE INPUT CL:SIMPLE-STRING)
   (CL:LET* ((CH NULL-CHARACTER) (VECTOR-000 INPUT) (INDEX-000 0) (LENGTH-000 (CL:THE CL:FIXNUM (CL:LENGTH VECTOR-000))))
    (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING VECTOR-000) (CL:TYPE CL:FIXNUM INDEX-000 LENGTH-000))
@@ -964,7 +964,7 @@ same as the one following the most recent token."
   "Writes a string and replaces unallowed URL characters according to RFC 2396
 with %-format URL escape sequences."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING INPUT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE INPUT CL:SIMPLE-STRING)
   (CL:LET* ((CH NULL-CHARACTER) (VECTOR-000 INPUT) (INDEX-000 0) (LENGTH-000 (CL:THE CL:FIXNUM (CL:LENGTH VECTOR-000))))
    (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING VECTOR-000) (CL:TYPE CL:FIXNUM INDEX-000 LENGTH-000))
@@ -1001,7 +1001,7 @@ with %-format URL escape sequences."
   "Takes a string and replaces %-format URL escape sequences with their real
 character equivalent according to RFC 2396."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING INPUT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE INPUT CL:SIMPLE-STRING)
   (CL:IF (CL:= (POSITION INPUT #\% 0) NULL-INTEGER) (CL:RETURN-FROM UNESCAPE-URL-STRING INPUT)
    (CL:LET*
@@ -1078,7 +1078,7 @@ character equivalent according to RFC 2396."
   "Replaces HTML escape sequences such as &amp; with their
 associated characters."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING INPUT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE INPUT CL:SIMPLE-STRING)
   (CL:LET* ((INCURSOR 0) (OUTCURSOR 0) (ESCAPESTART (POSITION INPUT #\& INCURSOR)) (ESCAPEEND -1) (INPUTLENGTH -1) (OUTPUT STELLA::NULL-STRING) (CHARACTER NULL))
    (CL:DECLARE (CL:TYPE CL:FIXNUM INCURSOR OUTCURSOR ESCAPESTART ESCAPEEND INPUTLENGTH) (CL:TYPE CL:SIMPLE-STRING OUTPUT))
@@ -1264,7 +1264,7 @@ associated characters."
   "Lookup logging `parameter' for `module'.  Use `default' if no
 value is defined."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING MODULE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE CL:SIMPLE-STRING)
   (CL:LET* ((VALUE NULL))
    (CL:LET* ((MOD NULL) (PROPS NULL) (ITER-000 (%THE-KV-LIST *LOGGING-REGISTRY*)))
@@ -1287,7 +1287,7 @@ value is defined."
                 (defaults to 10000, minimum width of about 30 is used to
                 print line header information)."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING MODULE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE CL:SIMPLE-STRING)
   (CL:LET* ((OPTIONS (VET-OPTIONS |PARAMS&VALUES| (GET-QUOTED-TREE "((:LOG-LEVELS :LEVEL :STREAM :PREFIX :MAX-WIDTH) \"/STELLA\")" "/STELLA"))) (LOGINFO NULL))
    (CL:LET* ((MOD NULL) (PROPS NULL) (ITER-000 (%THE-KV-LIST *LOGGING-REGISTRY*)))
@@ -1324,7 +1324,7 @@ value is defined."
   "Set the log-level for `module' to `level'.  This is a
 convenience function for this common operation."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING MODULE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE CL:SIMPLE-STRING)
   (%SET-LOGGING-PARAMETERS MODULE (CONS-LIST KWD-STREAMS-LEVEL LEVEL))
   :VOID)
@@ -1347,7 +1347,7 @@ convenience function for this common operation."
   "Return TRUE if `level' is lower than or equal to the current
 log level of `module'.  Return FALSE if any of them are undefined."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING MODULE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE CL:SIMPLE-STRING)
   (CL:LET*
    ((LOGLEVELS (LOOKUP-LOGGING-PARAMETER MODULE KWD-STREAMS-LOG-LEVELS NIL)) (MODULELEVEL (LOOKUP-LOGGING-PARAMETER MODULE KWD-STREAMS-LEVEL NULL))
@@ -1379,7 +1379,7 @@ log level of `module'.  Return FALSE if any of them are undefined."
 (CL:DEFUN GET-LOG-STREAM (MODULE)
   "Return a valid log stream for `module'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING MODULE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE CL:SIMPLE-STRING)
   (CL:LET* ((STREAMSPEC (LOOKUP-LOGGING-PARAMETER MODULE KWD-STREAMS-STREAM STANDARD-OUTPUT)))
    (CL:LET* ((TEST-VALUE-000 (SAFE-PRIMARY-TYPE STREAMSPEC)))
@@ -1400,7 +1400,7 @@ log level of `module'.  Return FALSE if any of them are undefined."
 `logLevel' is the same or lower than the `module's log level.  Interprets `EOL'
 or :EOL to print a line terminator."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING MODULE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE CL:SIMPLE-STRING)
   (CL:WHEN (LOG-LEVEL<= LOGLEVEL MODULE)
    (CL:LET*
@@ -1442,7 +1442,7 @@ or :EOL to print a line terminator."
 `logLevel' is the same or lower than the `module's log level.  Interprets `EOL'
 or :EOL to print a line terminator."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING MODULE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE CL:SIMPLE-STRING)
   (CL:LET* ((ARGLIST-000 NIL))
    (CL:LET* ((ARG-000 NULL) (ITER-000 MESSAGE) (COLLECT-000 NULL))

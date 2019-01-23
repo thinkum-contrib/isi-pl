@@ -157,7 +157,7 @@
 (CL:DECLAIM (CL:FTYPE (CL:FUNCTION (CL:FIXNUM) CL:SIMPLE-STRING) LISP-NULL-ARRAY-SYMBOL-STRING))
 (CL:DEFUN LISP-NULL-ARRAY-SYMBOL-STRING (RANK)
   (CL:DECLARE (CL:TYPE CL:FIXNUM RANK))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE RANK CL:FIXNUM)
   (CL:CASE RANK (1 (CL:RETURN-FROM LISP-NULL-ARRAY-SYMBOL-STRING "STELLA::NULL-1D-ARRAY")) (2 (CL:RETURN-FROM LISP-NULL-ARRAY-SYMBOL-STRING "STELLA::NULL-2D-ARRAY"))
    (3 (CL:RETURN-FROM LISP-NULL-ARRAY-SYMBOL-STRING "STELLA::NULL-3D-ARRAY")) (4 (CL:RETURN-FROM LISP-NULL-ARRAY-SYMBOL-STRING "STELLA::NULL-4D-ARRAY"))
@@ -263,7 +263,7 @@ literals are considered `eql?'."
 (%%DEFINTEGERMETHOD ZERO? ((X CL:FIXNUM))
   "Return true if `x' is 0."
   (CL:DECLARE (CL:TYPE CL:FIXNUM X))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:FIXNUM)
   (CL:RETURN-FROM ZERO? (CL:= X 0)))
 
@@ -278,7 +278,7 @@ literals are considered `eql?'."
 (%%DEFINTEGERMETHOD PLUS? ((X CL:FIXNUM))
   "Return true if `x' is greater than 0."
   (CL:DECLARE (CL:TYPE CL:FIXNUM X))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:FIXNUM)
   (CL:RETURN-FROM PLUS? (CL:> X 0)))
 
@@ -293,7 +293,7 @@ literals are considered `eql?'."
 (%%DEFINTEGERMETHOD EVEN? ((X CL:FIXNUM))
   "Return true if `x' is an even number."
   (CL:DECLARE (CL:TYPE CL:FIXNUM X))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:FIXNUM)
   (CL:RETURN-FROM EVEN? (CL:NOT (CL:LOGBITP 0 X))))
 
@@ -308,7 +308,7 @@ literals are considered `eql?'."
 (%%DEFINTEGERMETHOD ODD? ((X CL:FIXNUM))
   "Return true if `x' is an odd number."
   (CL:DECLARE (CL:TYPE CL:FIXNUM X))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:FIXNUM)
   (CL:RETURN-FROM ODD? (CL:LOGBITP 0 X)))
 
@@ -323,9 +323,9 @@ literals are considered `eql?'."
 (%%DEFINTEGERMETHOD DIV ((X CL:FIXNUM) Y)
   "Return the integer quotient from dividing `x' by `y'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:FIXNUM)
   (CL:RETURN-FROM DIV (CL:VALUES (CL:TRUNCATE X Y))))
 
@@ -343,9 +343,9 @@ sign of the result is always the same as the sign of `x'.  This has slightly
 different behavior than the `mod' function, and has less overhead in C++ and
 Java, which don't have direct support for a true modulus function."
   (CL:DECLARE (CL:TYPE CL:FIXNUM X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:FIXNUM)
   (CL:RETURN-FROM REM (CL:REM X Y)))
 
@@ -367,9 +367,9 @@ sign of the result is always the same as the sign of `x'.  This has slightly
 different behavior than the `mod' function, and has less overhead in C++ and
 Java, which don't have direct support for a true modulus function."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:DOUBLE-FLOAT)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM FREM (CL:REM X Y)))
 
@@ -381,9 +381,9 @@ Note: In C++ and Java, `mod' has more overhead than the similar
 function `rem'.  The  answers returned by `mod' and `rem' are only
 different when the signs of `x' and `modulo' are different."
   (CL:DECLARE (CL:TYPE CL:FIXNUM X MODULUS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULUS CL:FIXNUM)
   (CL:LET* ((REMAINDER (CL:MOD X MODULUS))) (CL:RETURN-FROM MOD REMAINDER)))
 
@@ -405,9 +405,9 @@ Note: In C++ and Java, `mod' has more overhead than the similar
 function `rem'.  The  answers returned by `mod' and `rem' are only
 different when the signs of `x' and `modulo' are different."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT X MODULUS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:DOUBLE-FLOAT)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULUS CL:DOUBLE-FLOAT)
   (CL:LET* ((REMAINDER (CL:MOD X MODULUS))) (CL:RETURN-FROM FMOD REMAINDER)))
 
@@ -430,7 +430,7 @@ different when the signs of `x' and `modulo' are different."
 (CL:DEFUN INTEGER-VALUED? (X)
   "Returns `true' if `x' is the floating point representation of an integer."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT X))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM INTEGER-VALUED? (CL:ZEROP (CL:REM X 1.0d0))))
 
@@ -445,7 +445,7 @@ is `true', then the last value will be rounded to an integer.
 This can be used to convert from decimal degree values to Degree-Minute-Second
 or from decimal hours to Hour-Minute-Second format."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT X))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:DOUBLE-FLOAT)
   (CL:LET* ((DEGREE (FLOOR X)) (MINUTE (FLOOR (CL:* (CL:- X DEGREE) 60.0d0))) (FSECOND (CL:- (CL:* X 3600.0d0) (CL:* DEGREE 3600.0d0) (CL:* MINUTE 60.0d0))))
    (CL:DECLARE (CL:TYPE CL:FIXNUM DEGREE MINUTE) (CL:TYPE CL:DOUBLE-FLOAT FSECOND))
@@ -490,7 +490,7 @@ The random number generator is seeded based on the current time every
 time STELLA starts up; however, your mileage may vary depending on
 the native language implementation."
   (CL:DECLARE (CL:TYPE CL:FIXNUM N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:FIXNUM)
   (CL:LET* ((RNUM (CL:RANDOM N))) (CL:DECLARE (CL:TYPE CL:FIXNUM RNUM)) (CL:RETURN-FROM RANDOM RNUM)))
 
@@ -507,7 +507,7 @@ the native language implementation."
 (CL:DEFUN SQRT (N)
   "Return the square root of `n'."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM SQRT (CL:SQRT N)))
 
@@ -517,7 +517,7 @@ the native language implementation."
 (CL:DEFUN COS (N)
   "Return the cosine of `n' radians."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM COS (CL:COS N)))
 
@@ -527,7 +527,7 @@ the native language implementation."
 (CL:DEFUN SIN (N)
   "Return the sine of `n' radians."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM SIN (CL:SIN N)))
 
@@ -537,7 +537,7 @@ the native language implementation."
 (CL:DEFUN TAN (N)
   "Return the tangent of `n' radians."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM TAN (CL:TAN N)))
 
@@ -547,7 +547,7 @@ the native language implementation."
 (CL:DEFUN ACOS (N)
   "Return the arccosine of `n' in radians."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM ACOS (CL:ACOS N)))
 
@@ -557,7 +557,7 @@ the native language implementation."
 (CL:DEFUN ASIN (N)
   "Return the arcsine of `n' in radians."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM ASIN (CL:ASIN N)))
 
@@ -567,7 +567,7 @@ the native language implementation."
 (CL:DEFUN ATAN (N)
   "Return the arc tangent of `n' in radians."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM ATAN (CL:ATAN N)))
 
@@ -577,9 +577,9 @@ the native language implementation."
 (CL:DEFUN ATAN2 (X Y)
   "Return the arc tangent of `x' / `y' in radians."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:DOUBLE-FLOAT)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM ATAN2 (CL:ATAN X Y)))
 
@@ -603,7 +603,7 @@ Used for log 10 conversions.")
 (CL:DEFUN LOG (N)
   "Return the natural logarithm (base e) of `n'."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM LOG (CL:LOG N)))
 
@@ -613,7 +613,7 @@ Used for log 10 conversions.")
 (CL:DEFUN LOG2 (N)
   "Return the logarithm (base 2) of `n'."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM LOG2 (CL:LOG n 2.0d0)))
 
@@ -623,7 +623,7 @@ Used for log 10 conversions.")
 (CL:DEFUN LOG10 (N)
   "Return the logarithm (base 10) of `n'."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM LOG10 (CL:LOG n 10.0d0)))
 
@@ -633,7 +633,7 @@ Used for log 10 conversions.")
 (CL:DEFUN EXP (N)
   "Return the e to the power `n'."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM EXP (CL:EXP N)))
 
@@ -643,9 +643,9 @@ Used for log 10 conversions.")
 (CL:DEFUN EXPT (X Y)
   "Return `x' ^ `y'."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:DOUBLE-FLOAT)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM EXPT (CL:EXPT X Y)))
 
@@ -654,9 +654,9 @@ Used for log 10 conversions.")
 (%%DEFINTEGERMETHOD MIN ((X CL:FIXNUM) Y)
   "Return the minimum of `x' and `y'.  If either is NULL, return the other."
   (CL:DECLARE (CL:TYPE CL:FIXNUM X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:FIXNUM)
   (CL:RETURN-FROM MIN (CL:IF (CL:> X Y) (CL:IF (CL:= Y NULL-INTEGER) X Y) (CL:IF (CL:= X NULL-INTEGER) Y X))))
 
@@ -671,9 +671,9 @@ Used for log 10 conversions.")
 (CL:DEFMETHOD MIN ((X CL:FLOAT) Y)
   "Return the minimum of `x' and `y'.  If either is NULL, return the other."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:DOUBLE-FLOAT)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM MIN (CL:IF (CL:> X Y) (CL:IF (CL:= Y NULL-FLOAT) X Y) (CL:IF (CL:= X NULL-FLOAT) Y X))))
 
@@ -725,9 +725,9 @@ Used for log 10 conversions.")
 (%%DEFINTEGERMETHOD MAX ((X CL:FIXNUM) Y)
   "Return the maximum of `x' and `y'.  If either is NULL, return the other."
   (CL:DECLARE (CL:TYPE CL:FIXNUM X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:FIXNUM)
   (CL:RETURN-FROM MAX (CL:IF (CL:> X Y) X Y)))
 
@@ -742,9 +742,9 @@ Used for log 10 conversions.")
 (CL:DEFMETHOD MAX ((X CL:FLOAT) Y)
   "Return the maximum of `x' and `y'.  If either is NULL, return the other."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:DOUBLE-FLOAT)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM MAX (CL:IF (CL:> X Y) X Y)))
 
@@ -796,7 +796,7 @@ Used for log 10 conversions.")
 (%%DEFINTEGERMETHOD ABS ((X CL:FIXNUM))
   "Return the absolute value of `x'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM X))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:FIXNUM)
   (CL:RETURN-FROM ABS (CL:IF (CL:< X 0) (CL:- 0 X) X)))
 
@@ -811,7 +811,7 @@ Used for log 10 conversions.")
 (CL:DEFMETHOD ABS ((X CL:FLOAT))
   "Return the absolute value of `x'."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT X))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM ABS (CL:IF (CL:< X 0.0d0) (CL:- 0.0d0 X) X)))
 
@@ -827,7 +827,7 @@ Used for log 10 conversions.")
 (CL:DEFUN CODE-CHARACTER (CODE)
   "Return the character encoded by `code' (0 <= `code' <= 255)."
   (CL:DECLARE (CL:TYPE CL:FIXNUM CODE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CODE CL:FIXNUM)
   (CL:RETURN-FROM CODE-CHARACTER (CL:CODE-CHAR CODE)))
 
@@ -863,6 +863,9 @@ be used if only the first character of a sequence of characters is to be capital
 
 ;;; (DEFSPECIAL *TRANSIENTOBJECTS?* ...)
 
+;; FIXME DOCU - Undocumented STELLA Runtime Options (??) [spchamp]
+;; This affects storage of STELLA symbols. refer to symbols.ste
+;; and STELLA::INTERN-SYMBOL
 (CL:DEFVAR *TRANSIENTOBJECTS?* CL:NIL)
 
 ;;; (DEFUN (STRING-EQL? BOOLEAN) ...)
@@ -872,9 +875,9 @@ be used if only the first character of a sequence of characters is to be capital
 test is substituted automatically by the STELLA translator if `eql?' is applied
 to strings."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:IF (CL:EQ X STELLA::NULL-STRING) (CL:RETURN-FROM STRING-EQL? (CL:EQ Y STELLA::NULL-STRING))
    (CL:RETURN-FROM STRING-EQL? (CL:AND (CL:NOT (CL:EQ Y STELLA::NULL-STRING)) (CL:string= x y)))))
@@ -885,9 +888,9 @@ to strings."
   "Return true if `x' and `y' are equal strings ignoring character case or
 are both undefined."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:IF (CL:EQ X STELLA::NULL-STRING) (CL:RETURN-FROM STRING-EQUAL? (CL:EQ Y STELLA::NULL-STRING))
    (CL:RETURN-FROM STRING-EQUAL? (CL:AND (CL:NOT (CL:EQ Y STELLA::NULL-STRING)) (CL:string-equal x y)))))
@@ -900,9 +903,9 @@ are both undefined."
 or 1, depending on whether `x' is less than, equal, or greater than `y'.
 If `case-sensitive?' is true, then case does matter for the comparison"
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:IF CASE-SENSITIVE? (CL:RETURN-FROM STRING-COMPARE (CL:COND ((CL:STRING< X Y) -1) ((CL:STRING> X Y) 1) (CL:T 0)))
    (CL:RETURN-FROM STRING-COMPARE (CL:COND ((CL:STRING-LESSP X Y) -1) ((CL:STRING-GREATERP X Y) 1) (CL:T 0)))))
@@ -912,7 +915,7 @@ If `case-sensitive?' is true, then case does matter for the comparison"
 (CL:DEFMETHOD EMPTY? ((X CL:STRING))
   "Return true if `x' is the empty string \"\""
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
   (CL:RETURN-FROM EMPTY? (STRING-EQL? X "")))
 
@@ -921,7 +924,7 @@ If `case-sensitive?' is true, then case does matter for the comparison"
 (CL:DEFMETHOD NON-EMPTY? ((X CL:STRING))
   "Return true if `x' is not the empty string \"\""
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
   (CL:RETURN-FROM NON-EMPTY? (CL:NOT (STRING-EQL? X ""))))
 
@@ -943,7 +946,7 @@ If `case-sensitive?' is true, then case does matter for the comparison"
   "Return true if `string' is either NULL, empty, or only
 contains white space characters."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
   (CL:LET* ((TEST-VALUE-000 CL:NIL))
    (CL:IF (CL:EQ STRING STELLA::NULL-STRING) (CL:SETQ TEST-VALUE-000 CL:T)
@@ -966,9 +969,9 @@ contains white space characters."
 (CL:DEFUN STRING< (X Y)
   "Return true if `x' is lexicographically < `y', considering case."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING< (CL:NULL (CL:STRING>= X Y))))
 
@@ -977,9 +980,9 @@ contains white space characters."
 (CL:DEFUN STRING<= (X Y)
   "Return true if `x' is lexicographically <= `y', considering case."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING<= (CL:NULL (CL:STRING> X Y))))
 
@@ -988,9 +991,9 @@ contains white space characters."
 (CL:DEFUN STRING>= (X Y)
   "Return true if `x' is lexicographically >= `y', considering case."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING>= (CL:NULL (CL:STRING< X Y))))
 
@@ -999,9 +1002,9 @@ contains white space characters."
 (CL:DEFUN STRING> (X Y)
   "Return true if `x' is lexicographically > `y', considering case."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING> (CL:NULL (CL:STRING<= X Y))))
 
@@ -1010,9 +1013,9 @@ contains white space characters."
 (CL:DEFUN STRING-LESS? (X Y)
   "Return true if `x' is lexicographically < `y', ignoring case."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING-LESS? (CL:NULL (CL:STRING-NOT-LESSP X Y))))
 
@@ -1021,9 +1024,9 @@ contains white space characters."
 (CL:DEFUN STRING-LESS-EQUAL? (X Y)
   "Return true if `x' is lexicographically <= `y', ignoring case."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING-LESS-EQUAL? (CL:NULL (CL:STRING-GREATERP X Y))))
 
@@ -1032,9 +1035,9 @@ contains white space characters."
 (CL:DEFUN STRING-GREATER-EQUAL? (X Y)
   "Return true if `x' is lexicographically >= `y', ignoring case."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING-GREATER-EQUAL? (CL:NULL (CL:STRING-LESSP X Y))))
 
@@ -1043,9 +1046,9 @@ contains white space characters."
 (CL:DEFUN STRING-GREATER? (X Y)
   "Return true if `x' is lexicographically > `y', ignoring case."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING-GREATER? (CL:NULL (CL:STRING-NOT-GREATERP X Y))))
 
@@ -1059,9 +1062,9 @@ collation.  In this collation `a < A < b' which gives strings that only differ i
 definite order while otherwise behaving identically to :ascii-case-insensitive.  This is
 similar to using a Java Collator for Locale.US with strength set to TERTIARY (which see)."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:LET* ((XLENGTH (CL:THE CL:FIXNUM (CL:LENGTH X))) (YLENGTH (CL:THE CL:FIXNUM (CL:LENGTH Y))) (XCH NULL-CHARACTER) (YCH NULL-CHARACTER))
    (CL:DECLARE (CL:TYPE CL:FIXNUM XLENGTH YLENGTH))
@@ -1101,9 +1104,9 @@ supported values for `collation' are :ascii-case-sensitive, :ascii-case-insensit
 the appropriate third argument.  :ascii-case-normalized calls the function
 `string-compare-case-normalized' (which see)."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:COND ((CL:EQ COLLATION KWD-PRIMAL-ASCII-CASE-SENSITIVE) (CL:RETURN-FROM COMPARE-STRINGS (STRING-COMPARE X Y CL:T)))
    ((CL:EQ COLLATION KWD-PRIMAL-ASCII-CASE-INSENSITIVE) (CL:RETURN-FROM COMPARE-STRINGS (STRING-COMPARE X Y CL:NIL)))
@@ -1119,9 +1122,9 @@ the appropriate third argument.  :ascii-case-normalized calls the function
   "Variant of `compare-strings' that also tolerates NULL values.
 NULL sorts after everything else in any collation."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING X Y))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE X CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE Y CL:SIMPLE-STRING)
   (CL:COND ((CL:EQ X STELLA::NULL-STRING) (CL:IF (CL:EQ Y STELLA::NULL-STRING) (CL:RETURN-FROM SAFE-COMPARE-STRINGS 0) (CL:RETURN-FROM SAFE-COMPARE-STRINGS 1)))
    ((CL:EQ Y STELLA::NULL-STRING) (CL:RETURN-FROM SAFE-COMPARE-STRINGS -1)) (CL:T (CL:RETURN-FROM SAFE-COMPARE-STRINGS (COMPARE-STRINGS X Y COLLATION)))))
@@ -1132,7 +1135,7 @@ NULL sorts after everything else in any collation."
 (CL:DEFUN MAKE-MUTABLE-STRING (SIZE INITCHAR)
   "Return a new mutable string filled with `size' `initchar's."
   (CL:DECLARE (CL:TYPE CL:FIXNUM SIZE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SIZE CL:FIXNUM)
   (CL:RETURN-FROM MAKE-MUTABLE-STRING (CL:MAKE-STRING SIZE :INITIAL-ELEMENT INITCHAR)))
 
@@ -1142,7 +1145,7 @@ NULL sorts after everything else in any collation."
 (CL:DEFUN MAKE-RAW-MUTABLE-STRING (SIZE)
   "Return a new uninitialized mutable string of `size'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM SIZE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SIZE CL:FIXNUM)
   (CL:LET* ((S STELLA::NULL-STRING)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING S)) (SETQ S (CL:MAKE-STRING SIZE)) (CL:RETURN-FROM MAKE-RAW-MUTABLE-STRING S)))
 
@@ -1154,9 +1157,9 @@ of `string1', `string2', and `otherStrings'.  The two mandatory parameters
 allow us to optimize the common binary case by not relying on the somewhat
 less efficient variable arguments mechanism."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING1 STRING2))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING1 CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING2 CL:SIMPLE-STRING)
   (CL:WHEN (CL:= (CL:LENGTH OTHERSTRINGS) 0) (CL:RETURN-FROM CONCATENATE (STRING-CONCATENATE STRING1 STRING2)))
   (CL:LET* ((RESULT STELLA::NULL-STRING) (LENGTH (CL:+ (CL:THE CL:FIXNUM (CL:LENGTH STRING1)) (CL:THE CL:FIXNUM (CL:LENGTH STRING2)))) (INDEX 0))
@@ -1200,11 +1203,11 @@ less efficient variable arguments mechanism."
 (CL:DECLAIM (CL:FTYPE (CL:FUNCTION (CL:SIMPLE-STRING CL:SIMPLE-STRING CL:SIMPLE-STRING) CL:SIMPLE-STRING) HELP-SUBSTITUTE-CHARACTERS))
 (CL:DEFUN HELP-SUBSTITUTE-CHARACTERS (SELF NEW-CHARS OLD-CHARS)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF NEW-CHARS OLD-CHARS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NEW-CHARS CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE OLD-CHARS CL:SIMPLE-STRING)
   (CL:LET* ((POS NULL-INTEGER)) (CL:DECLARE (CL:TYPE CL:FIXNUM POS))
    (CL:LET* ((I NULL-INTEGER) (ITER-000 0) (UPPER-BOUND-000 (CL:1- (CL:THE CL:FIXNUM (CL:LENGTH SELF))))) (CL:DECLARE (CL:TYPE CL:FIXNUM I ITER-000 UPPER-BOUND-000))
@@ -1234,11 +1237,11 @@ corresponding member of `new-chars' in the string `self'.  IMPORTANT:  The retur
 value should be used instead of relying on destructive substitution, since the
 substitution will not be destructive in all translated languages."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF NEW-CHARS OLD-CHARS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NEW-CHARS CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE OLD-CHARS CL:SIMPLE-STRING)
   (CL:RETURN-FROM SUBSTITUTE-CHARACTERS (HELP-SUBSTITUTE-CHARACTERS SELF NEW-CHARS OLD-CHARS)))
 
@@ -1248,11 +1251,11 @@ substitution will not be destructive in all translated languages."
   "Substitute all occurences of of a member of `old-chars' with the 
 corresponding member of `new-chars' in the string `self'.  Returns a new string."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF NEW-CHARS OLD-CHARS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NEW-CHARS CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE OLD-CHARS CL:SIMPLE-STRING)
   (CL:RETURN-FROM SUBSTITUTE-CHARACTERS
    (CL:LET ((S (HELP-SUBSTITUTE-CHARACTERS (CL:THE CL:SIMPLE-STRING (CL:COPY-SEQ SELF)) NEW-CHARS OLD-CHARS))) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING S))
@@ -1264,11 +1267,11 @@ corresponding member of `new-chars' in the string `self'.  Returns a new string.
 (CL:DEFUN REPLACE-SUBSTRINGS (STRING NEW OLD)
   "Replace all occurrences of `old' in `string' with `new'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING NEW OLD))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NEW CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE OLD CL:SIMPLE-STRING)
   (CL:LET*
    ((STRINGLENGTH (CL:THE CL:FIXNUM (CL:LENGTH STRING))) (OLDLENGTH (CL:THE CL:FIXNUM (CL:LENGTH OLD))) (NEWLENGTH (CL:THE CL:FIXNUM (CL:LENGTH NEW))) (NOFOCCURRENCES 0)
@@ -1321,7 +1324,7 @@ corresponding member of `new-chars' in the string `self'.  Returns a new string.
 with its corresponding <value> string.  Replacement is done in sequence which
 means (part of) a value might be replaced further with a later <var> and <value>."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING TEMPLATE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TEMPLATE CL:SIMPLE-STRING)
   (CL:LET* ((VAR STELLA::NULL-STRING)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING VAR))
    (CL:LET* ((ITEM STELLA::NULL-STRING) (ITER-000 |VARS&VALUES|)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING ITEM))
@@ -1342,15 +1345,15 @@ by the `case-conversion' keyword which should be one of
 
 The final value of target-index is returned."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SOURCE TARGET) (CL:TYPE CL:FIXNUM START END TARGET-INDEX))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SOURCE CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TARGET CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TARGET-INDEX CL:FIXNUM)
   (CL:WHEN (CL:= END NULL-INTEGER) (CL:SETQ END (CL:1- (CL:THE CL:FIXNUM (CL:LENGTH SOURCE)))))
   (CL:WHEN (CL:< END START) (CL:RETURN-FROM INSERT-STRING TARGET-INDEX))
@@ -1454,7 +1457,7 @@ and return a copy of the trimmed substring (which might be empty if we had
 all white space).  If no white space was removed, `string' is returned
 unmodified and uncopied."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
   (CL:LET* ((START 0) (LAST (CL:1- (CL:THE CL:FIXNUM (CL:LENGTH STRING)))) (END LAST)) (CL:DECLARE (CL:TYPE CL:FIXNUM START LAST END))
    (CL:LOOP WHILE
@@ -1487,7 +1490,7 @@ unmodified and uncopied."
 This is a convenience function that expects regular integers as opposed to longs
 which is useful in contexts where we do automatic unwrapping based on the target."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
   (CL:RETURN-FROM INT-TO-STRING (INTEGER-TO-STRING (CL:TRUNCATE I))))
 
@@ -1505,7 +1508,7 @@ which is useful in contexts where we do automatic unwrapping based on the target
   "STELLA version of `integer-to-string-in-base' which is faster than
 the C++ version we have but slower than the native Java version."
   (CL:DECLARE (CL:TYPE CL:FIXNUM BASE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE BASE CL:FIXNUM)
   (CL:WHEN (CL:NOT (CL:AND (CL:>= BASE 2) (CL:<= BASE 36))) (CL:ERROR "Safety violation: integer-to-string-in-base: illegal base: `~A'" BASE))
   (CL:WHEN (CL:= INTEGER 0) (CL:RETURN-FROM STELLA-INTEGER-TO-STRING-IN-BASE "0"))
@@ -1553,7 +1556,7 @@ This is a convenience function that ensures a regular integer return value.  If
 `string' represents a long integer, the behavior is undefined.  Use `parse-integer'
 if the syntax of `string' needs to be checked for errors."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
   (CL:RETURN-FROM STRING-TO-INT (CL:TRUNCATE (STRING-TO-INTEGER STRING))))
 
@@ -1567,9 +1570,9 @@ how `input' will be justified in the resulting string.  If `truncate?' is true, 
 then an overlength string will be truncated, using the opposite of `align' to pick
 the truncation direction."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING INPUT) (CL:TYPE CL:FIXNUM LENGTH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE INPUT CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE LENGTH CL:FIXNUM)
   (CL:LET* ((LEN (CL:THE CL:FIXNUM (CL:LENGTH INPUT)))) (CL:DECLARE (CL:TYPE CL:FIXNUM LEN))
    (CL:COND ((CL:= LEN LENGTH) (CL:RETURN-FROM FORMAT-WITH-PADDING INPUT))
@@ -1601,9 +1604,9 @@ the truncation direction."
   "Returns a string representing `value' of at least length
 'size', padded if necessary with 0 characters."
   (CL:DECLARE (CL:TYPE CL:FIXNUM VALUE SIZE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VALUE CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SIZE CL:FIXNUM)
   (CL:RETURN-FROM ZERO-PAD-INTEGER (cl:format cl:nil "~v,'0D" size value)))
 
@@ -1612,9 +1615,9 @@ the truncation direction."
 (CL:DECLAIM (CL:FTYPE (CL:FUNCTION (CL:SIMPLE-STRING CL:FIXNUM) CL:SIMPLE-STRING) ZERO-PAD-STRING))
 (CL:DEFUN ZERO-PAD-STRING (INPUT SIZE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING INPUT) (CL:TYPE CL:FIXNUM SIZE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE INPUT CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SIZE CL:FIXNUM)
   (CL:RETURN-FROM ZERO-PAD-STRING (FORMAT-WITH-PADDING INPUT SIZE #\0 KWD-PRIMAL-RIGHT CL:NIL)))
 
@@ -1623,7 +1626,7 @@ the truncation direction."
 (CL:DEFMETHOD FIRST ((SELF CL:STRING))
   "Return the first character of `self'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM FIRST
    (CL:LET ((SELF SELF) (POSITION 0)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1634,7 +1637,7 @@ the truncation direction."
 (CL:DEFMETHOD FIRST ((SELF CL:STRING))
   "Return the first character of `self' (settable via `setf')."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM FIRST
    (CL:LET ((SELF SELF) (POSITION 0)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1645,7 +1648,7 @@ the truncation direction."
 (CL:DEFMETHOD FIRST-SETTER ((SELF CL:STRING) CH)
   "Set the first character of `self' to `ch' and return `ch'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM FIRST-SETTER
    (CL:LET ((SELF SELF) (CH CH) (POSITION 0)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1656,7 +1659,7 @@ the truncation direction."
 (CL:DEFMETHOD SECOND ((SELF CL:STRING))
   "Return the second character of `self'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM SECOND
    (CL:LET ((SELF SELF) (POSITION 1)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1667,7 +1670,7 @@ the truncation direction."
 (CL:DEFMETHOD SECOND ((SELF CL:STRING))
   "Return the second character of `self' (settable via `setf')."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM SECOND
    (CL:LET ((SELF SELF) (POSITION 1)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1678,7 +1681,7 @@ the truncation direction."
 (CL:DEFMETHOD SECOND-SETTER ((SELF CL:STRING) CH)
   "Set the second character of `self' to `ch' and return `ch'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM SECOND-SETTER
    (CL:LET ((SELF SELF) (CH CH) (POSITION 1)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1689,7 +1692,7 @@ the truncation direction."
 (CL:DEFMETHOD THIRD ((SELF CL:STRING))
   "Return the third character of `self'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM THIRD
    (CL:LET ((SELF SELF) (POSITION 2)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1700,7 +1703,7 @@ the truncation direction."
 (CL:DEFMETHOD THIRD ((SELF CL:STRING))
   "Return the third character of `self' (settable via `setf')."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM THIRD
    (CL:LET ((SELF SELF) (POSITION 2)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1711,7 +1714,7 @@ the truncation direction."
 (CL:DEFMETHOD THIRD-SETTER ((SELF CL:STRING) CH)
   "Set the third character of `self' to `ch' and return `ch'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM THIRD-SETTER
    (CL:LET ((SELF SELF) (CH CH) (POSITION 2)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1722,7 +1725,7 @@ the truncation direction."
 (CL:DEFMETHOD FOURTH ((SELF CL:STRING))
   "Return the fourth character of `self'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM FOURTH
    (CL:LET ((SELF SELF) (POSITION 3)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1733,7 +1736,7 @@ the truncation direction."
 (CL:DEFMETHOD FOURTH ((SELF CL:STRING))
   "Return the fourth character of `self' (settable via `setf')."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM FOURTH
    (CL:LET ((SELF SELF) (POSITION 3)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1744,7 +1747,7 @@ the truncation direction."
 (CL:DEFMETHOD FOURTH-SETTER ((SELF CL:STRING) CH)
   "Set the fourth character of `self' to `ch' and return `ch'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM FOURTH-SETTER
    (CL:LET ((SELF SELF) (CH CH) (POSITION 3)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1755,7 +1758,7 @@ the truncation direction."
 (CL:DEFMETHOD FIFTH ((SELF CL:STRING))
   "Return the fifth character of `self'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM FIFTH
    (CL:LET ((SELF SELF) (POSITION 4)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1766,7 +1769,7 @@ the truncation direction."
 (CL:DEFMETHOD FIFTH ((SELF CL:STRING))
   "Return the fifth character of `self' (settable via `setf')."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM FIFTH
    (CL:LET ((SELF SELF) (POSITION 4)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1777,7 +1780,7 @@ the truncation direction."
 (CL:DEFMETHOD FIFTH-SETTER ((SELF CL:STRING) CH)
   "Set the fifth character of `self' to `ch' and return `ch'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM FIFTH-SETTER
    (CL:LET ((SELF SELF) (CH CH) (POSITION 4)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1788,9 +1791,9 @@ the truncation direction."
 (CL:DEFMETHOD NTH ((SELF CL:STRING) POSITION)
   "Return the character in `self' at `position'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE POSITION CL:FIXNUM)
   (CL:RETURN-FROM NTH (CL:SCHAR (CL:THE CL:SIMPLE-STRING SELF) (CL:THE CL:FIXNUM POSITION))))
 
@@ -1799,9 +1802,9 @@ the truncation direction."
 (CL:DEFMETHOD NTH ((SELF CL:STRING) POSITION)
   "Return the character in `self' at `position'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE POSITION CL:FIXNUM)
   (CL:RETURN-FROM NTH (CL:SCHAR (CL:THE CL:SIMPLE-STRING SELF) (CL:THE CL:FIXNUM POSITION))))
 
@@ -1810,9 +1813,9 @@ the truncation direction."
 (CL:DEFMETHOD NTH-SETTER ((SELF CL:STRING) CH POSITION)
   "Set the character in `self' at `position' to `ch'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF) (CL:TYPE CL:FIXNUM POSITION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE POSITION CL:FIXNUM)
   (CL:RETURN-FROM NTH-SETTER (SETF (CL:SCHAR (CL:THE CL:SIMPLE-STRING SELF) (CL:THE CL:FIXNUM POSITION)) (CL:THE CL:CHARACTER CH))))
 
@@ -1821,7 +1824,7 @@ the truncation direction."
 (CL:DEFMETHOD LENGTH ((SELF CL:STRING))
   "Return the length of the string `self'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM LENGTH (CL:LENGTH SELF)))
 
@@ -1830,7 +1833,7 @@ the truncation direction."
 (CL:DEFMETHOD LENGTH ((SELF CL:STRING))
   "Return the length of the string `self'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM LENGTH (CL:LENGTH SELF)))
 
@@ -1842,11 +1845,11 @@ the truncation direction."
 `substring' in `string', beginning from `start'.  Return NULL if it is not
 a substring.  The comparison ignores differences in letter case."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING SUBSTRING) (CL:TYPE CL:FIXNUM START))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SUBSTRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
   (CL:WHEN (CL:= START NULL-INTEGER) (CL:SETQ START 0))
   (CL:RETURN-FROM STRING-SEARCH-IGNORE-CASE (CL:or (CL:search substring string :start2 start :test #'CL:string-equal)
@@ -1858,11 +1861,11 @@ a substring.  The comparison ignores differences in letter case."
   "Return TRUE if `string' starts with `prefix' starting from
 `start' (which defaults to 0 if it is supplied as NULL)."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING PREFIX) (CL:TYPE CL:FIXNUM START))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PREFIX CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
   (CL:WHEN (CL:= START NULL-INTEGER) (CL:SETQ START 0))
   (CL:LET* ((PREFIXLENGTH (CL:THE CL:FIXNUM (CL:LENGTH PREFIX)))) (CL:DECLARE (CL:TYPE CL:FIXNUM PREFIXLENGTH))
@@ -1888,11 +1891,11 @@ a substring.  The comparison ignores differences in letter case."
   "Return TRUE if the substring of `string' ending at `end'
 ends with `suffix'.  If `end' is NULL it defaults to the length of `string'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING SUFFIX) (CL:TYPE CL:FIXNUM END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SUFFIX CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
   (CL:WHEN (CL:= END NULL-INTEGER) (CL:SETQ END (CL:THE CL:FIXNUM (CL:LENGTH STRING))))
   (CL:LET* ((SUFFIXLENGTH (CL:THE CL:FIXNUM (CL:LENGTH SUFFIX))) (START (CL:- END SUFFIXLENGTH))) (CL:DECLARE (CL:TYPE CL:FIXNUM SUFFIXLENGTH START))
@@ -1919,17 +1922,17 @@ ends with `suffix'.  If `end' is NULL it defaults to the length of `string'."
   "Helping function for `find-matching-prefix' that requires `end1' and `end2'
 to be properly set up."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING1 STRING2) (CL:TYPE CL:FIXNUM START1 END1 START2 END2))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING1 CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START1 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END1 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING2 CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START2 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END2 CL:FIXNUM)
   (CL:LET* ((I1 START1) (I2 START2)) (CL:DECLARE (CL:TYPE CL:FIXNUM I1 I2))
    (CL:LOOP WHILE
@@ -1952,17 +1955,17 @@ The search will end when `end1' or `end2' is reached.  If either `end1'
 or `end2' is null, then they will be set to the length of their respective
 strings."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING1 STRING2) (CL:TYPE CL:FIXNUM START1 END1 START2 END2))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING1 CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START1 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END1 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING2 CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START2 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END2 CL:FIXNUM)
   (CL:WHEN (CL:= END1 NULL-INTEGER) (CL:SETQ END1 (CL:THE CL:FIXNUM (CL:LENGTH STRING1))))
   (CL:WHEN (CL:= END2 NULL-INTEGER) (CL:SETQ END2 (CL:THE CL:FIXNUM (CL:LENGTH STRING2))))
@@ -1978,17 +1981,17 @@ The search will end when `end1' or `end2' is reached.  If either `end1'
 or `end2' is null, then they will be set to the length of their respective
 strings.  If there is no mismatch, then `null' values are returned."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING1 STRING2) (CL:TYPE CL:FIXNUM START1 END1 START2 END2))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING1 CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START1 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END1 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING2 CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START2 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END2 CL:FIXNUM)
   (CL:WHEN (CL:= END1 NULL-INTEGER) (CL:SETQ END1 (CL:THE CL:FIXNUM (CL:LENGTH STRING1))))
   (CL:WHEN (CL:= END2 NULL-INTEGER) (CL:SETQ END2 (CL:THE CL:FIXNUM (CL:LENGTH STRING2))))
@@ -2003,13 +2006,13 @@ strings.  If there is no mismatch, then `null' values are returned."
 (CL:DEFUN NON-MATCHING-POSITION-HELPER (SOURCE START END MATCH)
   "Helper for `non-matching-position' that requires `end' to not be `null'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SOURCE MATCH) (CL:TYPE CL:FIXNUM START END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SOURCE CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MATCH CL:SIMPLE-STRING)
   (CL:LOOP WHILE
    (CL:AND (CL:< START END)
@@ -2026,11 +2029,11 @@ strings.  If there is no mismatch, then `null' values are returned."
   "Returns the index into `source', starting from `start', of the first
 character that is not included in `match'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SOURCE MATCH) (CL:TYPE CL:FIXNUM START))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SOURCE CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MATCH CL:SIMPLE-STRING)
   (CL:RETURN-FROM NON-MATCHING-POSITION (NON-MATCHING-POSITION-HELPER SOURCE START (CL:THE CL:FIXNUM (CL:LENGTH SOURCE)) MATCH)))
 
@@ -2040,11 +2043,11 @@ character that is not included in `match'."
 (CL:DEFUN HELP-ADVANCE-PAST-WHITESPACE (SOURCE START END)
   "Helper for `advance-past-whitespace' that requires `end' to be properly set."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SOURCE) (CL:TYPE CL:FIXNUM START END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SOURCE CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
   (CL:LOOP WHILE
    (CL:AND (CL:< START END)
@@ -2065,9 +2068,9 @@ character that is not included in `match'."
   "Returns the first index into `source', starting from `start', of
 the first character that is not white space."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SOURCE) (CL:TYPE CL:FIXNUM START))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SOURCE CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
   (CL:RETURN-FROM ADVANCE-PAST-WHITESPACE (HELP-ADVANCE-PAST-WHITESPACE SOURCE START (CL:THE CL:FIXNUM (CL:LENGTH SOURCE)))))
 
@@ -2078,9 +2081,9 @@ the first character that is not white space."
 except for the amounts of whitespace separating words.  Leading or
 trailing whitespace is also not considered."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING S1 S2))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE S1 CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE S2 CL:SIMPLE-STRING)
   (CL:COND ((CL:EQ S1 STELLA::NULL-STRING) (CL:RETURN-FROM EQL-EXCEPT-IN-WHITESPACE? (CL:EQ S2 STELLA::NULL-STRING)))
    ((CL:EQ S2 STELLA::NULL-STRING) (CL:RETURN-FROM EQL-EXCEPT-IN-WHITESPACE? CL:NIL)) ((STRING-EQL? S1 S2) (CL:RETURN-FROM EQL-EXCEPT-IN-WHITESPACE? CL:T)))
@@ -2158,7 +2161,7 @@ trailing whitespace is also not considered."
 (CL:DEFUN SPLIT-STRING (INPUT SEPARATOR)
   "Split `input' into separate strings based on the `separator' character."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING INPUT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE INPUT CL:SIMPLE-STRING)
   (CL:LET* ((LENGTH (CL:THE CL:FIXNUM (CL:LENGTH INPUT))) (START 0) (END 0) (STRINGS NIL)) (CL:DECLARE (CL:TYPE CL:FIXNUM LENGTH START END))
    (CL:LOOP (CL:SETQ END (POSITION INPUT SEPARATOR START)) (CL:SETQ STRINGS (CONS (WRAP-STRING (SUBSEQUENCE INPUT START END)) STRINGS))
@@ -2171,7 +2174,7 @@ trailing whitespace is also not considered."
   "Read a STELLA expression from `string' and return the result.
 This is identical to `read-s-expression-from-string'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
   (CL:RETURN-FROM UNSTRINGIFY (READ-S-EXPRESSION-FROM-STRING STRING)))
 
@@ -2226,7 +2229,7 @@ This is identical to `read-s-expression-from-string'."
 
 (CL:DEFMETHOD LOOKUP ((SELF INTEGER-HASH-TABLE) KEY)
   (CL:DECLARE (CL:TYPE CL:FIXNUM KEY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:FIXNUM)
   (CL:WHEN *USE-STELLA-HASH-TABLES?* (CL:RETURN-FROM LOOKUP (STELLA-HASH-TABLE-LOOKUP (%THE-STELLA-HASH-TABLE SELF) (WRAP-INTEGER KEY))))
   (CL:LET* ((NATIVE-TABLE (%THE-HASH-TABLE SELF))) (CL:RETURN-FROM LOOKUP (CL:OR (CL:GETHASH KEY NATIVE-TABLE) NULL))))
@@ -2235,7 +2238,7 @@ This is identical to `read-s-expression-from-string'."
 
 (CL:DEFMETHOD INSERT-AT ((SELF INTEGER-HASH-TABLE) KEY VALUE)
   (CL:DECLARE (CL:TYPE CL:FIXNUM KEY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:FIXNUM)
   (CL:WHEN *USE-STELLA-HASH-TABLES?* (STELLA-HASH-TABLE-INSERT-AT (%THE-STELLA-HASH-TABLE SELF) (WRAP-INTEGER KEY) VALUE) (CL:RETURN-FROM INSERT-AT))
   (CL:LET* ((NATIVE-TABLE (%THE-HASH-TABLE SELF))) (CL:DECLARE (CL:FIXNUM KEY)) (CL:SETF (CL:GETHASH KEY NATIVE-TABLE) VALUE))
@@ -2245,7 +2248,7 @@ This is identical to `read-s-expression-from-string'."
 
 (CL:DEFMETHOD REMOVE-AT ((SELF INTEGER-HASH-TABLE) KEY)
   (CL:DECLARE (CL:TYPE CL:FIXNUM KEY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:FIXNUM)
   (CL:WHEN *USE-STELLA-HASH-TABLES?* (STELLA-HASH-TABLE-REMOVE-AT (%THE-STELLA-HASH-TABLE SELF) (WRAP-INTEGER KEY)) (CL:RETURN-FROM REMOVE-AT))
   (CL:LET* ((NATIVE-TABLE (%THE-HASH-TABLE SELF))) (CL:REMHASH KEY NATIVE-TABLE))
@@ -2263,7 +2266,7 @@ This is identical to `read-s-expression-from-string'."
 
 (CL:DEFMETHOD LOOKUP ((SELF FLOAT-HASH-TABLE) KEY)
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT KEY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:DOUBLE-FLOAT)
   (CL:WHEN *USE-STELLA-HASH-TABLES?* (CL:RETURN-FROM LOOKUP (STELLA-HASH-TABLE-LOOKUP (%THE-STELLA-HASH-TABLE SELF) (WRAP-FLOAT KEY))))
   (CL:LET* ((NATIVE-TABLE (%THE-HASH-TABLE SELF))) (CL:RETURN-FROM LOOKUP (CL:OR (CL:GETHASH KEY NATIVE-TABLE) NULL))))
@@ -2272,7 +2275,7 @@ This is identical to `read-s-expression-from-string'."
 
 (CL:DEFMETHOD INSERT-AT ((SELF FLOAT-HASH-TABLE) KEY VALUE)
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT KEY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:DOUBLE-FLOAT)
   (CL:WHEN *USE-STELLA-HASH-TABLES?* (STELLA-HASH-TABLE-INSERT-AT (%THE-STELLA-HASH-TABLE SELF) (WRAP-FLOAT KEY) VALUE) (CL:RETURN-FROM INSERT-AT))
   (CL:LET* ((NATIVE-TABLE (%THE-HASH-TABLE SELF))) (CL:SETF (CL:GETHASH KEY NATIVE-TABLE) VALUE))
@@ -2282,7 +2285,7 @@ This is identical to `read-s-expression-from-string'."
 
 (CL:DEFMETHOD REMOVE-AT ((SELF FLOAT-HASH-TABLE) KEY)
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT KEY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:DOUBLE-FLOAT)
   (CL:WHEN *USE-STELLA-HASH-TABLES?* (STELLA-HASH-TABLE-REMOVE-AT (%THE-STELLA-HASH-TABLE SELF) (WRAP-FLOAT KEY)) (CL:RETURN-FROM REMOVE-AT))
   (CL:LET* ((NATIVE-TABLE (%THE-HASH-TABLE SELF))) (CL:REMHASH KEY NATIVE-TABLE))
@@ -2300,7 +2303,7 @@ This is identical to `read-s-expression-from-string'."
 
 (CL:DEFMETHOD LOOKUP ((SELF STRING-HASH-TABLE) KEY)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING KEY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:SIMPLE-STRING)
   (CL:WHEN *USE-STELLA-HASH-TABLES?* (CL:RETURN-FROM LOOKUP (STELLA-STRING-HASH-TABLE-LOOKUP (%THE-STELLA-HASH-TABLE SELF) KEY)))
   (CL:LET* ((NATIVE-TABLE (%THE-HASH-TABLE SELF))) (CL:RETURN-FROM LOOKUP (CL:OR (CL:GETHASH KEY NATIVE-TABLE) NULL))))
@@ -2309,7 +2312,7 @@ This is identical to `read-s-expression-from-string'."
 
 (CL:DEFMETHOD INSERT-AT ((SELF STRING-HASH-TABLE) KEY VALUE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING KEY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:SIMPLE-STRING)
   (CL:WHEN *USE-STELLA-HASH-TABLES?* (STELLA-HASH-TABLE-INSERT-AT (%THE-STELLA-HASH-TABLE SELF) (WRAP-STRING KEY) VALUE) (CL:RETURN-FROM INSERT-AT))
   (CL:LET* ((NATIVE-TABLE (%THE-HASH-TABLE SELF))) (CL:SETF (CL:GETHASH KEY NATIVE-TABLE) VALUE))
@@ -2319,7 +2322,7 @@ This is identical to `read-s-expression-from-string'."
 
 (CL:DEFMETHOD REMOVE-AT ((SELF STRING-HASH-TABLE) KEY)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING KEY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:SIMPLE-STRING)
   (CL:WHEN *USE-STELLA-HASH-TABLES?* (STELLA-HASH-TABLE-REMOVE-AT (%THE-STELLA-HASH-TABLE SELF) (WRAP-STRING KEY)) (CL:RETURN-FROM REMOVE-AT))
   (CL:LET* ((NATIVE-TABLE (%THE-HASH-TABLE SELF))) (CL:REMHASH KEY NATIVE-TABLE))
@@ -2337,7 +2340,7 @@ This is identical to `read-s-expression-from-string'."
 
 (CL:DEFMETHOD LOOKUP ((SELF STRING-TO-INTEGER-HASH-TABLE) KEY)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING KEY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:SIMPLE-STRING)
   (CL:WHEN *USE-STELLA-HASH-TABLES?* (CL:RETURN-FROM LOOKUP (UNWRAP-INTEGER (STELLA-STRING-HASH-TABLE-LOOKUP (%THE-STELLA-HASH-TABLE SELF) KEY))))
   (CL:LET* ((NATIVE-TABLE (%THE-HASH-TABLE SELF)) (RESULT NULL-INTEGER)) (CL:DECLARE (CL:TYPE CL:FIXNUM RESULT))
@@ -2347,9 +2350,9 @@ This is identical to `read-s-expression-from-string'."
 
 (CL:DEFMETHOD INSERT-AT ((SELF STRING-TO-INTEGER-HASH-TABLE) KEY VALUE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING KEY) (CL:TYPE CL:FIXNUM VALUE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VALUE CL:FIXNUM)
   (CL:WHEN *USE-STELLA-HASH-TABLES?* (STELLA-HASH-TABLE-INSERT-AT (%THE-STELLA-HASH-TABLE SELF) (WRAP-STRING KEY) (WRAP-INTEGER VALUE)) (CL:RETURN-FROM INSERT-AT))
   (CL:LET* ((NATIVE-TABLE (%THE-HASH-TABLE SELF))) (CL:SETF (CL:GETHASH KEY NATIVE-TABLE) VALUE))
@@ -2359,7 +2362,7 @@ This is identical to `read-s-expression-from-string'."
 
 (CL:DEFMETHOD REMOVE-AT ((SELF STRING-TO-INTEGER-HASH-TABLE) KEY)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING KEY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:SIMPLE-STRING)
   (CL:WHEN *USE-STELLA-HASH-TABLES?* (STELLA-HASH-TABLE-REMOVE-AT (%THE-STELLA-HASH-TABLE SELF) (WRAP-STRING KEY)) (CL:RETURN-FROM REMOVE-AT))
   (CL:LET* ((NATIVE-TABLE (%THE-HASH-TABLE SELF))) (CL:REMHASH KEY NATIVE-TABLE))
@@ -2408,9 +2411,9 @@ onto a positive number first.  Note, that the sign conversion mapping is not
 equivalent to calling the `abs' function (it simply masks the sign bit for
 speed) and therefore really only makes sense for hash codes."
   (CL:DECLARE (CL:TYPE CL:FIXNUM CODE SIZE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CODE CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SIZE CL:FIXNUM)
   (CL:RETURN-FROM HASHMOD (CL:REM (CL:THE CL:FIXNUM (CL:LOGAND CODE *INTEGER-UNSIGNED-BITS-MASK*)) SIZE)))
 
@@ -2426,7 +2429,7 @@ it must be called with an atom (i.e., constant or variable) as its argument.
 This function is primarily useful for hashing sequences of items where the hash
 code should take the sequential order of elements into account (e.g., lists)."
   (CL:DECLARE (CL:TYPE CL:FIXNUM ARG))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARG CL:FIXNUM)
   (CL:RETURN-FROM ROTATE-HASH-CODE
    (CL:IF (CL:= (CL:THE CL:FIXNUM (CL:LOGAND ARG 1)) 0)
@@ -2513,7 +2516,7 @@ do not necessarily generate different hash codes."
 
 (CL:DEFMETHOD HASH-CODE ((SELF CL:STRING))
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-STRING)
   (CL:RETURN-FROM HASH-CODE (CL:SXHASH SELF)))
 
@@ -2521,7 +2524,7 @@ do not necessarily generate different hash codes."
 
 (%%DEFINTEGERMETHOD HASH-CODE ((SELF CL:FIXNUM))
   (CL:DECLARE (CL:TYPE CL:FIXNUM SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:FIXNUM)
   (CL:RETURN-FROM HASH-CODE SELF))
 
@@ -2537,7 +2540,7 @@ do not necessarily generate different hash codes."
 
 (CL:DEFMETHOD HASH-CODE ((SELF CL:FLOAT))
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT SELF))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:DOUBLE-FLOAT)
   (CL:RETURN-FROM HASH-CODE (CL:SXHASH SELF)))
 
@@ -2576,9 +2579,9 @@ The hash-code is based on `seedCode' which usually will be 0.  However,
 operation to achieve hashing on sequences of strings without actually
 having to concatenate them."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING) (CL:TYPE CL:FIXNUM SEEDCODE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SEEDCODE CL:FIXNUM)
   (CL:LET* ((CODE SEEDCODE) (CURSOR (CL:THE CL:FIXNUM (CL:LENGTH STRING)))) (CL:DECLARE (CL:TYPE CL:FIXNUM CODE CURSOR))
    (CL:IF (CL:= CURSOR 0) (CL:RETURN-FROM HASH-STRING 4303803) (CL:SETQ CURSOR (CL:1- CURSOR)))
@@ -2621,7 +2624,7 @@ that are suitable to be used as hash table sizes.")
 (CL:DEFUN PICK-HASH-TABLE-SIZE-PRIME (MINSIZE)
   "Return a hash table prime of at least `minSize'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM MINSIZE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MINSIZE CL:FIXNUM)
   (CL:LET* ((PRIME NULL) (VECTOR-000 *HASH-TABLE-SIZE-PRIMES*) (INDEX-000 0) (LENGTH-000 (LENGTH VECTOR-000))) (CL:DECLARE (CL:TYPE CL:FIXNUM INDEX-000 LENGTH-000))
    (CL:LOOP WHILE (CL:< INDEX-000 LENGTH-000) DO (CL:SETQ PRIME (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY VECTOR-000)) INDEX-000))
@@ -2642,7 +2645,7 @@ than the current size of `self' the vector will be truncated.  Otherwise,
 the internal array of `self' will be grown to `size' and unused elements
 will be initialized to NULL."
   (CL:DECLARE (CL:TYPE CL:FIXNUM SIZE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SIZE CL:FIXNUM)
   (CL:LET* ((OLD_SIZE (%ARRAY-SIZE SELF)) (I OLD_SIZE) (OLD_ARRAY (%THE-ARRAY SELF)) (NEW_ARRAY OLD_ARRAY))
    (CL:DECLARE (CL:TYPE CL:FIXNUM OLD_SIZE I) (CL:TYPE CL:SIMPLE-VECTOR OLD_ARRAY NEW_ARRAY)) (CL:WHEN (CL:= SIZE OLD_SIZE) (CL:RETURN-FROM RESIZE-VECTOR))
@@ -2658,9 +2661,9 @@ will be initialized to NULL."
 (CL:DEFMETHOD NTH ((SELF CL:VECTOR) POSITION)
   "Return the element in `self' at `position'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR SELF) (CL:TYPE CL:FIXNUM POSITION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-VECTOR)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE POSITION CL:FIXNUM)
   (CL:RETURN-FROM NTH (CL:AREF SELF POSITION)))
 
@@ -2669,9 +2672,9 @@ will be initialized to NULL."
 (CL:DEFMETHOD NTH-SETTER ((SELF CL:VECTOR) VALUE POSITION)
   "Set the element in `self' at `position' to `value'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR SELF) (CL:TYPE CL:FIXNUM POSITION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SELF CL:SIMPLE-VECTOR)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE POSITION CL:FIXNUM)
   (CL:RETURN-FROM NTH-SETTER (CL:SETF (CL:AREF SELF POSITION) VALUE)))
 
@@ -2796,9 +2799,9 @@ NULL will be returned.  Note that it is possible due to multi-threading
 or processing that the generated filename becomes used by another thread
 or OS process.  If necessary, this case can be handled by the caller."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PREFIX SUFFIX))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PREFIX CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SUFFIX CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ PREFIX STELLA::NULL-STRING) (CL:SETQ PREFIX "tmpfile"))
   (CL:WHEN (CL:EQ SUFFIX STELLA::NULL-STRING) (CL:SETQ SUFFIX ""))
@@ -2821,9 +2824,9 @@ allocates the file to prevent other processes from using that name.
 This is still not fully thread safe - for that we would need a file lock -
 but maybe a bit better in avoiding collisions."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PREFIX SUFFIX))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PREFIX CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SUFFIX CL:SIMPLE-STRING)
   (CL:LET* ((I NULL-INTEGER) (ITER-000 0) (UPPER-BOUND-000 100)) (CL:DECLARE (CL:TYPE CL:FIXNUM I ITER-000 UPPER-BOUND-000))
    (CL:LOOP WHILE (CL:<= ITER-000 UPPER-BOUND-000) DO (CL:SETQ I ITER-000) (CL:SETQ I I)
@@ -2841,13 +2844,13 @@ but maybe a bit better in avoiding collisions."
 
 (CL:DEFUN CL-LIST-DIRECTORY-FILES (DIRECTORY)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING DIRECTORY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIRECTORY CL:SIMPLE-STRING)
   (CL:LET* ((FILES NULL) (DIRSEP (DIRECTORY-SEPARATOR-STRING)) (CHECKDUPLICATES? CL:NIL) (NORMFILE STELLA::NULL-STRING) (NORMALIZEDFILES NIL))
    (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING DIRSEP NORMFILE)) #+allegro (setq files (cl:directory directory))
        #+cmucl (setq files (cl:directory directory))
        #+lispworks (setq files (cl:directory (string-concatenate directory "*")))
-       #+mcl (setq files (cl:directory (string-concatenate directory "*.*")))
+       #+(or mcl openmcl) (setq files (cl:directory (string-concatenate directory "*.*")))
        #+clisp (setq files (cl:append (cl:directory (string-concatenate directory "*"))
                                       (cl:directory (string-concatenate directory "*/"))))
    (CL:WHEN (CL:EQ FILES NULL) (CL:SETQ CHECKDUPLICATES? CL:T) (setq files (cl:append (cl:directory (string-concatenate directory "*"))
@@ -2871,7 +2874,7 @@ but maybe a bit better in avoiding collisions."
 
 (CL:DEFUN CPP-LIST-DIRECTORY-FILES (DIRECTORY)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING DIRECTORY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIRECTORY CL:SIMPLE-STRING)
   (CL:LET* ((FILES NIL))
    (CL:WHEN (CL:EQ FILES NULL)
@@ -2883,7 +2886,7 @@ but maybe a bit better in avoiding collisions."
 
 (CL:DEFUN JAVA-LIST-DIRECTORY-FILES (DIRECTORY)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING DIRECTORY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIRECTORY CL:SIMPLE-STRING)
   (CL:LET* ((FILES NIL)) (CL:RETURN-FROM JAVA-LIST-DIRECTORY-FILES FILES)))
 
@@ -2898,7 +2901,7 @@ directories.  Handles logical pathnames but resulting files will always use phys
 syntax.  This is mostly consistent across native languages, but some differences still exist -
 e.g., Lisp will convert . or .. into absolute pathnames."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING DIRECTORY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIRECTORY CL:SIMPLE-STRING)
   (CL:SETQ DIRECTORY (TRANSLATE-LOGICAL-PATHNAME (FILE-NAME-AS-DIRECTORY DIRECTORY)))
   (ENSURE-FILE-EXISTS DIRECTORY "list-directory-files")
@@ -2929,7 +2932,7 @@ a `directory' component.  Files in subdirectories will be prefixed with the rela
 subdirectory path starting right below `directory'.  The sort order is lexicographic
 within directories which results in a depth-first presentation order of files."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING DIRECTORY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIRECTORY CL:SIMPLE-STRING)
   (CL:SETQ DIRECTORY (TRANSLATE-LOGICAL-PATHNAME (FILE-NAME-AS-DIRECTORY DIRECTORY)))
   (ENSURE-FILE-EXISTS DIRECTORY "list-directory-files")
@@ -2963,7 +2966,7 @@ within directories which results in a depth-first presentation order of files."
 
 (%%DEFINTEGERMETHOD LOGNOT ((ARG CL:FIXNUM))
   (CL:DECLARE (CL:TYPE CL:FIXNUM ARG))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARG CL:FIXNUM)
   (CL:RETURN-FROM LOGNOT (CL:LOGNOT ARG)))
 
@@ -2976,9 +2979,9 @@ within directories which results in a depth-first presentation order of files."
 
 (%%DEFINTEGERMETHOD LOGAND ((ARG1 CL:FIXNUM) ARG2)
   (CL:DECLARE (CL:TYPE CL:FIXNUM ARG1 ARG2))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARG1 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARG2 CL:FIXNUM)
   (CL:RETURN-FROM LOGAND (CL:LOGAND ARG1 ARG2)))
 
@@ -2991,9 +2994,9 @@ within directories which results in a depth-first presentation order of files."
 
 (%%DEFINTEGERMETHOD LOGOR ((ARG1 CL:FIXNUM) ARG2)
   (CL:DECLARE (CL:TYPE CL:FIXNUM ARG1 ARG2))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARG1 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARG2 CL:FIXNUM)
   (CL:RETURN-FROM LOGOR (CL:LOGIOR ARG1 ARG2)))
 
@@ -3006,9 +3009,9 @@ within directories which results in a depth-first presentation order of files."
 
 (%%DEFINTEGERMETHOD LOGXOR ((ARG1 CL:FIXNUM) ARG2)
   (CL:DECLARE (CL:TYPE CL:FIXNUM ARG1 ARG2))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARG1 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARG2 CL:FIXNUM)
   (CL:RETURN-FROM LOGXOR (CL:LOGXOR ARG1 ARG2)))
 
@@ -3057,9 +3060,9 @@ of base-10 digits to represent `x', with the exception of x=0."
 
 (%%DEFINTEGERMETHOD SHIFT-LEFT ((ARG CL:FIXNUM) COUNT)
   (CL:DECLARE (CL:TYPE CL:FIXNUM ARG COUNT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARG CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE COUNT CL:FIXNUM)
   (CL:RETURN-FROM SHIFT-LEFT (CL:ASH ARG COUNT)))
 
@@ -3067,7 +3070,7 @@ of base-10 digits to represent `x', with the exception of x=0."
 
 (%%DEFINTEGERMETHOD SHIFT-LEFT ((ARG CL:INTEGER) COUNT)
   (CL:DECLARE (CL:TYPE CL:FIXNUM COUNT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE COUNT CL:FIXNUM)
   (CL:RETURN-FROM SHIFT-LEFT (CL:ASH ARG COUNT)))
 
@@ -3079,9 +3082,9 @@ of base-10 digits to represent `x', with the exception of x=0."
 negative.  This is an arithmetic shift that preserve the sign of `arg'
 and is equivalent to dividing `arg' by 2** `count'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM ARG COUNT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARG CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE COUNT CL:FIXNUM)
   (CL:RETURN-FROM SHIFT-RIGHT (CL:ASH ARG (CL:THE CL:FIXNUM (CL:- COUNT)))))
 
@@ -3093,7 +3096,7 @@ and is equivalent to dividing `arg' by 2** `count'."
 negative.  This is an arithmetic shift that preserve the sign of `arg'
 and is equivalent to dividing `arg' by 2** `count'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM COUNT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE COUNT CL:FIXNUM)
   (CL:RETURN-FROM SHIFT-RIGHT (CL:ASH ARG (CL:THE CL:FIXNUM (CL:- COUNT)))))
 
@@ -3105,7 +3108,7 @@ from the left.  This does not preserve the sign of `arg' and shifts
 the sign-bit just like a regular bit.  In Common-Lisp we can't do that
 directly and need to do some extra masking."
   (CL:DECLARE (CL:TYPE CL:FIXNUM ARG))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARG CL:FIXNUM)
   (CL:RETURN-FROM UNSIGNED-SHIFT-RIGHT-BY-1 (CL:LOGAND (CL:THE CL:FIXNUM (CL:ASH ARG -1)) *INTEGER-UNSIGNED-BITS-MASK*)))
 
@@ -3216,7 +3219,7 @@ Fractional values are allowed, but the results are implementation dependent:
 Common Lisp uses the fractions natively, Java with a resolution of 0.001,
 and C++ can only use integral values."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT SECONDS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SECONDS CL:DOUBLE-FLOAT)
   (cl:sleep seconds)
   :VOID)

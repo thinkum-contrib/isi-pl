@@ -196,7 +196,7 @@ cancel slot update when they return `false'.")
 (CL:DEFUN LOOKUP-DEMON (NAME)
   "Return the demon named `name'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:RETURN-FROM LOOKUP-DEMON (LOOKUP *DEMONS-TABLE* NAME)))
 
@@ -206,7 +206,7 @@ cancel slot update when they return `false'.")
   "Define a class or slot demon.  Options are :create,
 :destroy, :class, :slot, :guard?, :code, :method, :inherit?, and :documentation."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((DEMON (NEW-DEMON)) (PLIST (NEW-PROPERTY-LIST)) (CONSLIST NIL) (OLDDEMON NULL) (ACTIVATE? CL:NIL))
    (CL:LET* ((ITEM NULL) (ITER-000 OPTIONS) (COLLECT-000 NULL))

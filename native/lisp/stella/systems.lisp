@@ -202,7 +202,7 @@
 
 (CL:DEFUN PARSE-DIRECTORY-PATH (PATH)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PATH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
   (CL:LET* ((SEPARATOR #\|) (LENGTH (CL:THE CL:FIXNUM (CL:LENGTH PATH))) (START 0) (END 0) (PARSEDPATH NIL)) (CL:DECLARE (CL:TYPE CL:FIXNUM LENGTH START END))
    (CL:LOOP (CL:SETQ END (POSITION PATH SEPARATOR START)) (CL:SETQ PARSEDPATH (CONS (WRAP-STRING (FILE-NAME-AS-DIRECTORY (SUBSEQUENCE PATH START END))) PARSEDPATH))
@@ -215,7 +215,7 @@
   "Set the STELLA load path to the |-separated
 directories listed in `path'.  Return the resulting load path."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PATH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
   (CL:SETQ *FILE-LOAD-PATH* (PARSE-DIRECTORY-PATH PATH))
   (CL:RETURN-FROM %SET-LOAD-PATH *FILE-LOAD-PATH*))
@@ -244,7 +244,7 @@ directories listed in `path'.  Return the resulting load path."
 `path' to the front of the STELLA load path.  Return the
 resulting load path."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PATH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
   (CL:SETQ *FILE-LOAD-PATH* (CONCATENATE (PARSE-DIRECTORY-PATH PATH) *FILE-LOAD-PATH*))
   (CL:RETURN-FROM %PUSH-LOAD-PATH *FILE-LOAD-PATH*))
@@ -283,7 +283,7 @@ and return the removed element."
 `path' to the end of the STELLA load path.  Return the resulting
 load path."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PATH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
   (CL:SETQ *FILE-LOAD-PATH* (CONCATENATE *FILE-LOAD-PATH* (PARSE-DIRECTORY-PATH PATH)))
   (CL:RETURN-FROM %ADD-LOAD-PATH *FILE-LOAD-PATH*))
@@ -306,7 +306,7 @@ load path."
   "Remove the directories listed in the |-separated
 `path' from the PowerLoom load path."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PATH))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PATH CL:SIMPLE-STRING)
   (CL:LET* ((DIR NULL) (ITER-000 (PARSE-DIRECTORY-PATH PATH)))
    (CL:LOOP WHILE (CL:NOT (CL:EQ ITER-000 NIL)) DO (CL:SETQ DIR (%%VALUE ITER-000)) (CL:SETQ *FILE-LOAD-PATH* (REMOVE *FILE-LOAD-PATH* DIR))
@@ -340,7 +340,7 @@ with any of the listed `extensions' added.  If `extensions' is NULL it defaults
 to `*stella-file-extensions*', therefore, to not default to any extensions
 the value has to be supplied as NIL."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING FILE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILE CL:SIMPLE-STRING)
   (CL:LET* ((EXPANDEDFILE FILE)) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING EXPANDEDFILE)) (CL:WHEN (CL:EQ EXTENSIONS NULL) (CL:SETQ EXTENSIONS *STELLA-FILE-EXTENSIONS*))
    (CL:LET* ((DIR NULL) (ITER-000 (CONS (WRAP-STRING "") *FILE-LOAD-PATH*)))
@@ -611,7 +611,7 @@ the module within which all remaining commands are to be evaluated
 The remaining commands are evaluated one-by-one, applying the function
 `evaluate' to each of them."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING FILE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILE CL:SIMPLE-STRING)
   (CL:LET* ((TEMP-000 (FIND-FILE-IN-LOAD-PATH FILE NULL))) (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING TEMP-000))
    (CL:SETQ FILE (CL:IF (CL:NOT (CL:EQ TEMP-000 STELLA::NULL-STRING)) TEMP-000 FILE)))
@@ -670,7 +670,7 @@ The remaining commands are evaluated one-by-one, applying the function
 
 (CL:DEFUN MAKE-SYSTEM-DEFINITION-FILE-NAME (NAME)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:RETURN-FROM MAKE-SYSTEM-DEFINITION-FILE-NAME (CONCATENATE (SYSTEM-DEFINITIONS-DIRECTORY) (DIRECTORY-SEPARATOR-STRING) (STRING-DOWNCASE NAME) "-system.ste")))
 
@@ -803,7 +803,7 @@ a Stella application.
 
 (CL:DEFUN GET-SYSTEM-DEFINITION (NAME)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((VALUE-000 NULL))
    (CL:LET* ((S NULL) (ITER-000 (%THE-CONS-LIST *SYSTEMDEFINITIONS*)))
@@ -875,7 +875,7 @@ a Stella application.
 
 (CL:DEFUN CLEAN-SYSTEM (SYSTEMNAME)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SYSTEMNAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SYSTEMNAME CL:SIMPLE-STRING)
   (CL:LET* ((SYSTEM (GET-SYSTEM-DEFINITION SYSTEMNAME))) (CL:WHEN (CL:EQ SYSTEM NULL) (CL:RETURN-FROM CLEAN-SYSTEM))
    (CL:LET* ((F NULL) (ITER-000 (%THE-CONS-LIST (GET-SYSTEM-FILES SYSTEM KWD-SYSTEMS-LISP CL:T))))
@@ -941,7 +941,7 @@ the current STELLA image (only supported in Lisp and Java right now).
 `:startup?' (default true): if true, the system startup function will
 be called once all files have been loaded."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SYSTEMNAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SYSTEMNAME CL:SIMPLE-STRING)
   (CL:LET*
    ((OPTIONS |LANGUAGE&OPTIONS|)
@@ -1078,7 +1078,7 @@ be called once all files have been loaded."
 (CL:DEFUN SYSTEM-LOADED? (NAME)
   "Return `true' if system `name' has been loaded."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((TEST-VALUE-000 CL:NIL))
    (CL:IF (STRING-EQUAL? NAME "STELLA") (CL:SETQ TEST-VALUE-000 CL:T)
@@ -1095,7 +1095,7 @@ be called once all files have been loaded."
   "Return `true' if system `name' has either been loaded
 or initialized with its startup function."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((TEST-VALUE-000 CL:NIL))
    (CL:IF (STRING-EQUAL? NAME "STELLA") (CL:SETQ TEST-VALUE-000 CL:T)
@@ -1116,7 +1116,7 @@ or initialized with its startup function."
 is useful when changes have been made to the system definition, and one
 wants to have it reloaded from the standard location in the file system."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:IF (CL:EQ NAME STELLA::NULL-STRING) (CL:SETQ *SYSTEMDEFINITIONS* (NEW-LIST))
    (CL:LET* ((VALUE-000 NULL))
@@ -1130,7 +1130,7 @@ wants to have it reloaded from the standard location in the file system."
 
 (CL:DEFUN LOAD-PREPROCESSED-FILES (SYSTEMNAME)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SYSTEMNAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SYSTEMNAME CL:SIMPLE-STRING)
   (CL:WHEN (CL:OR (CL:NOT (RUNNING-AS-LISP?)) (CL:EQ (%PREPROCESSED-FILES (GET-SYSTEM-DEFINITION SYSTEMNAME)) NULL)) (CL:RETURN-FROM LOAD-PREPROCESSED-FILES))
   (CL:LET* ((*TRANSLATOROUTPUTLANGUAGE* KWD-SYSTEMS-COMMON-LISP)) (CL:DECLARE (CL:SPECIAL *TRANSLATOROUTPUTLANGUAGE*))
@@ -1182,7 +1182,7 @@ whether or not their compilations are up-to-date.
 `:startup?' (default true): if true, the system startup function will
 be called once all files have been loaded."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SYSTEMNAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SYSTEMNAME CL:SIMPLE-STRING)
   (CL:LET*
    ((OPTIONS |LANGUAGE&OPTIONS|)
@@ -1258,7 +1258,7 @@ be called once all files have been loaded."
 
 (CL:DEFMETHOD SYSTEM-STARTUP-FUNCTION-NAME ((SYSTEMNAME CL:STRING))
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SYSTEMNAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SYSTEMNAME CL:SIMPLE-STRING)
   (CL:RETURN-FROM SYSTEM-STARTUP-FUNCTION-NAME (CONCATENATE "STARTUP-" (STRING-UPCASE SYSTEMNAME) "-SYSTEM")))
 
@@ -1322,9 +1322,9 @@ be called once all files have been loaded."
 
 (CL:DEFUN SYSTEM-STARTED-UP? (SYSTEMNAME SYSTEMMODULENAME)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SYSTEMNAME SYSTEMMODULENAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SYSTEMNAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SYSTEMMODULENAME CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ *FUNCTION-LOOKUP-TABLE* NULL) (CL:RETURN-FROM SYSTEM-STARTED-UP? CL:NIL))
   (CL:WHEN (STRING-EQUAL? SYSTEMNAME "STELLA") (CL:RETURN-FROM SYSTEM-STARTED-UP? (CL:NOT (CL:EQ *FUNCTION-LOOKUP-TABLE* NULL))))
@@ -1477,7 +1477,7 @@ be called once all files have been loaded."
 
 (CL:DEFUN HELP-ALL-REQUIRED-SYSTEMS (SYSTEM-NAME FOUND)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SYSTEM-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SYSTEM-NAME CL:SIMPLE-STRING)
   (CL:LET* ((SYSTEM (GET-SYSTEM-DEFINITION SYSTEM-NAME)))
    (CL:WHEN (CL:EQ SYSTEM NULL)
@@ -1495,7 +1495,7 @@ be called once all files have been loaded."
 (CL:DEFUN ALL-REQUIRED-SYSTEMS (SYSTEM-NAME)
   "Returns a CONS of all of the systems required by `system-name'"
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SYSTEM-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SYSTEM-NAME CL:SIMPLE-STRING)
   (CL:RETURN-FROM ALL-REQUIRED-SYSTEMS (%THE-CONS-LIST (HELP-ALL-REQUIRED-SYSTEMS SYSTEM-NAME (NEW-LIST)))))
 
@@ -1508,9 +1508,9 @@ is defined, return its value if defined, otherwise, set its value to the
 function found.  If the function failed to be defined by loading `systemName'
 and `error?' is true, raise an error.  Otherwise, simply return NULL."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING QUALIFIEDNAME SYSTEMNAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE QUALIFIEDNAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SYSTEMNAME CL:SIMPLE-STRING)
   (CL:LET* ((FUNCTION NULL))
    (CL:WHEN (CL:NOT (CL:EQ CACHE NULL))
@@ -1554,7 +1554,7 @@ and `error?' is true, raise an error.  Otherwise, simply return NULL."
 
 (CL:DEFUN PARSE-CONFIGURATION-FILE-LINE (LINE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING LINE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE LINE CL:SIMPLE-STRING)
   (CL:LET*
    ((START 0) (HASHPOS (POSITION LINE #\# 0)) (EQUALPOS (POSITION LINE #\= 0)) (END EQUALPOS) (LENGTH (CL:THE CL:FIXNUM (CL:LENGTH LINE))) (PROPERTY STELLA::NULL-STRING)
@@ -1679,7 +1679,7 @@ value."
 (CL:DEFUN SAVE-CONFIGURATION-FILE (TABLE FILE TITLE)
   "Save `table' as a configuration file.  Uses a Java-style property file syntax."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING TITLE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE TITLE CL:SIMPLE-STRING)
   (CL:LET* ((*PRINTREADABLY?* CL:NIL)) (CL:DECLARE (CL:SPECIAL *PRINTREADABLY?*))
    (CL:LET* ((OUT NULL))
@@ -1705,7 +1705,7 @@ value."
 Use the global system configuration table if `configuration' is NULL.  Return
 `defaultValue' if `property' is not defined."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PROPERTY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PROPERTY CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ CONFIGURATION NULL) (CL:SETQ CONFIGURATION *SYSTEM-CONFIGURATION-TABLE*))
   (CL:LET* ((VALUE (LOOKUP CONFIGURATION (WRAP-STRING PROPERTY))))
@@ -1719,7 +1719,7 @@ property and return its value(s) as a list.  Use the global system configuration
 if `configuration' is NULL.  Return `defaultValue' if `property' is not defined or
 NIL is no default value is specified."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PROPERTY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PROPERTY CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ CONFIGURATION NULL) (CL:SETQ CONFIGURATION *SYSTEM-CONFIGURATION-TABLE*))
   (CL:LET* ((VALUE (LOOKUP CONFIGURATION (WRAP-STRING PROPERTY))))
@@ -1733,7 +1733,7 @@ NIL is no default value is specified."
   "Set `property' in `configuration' to `value' and return it.
 Use the global system configuration table if `configuration' is NULL."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PROPERTY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PROPERTY CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ CONFIGURATION NULL) (CL:SETQ CONFIGURATION *SYSTEM-CONFIGURATION-TABLE*))
   (INSERT-AT CONFIGURATION (WRAP-STRING PROPERTY) VALUE)
@@ -1748,7 +1748,7 @@ If a previous value exists add `value' to the end (listify the old value
 if it is not yet a list).  Otherwise, create a new list containing `value'.
 Use the global system configuration table if `configuration' is NULL."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PROPERTY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PROPERTY CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ CONFIGURATION NULL) (CL:SETQ CONFIGURATION *SYSTEM-CONFIGURATION-TABLE*))
   (CL:LET* ((TEMP-000 (LOOKUP CONFIGURATION (WRAP-STRING PROPERTY))))
@@ -1763,7 +1763,7 @@ Use the global system configuration table if `configuration' is NULL."
 value.
 Use the global system configuration table if `configuration' is NULL."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PROPERTY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PROPERTY CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ CONFIGURATION NULL) (CL:SETQ CONFIGURATION *SYSTEM-CONFIGURATION-TABLE*))
   (CL:LET* ((CURRENT-VALUE (LOOKUP CONFIGURATION (WRAP-STRING PROPERTY)))) (REMOVE-AT CONFIGURATION (WRAP-STRING PROPERTY))
@@ -1775,7 +1775,7 @@ Use the global system configuration table if `configuration' is NULL."
   "Remove `value' from `property' in `configuration' and return it.
 Use the global system configuration table if `configuration' is NULL."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PROPERTY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PROPERTY CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ CONFIGURATION NULL) (CL:SETQ CONFIGURATION *SYSTEM-CONFIGURATION-TABLE*))
   (CL:LET* ((CURRENT-VALUE (LOOKUP CONFIGURATION (WRAP-STRING PROPERTY))))
@@ -1806,7 +1806,7 @@ is primarily defined to allow us to dynamically change this via a configuration 
 (CL:DECLAIM (CL:FTYPE (CL:FUNCTION (CL:SIMPLE-STRING) CL:SIMPLE-STRING) *PL-ROOT-DIRECTORY*-SETTER))
 (CL:DEFUN *PL-ROOT-DIRECTORY*-SETTER (VALUE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING VALUE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VALUE CL:SIMPLE-STRING)
   (CL:SETQ *PL-ROOT-DIRECTORY* VALUE)
   (DEFINE-LOGICAL-HOST-PROPERTY "PL" KWD-SYSTEMS-ROOT-DIRECTORY (WRAP-STRING VALUE))
@@ -1924,7 +1924,7 @@ standard output."
 Demons will be run as after demons on every configuration table update.  Set the
 property `stella.test.propertyDemon' to see a test demon in action."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PROPERTY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PROPERTY CL:SIMPLE-STRING)
   (CL:LET* ((DEMON (LOOKUP-FUNCTION DEMONNAME))) (CL:WHEN (CL:EQ DEMON NULL) (CL:SETQ DEMON (LOOKUP-GLOBAL-VARIABLE DEMONNAME)))
    (CL:IF (CL:NOT (CL:EQ DEMON NULL)) (INSERT-AT *REGISTERED-PROPERTY-DEMONS* (WRAP-STRING PROPERTY) DEMON)
@@ -1938,7 +1938,7 @@ property `stella.test.propertyDemon' to see a test demon in action."
 (CL:DEFUN UNREGISTER-PROPERTY-DEMON (PROPERTY)
   "Unregister any demon for `property'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PROPERTY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PROPERTY CL:SIMPLE-STRING)
   (REMOVE-AT *REGISTERED-PROPERTY-DEMONS* (WRAP-STRING PROPERTY))
   :VOID)
@@ -1955,7 +1955,7 @@ property `stella.test.propertyDemon' to see a test demon in action."
 
 (CL:DEFUN RUN-CONFIGURATION-PROPERTY-DEMON (ACTION PROPERTY VALUE TABLE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PROPERTY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PROPERTY CL:SIMPLE-STRING)
   (CL:LET* ((DEMON (LOOKUP *REGISTERED-PROPERTY-DEMONS* (WRAP-STRING PROPERTY))))
    (CL:LET* ((TEST-VALUE-000 (SAFE-PRIMARY-TYPE DEMON)))
@@ -1992,7 +1992,7 @@ property `stella.test.propertyDemon' to see a test demon in action."
 (CL:DEFUN TEST-PROPERTY-DEMON (ACTION PROPERTY VALUE TABLE)
   "A test demon for the property demon machinery which simply prints arguments."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PROPERTY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PROPERTY CL:SIMPLE-STRING)
   (CL:SETQ TABLE TABLE)
   (%%PRINT-STREAM (%NATIVE-STREAM STANDARD-OUTPUT) "test-property-demon: action=" ACTION ", property=" PROPERTY ", value-arg=" VALUE ", prop-value="
@@ -2108,7 +2108,7 @@ added to the specified configuration :property.  :error-action can be one of :ig
 (CL:DEFUN UNREGISTER-CMD-LINE-OPTION (KEY)
   "Unregister the command line option identified by `key' under all its keys."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING KEY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:SIMPLE-STRING)
   (CL:LET* ((CMDLINEOPTION (LOOKUP *REGISTERED-COMMAND-LINE-OPTIONS* (WRAP-STRING KEY))))
    (CL:WHEN (CL:NOT (CL:EQ CMDLINEOPTION NULL))
@@ -2163,9 +2163,9 @@ according to `unhandledOptionAction' which can be one of :ignore, :warn or :erro
 This ensures that at any point in the option processing, `*unprocessed-command-line-arguments*'
 accurately reflects the arguments which have been either skipped or not handled yet."
   (CL:DECLARE (CL:TYPE CL:FIXNUM COUNT) (CL:TYPE CL:SIMPLE-VECTOR ARGUMENTS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE COUNT CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARGUMENTS CL:SIMPLE-VECTOR)
   (CL:WHEN (CL:EQ *UNPROCESSED-COMMAND-LINE-ARGUMENTS* NULL) (CL:SETQ *UNPROCESSED-COMMAND-LINE-ARGUMENTS* (CONSIFY-COMMAND-LINE-ARGUMENTS COUNT ARGUMENTS)))
   (CL:LET*

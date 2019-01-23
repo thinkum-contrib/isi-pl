@@ -291,7 +291,7 @@ is O(N) in the number of elements of `self'."
 
 (CL:DEFMETHOD NTH ((SELF VECTOR) POSITION)
   (CL:DECLARE (CL:TYPE CL:FIXNUM POSITION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE POSITION CL:FIXNUM)
   (CL:RETURN-FROM NTH (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY SELF)) POSITION)))
 
@@ -340,7 +340,7 @@ is O(N) in the number of elements of `self'."
 
 (CL:DEFMETHOD NTH-SETTER ((SELF VECTOR) VALUE POSITION)
   (CL:DECLARE (CL:TYPE CL:FIXNUM POSITION))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE POSITION CL:FIXNUM)
   (CL:RETURN-FROM NTH-SETTER
    (CL:LET ((SELF (%THE-ARRAY SELF)) (VALUE VALUE) (POSITION POSITION)) (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -376,7 +376,7 @@ is O(N) in the number of elements of `self'."
 consider the portion starting at `start', however, the returned position 
 will always be relative to the entire vector."
   (CL:DECLARE (CL:TYPE CL:FIXNUM START))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
   (CL:WHEN (CL:= START NULL-INTEGER) (CL:SETQ START 0))
   (CL:LET* ((I NULL-INTEGER) (ITER-000 START) (UPPER-BOUND-000 (CL:1- (LENGTH SELF)))) (CL:DECLARE (CL:TYPE CL:FIXNUM I ITER-000 UPPER-BOUND-000))
@@ -393,7 +393,7 @@ will always be relative to the entire vector."
 consider the portion ending at index `end', however, the returned position 
 will always be relative to the entire vector."
   (CL:DECLARE (CL:TYPE CL:FIXNUM END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
   (CL:WHEN (CL:= END NULL-INTEGER) (CL:SETQ END (CL:1- (LENGTH SELF))))
   (CL:LET* ((I NULL-INTEGER) (ITER-000 (REVERSE (INTERVAL 0 END)))) (CL:DECLARE (CL:TYPE CL:FIXNUM I))
@@ -405,7 +405,7 @@ will always be relative to the entire vector."
 
 (CL:DEFMETHOD INSERT-AT ((SELF VECTOR) OFFSET VALUE)
   (CL:DECLARE (CL:TYPE CL:FIXNUM OFFSET))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE OFFSET CL:FIXNUM)
   (CL:WHEN (CL:>= OFFSET (%ARRAY-SIZE SELF)) (CL:ERROR (NEW-STELLA-EXCEPTION "Out-of-bounds array access")))
   (CL:LET ((SELF (%THE-ARRAY SELF)) (VALUE VALUE) (POSITION OFFSET)) (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -486,7 +486,7 @@ equivalent.  Uses `equal?' to test equality of elements."
 
 (CL:DEFMETHOD INSERT-AT ((SELF EXTENSIBLE-VECTOR) OFFSET VALUE)
   (CL:DECLARE (CL:TYPE CL:FIXNUM OFFSET))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE OFFSET CL:FIXNUM)
   (CL:WHEN (CL:>= OFFSET (%ARRAY-SIZE SELF))
    (CL:LET* ((SIZE (%ARRAY-SIZE SELF))) (CL:DECLARE (CL:TYPE CL:FIXNUM SIZE)) (CL:LOOP WHILE (CL:>= OFFSET SIZE) DO (CL:SETQ SIZE (CL:* 2 SIZE)))
@@ -499,7 +499,7 @@ equivalent.  Uses `equal?' to test equality of elements."
 
 (CL:DEFMETHOD INSERT-AT ((SELF EXTENSIBLE-SYMBOL-ARRAY) OFFSET VALUE)
   (CL:DECLARE (CL:TYPE CL:FIXNUM OFFSET))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE OFFSET CL:FIXNUM)
   (CL:WHEN (CL:>= OFFSET (%ARRAY-SIZE SELF))
    (CL:LET* ((SIZE (%ARRAY-SIZE SELF))) (CL:DECLARE (CL:TYPE CL:FIXNUM SIZE)) (CL:LOOP WHILE (CL:>= OFFSET SIZE) DO (CL:SETQ SIZE (CL:* 2 SIZE)))
@@ -694,7 +694,7 @@ element types are GENERALIZED-SYMBOL, STRING, INTEGER, and FLOAT)."
   "Just like `sort' but assumes each element of `self' is a tuple (a cons)
 whose `n'-th element (0-based) will be used for comparison."
   (CL:DECLARE (CL:TYPE CL:FIXNUM N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:FIXNUM)
   (CL:LET* ((LENGTH (LENGTH SELF))) (CL:DECLARE (CL:TYPE CL:FIXNUM LENGTH))
    (CL:COND ((CL:= LENGTH 0) (CL:RETURN-FROM SORT-TUPLES SELF))
@@ -721,9 +721,9 @@ it will cause value wrapping everytime `slot' is read."
 
 (CL:DEFUN HEAP-SORT-NATIVE-VECTOR (VECTOR SIZE PREDICATE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR VECTOR) (CL:TYPE CL:FIXNUM SIZE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VECTOR CL:SIMPLE-VECTOR)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SIZE CL:FIXNUM)
   (HEAP-SORT-HEAPIFY VECTOR SIZE PREDICATE)
   (CL:LET* ((END (CL:1- SIZE)) (AUX NULL)) (CL:DECLARE (CL:TYPE CL:FIXNUM END))
@@ -738,9 +738,9 @@ it will cause value wrapping everytime `slot' is read."
 
 (CL:DEFUN HEAP-SORT-HEAPIFY (VECTOR SIZE PREDICATE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR VECTOR) (CL:TYPE CL:FIXNUM SIZE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VECTOR CL:SIMPLE-VECTOR)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SIZE CL:FIXNUM)
   (CL:LET* ((START (CL:1- (CL:LET ((ARG SIZE) (COUNT 1)) (CL:DECLARE (CL:TYPE CL:FIXNUM ARG COUNT)) (CL:THE CL:FIXNUM (CL:ASH ARG (CL:THE CL:FIXNUM (CL:- COUNT))))))))
    (CL:DECLARE (CL:TYPE CL:FIXNUM START)) (CL:LOOP WHILE (CL:>= START 0) DO (HEAP-SORT-SIFT-DOWN VECTOR START (CL:1- SIZE) PREDICATE) (CL:SETQ START (CL:1- START))))
@@ -750,11 +750,11 @@ it will cause value wrapping everytime `slot' is read."
 
 (CL:DEFUN HEAP-SORT-SIFT-DOWN (VECTOR START END PREDICATE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR VECTOR) (CL:TYPE CL:FIXNUM START END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VECTOR CL:SIMPLE-VECTOR)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
   (CL:LET* ((ROOT START) (CHILD 0) (AUX NULL)) (CL:DECLARE (CL:TYPE CL:FIXNUM ROOT CHILD))
    (CL:LOOP (CL:SETQ CHILD (CL:1+ (CL:THE CL:FIXNUM (CL:ASH ROOT 1)))) (CL:WHEN (CL:> CHILD END) (CL:RETURN))
@@ -773,11 +773,11 @@ it will cause value wrapping everytime `slot' is read."
 
 (CL:DEFUN QUICK-SORT-PICK-SPLIT-ELEMENT (VECTOR START END PREDICATE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR VECTOR) (CL:TYPE CL:FIXNUM START END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VECTOR CL:SIMPLE-VECTOR)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
   (CL:LET*
    ((SPLITELEMENT (CL:AREF VECTOR START))
@@ -805,11 +805,11 @@ it will cause value wrapping everytime `slot' is read."
 
 (CL:DEFUN QUICK-SORT-NATIVE-VECTOR (VECTOR START END PREDICATE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR VECTOR) (CL:TYPE CL:FIXNUM START END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VECTOR CL:SIMPLE-VECTOR)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
   (CL:LOOP
    (CL:LET* ((LENGTH (CL:- END START)) (SPLITELEMENT NULL) (ELEMENT NULL) (LOWCURSOR START) (HIGHCURSOR END))
@@ -849,7 +849,7 @@ really maintained or accessible until we sort the heap."))
 
 (CL:DEFUN NEW-HEAP (PREDICATE ARRAY-SIZE)
   (CL:DECLARE (CL:TYPE CL:FIXNUM ARRAY-SIZE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARRAY-SIZE CL:FIXNUM)
   (CL:LET* ((SELF NULL)) (CL:SETQ SELF (CL:MAKE-INSTANCE (CL:QUOTE HEAP))) (CL:SETF (%PREDICATE SELF) PREDICATE) (CL:SETF (%ARRAY-SIZE SELF) ARRAY-SIZE)
    (CL:SETF (%THE-ARRAY SELF) STELLA::NULL-NATIVE-VECTOR) (CL:SETF (%FILL-POINTER SELF) 0) (INITIALIZE-VECTOR SELF) (INITIALIZE-HEAP SELF) (CL:RETURN-FROM NEW-HEAP SELF)))
@@ -931,11 +931,11 @@ The root contains the minimum element of a min-heap with '<' predicate."
 
 (CL:DEFUN HEAP-SIFT-UP (HEAP START END VALUE PREDICATE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR HEAP) (CL:TYPE CL:FIXNUM START END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE HEAP CL:SIMPLE-VECTOR)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
   (CL:LET* ((PARENT NULL-INTEGER) (CHILD END)) (CL:DECLARE (CL:TYPE CL:FIXNUM PARENT CHILD))
    (CL:LET ((SELF HEAP) (VALUE VALUE) (POSITION END)) (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR SELF) (CL:TYPE CL:FIXNUM POSITION)) (CL:SETF (CL:AREF SELF POSITION) VALUE))
@@ -959,11 +959,11 @@ The root contains the minimum element of a min-heap with '<' predicate."
 
 (CL:DEFUN HEAP-SIFT-DOWN (HEAP START END VALUE PREDICATE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR HEAP) (CL:TYPE CL:FIXNUM START END))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE HEAP CL:SIMPLE-VECTOR)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE START CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE END CL:FIXNUM)
   (CL:LET* ((PARENT START) (CHILD NULL-INTEGER) (LEFTCHILD NULL) (RIGHTCHILD NULL)) (CL:DECLARE (CL:TYPE CL:FIXNUM PARENT CHILD))
    (CL:LET ((SELF HEAP) (VALUE VALUE) (POSITION START)) (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR SELF) (CL:TYPE CL:FIXNUM POSITION))
@@ -1134,7 +1134,7 @@ first insertion operation."
 
 (CL:DEFUN REHASH-STELLA-HASH-TABLE (SELF NEWSIZE)
   (CL:DECLARE (CL:TYPE CL:FIXNUM NEWSIZE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NEWSIZE CL:FIXNUM)
   (CL:WHEN (NULL-ARRAY? (%THE-TABLE SELF)) (INITIALIZE-STELLA-HASH-TABLE SELF) (CL:RETURN-FROM REHASH-STELLA-HASH-TABLE))
   (CL:LET*
@@ -1249,7 +1249,7 @@ first insertion operation."
 
 (CL:DEFUN STELLA-STRING-HASH-TABLE-LOOKUP (SELF KEY)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING KEY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE KEY CL:SIMPLE-STRING)
   (CL:LET* ((TABLE (%THE-TABLE SELF)) (BUCKET NULL)) (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR TABLE))
    (CL:WHEN (NULL-ARRAY? TABLE) (CL:RETURN-FROM STELLA-STRING-HASH-TABLE-LOOKUP NULL))
@@ -1893,7 +1893,7 @@ less equivalent to VECTOR (fewer methods) but kept here for symmetry."))
 
 (CL:DEFUN NEW-1D-ARRAY (DIM1)
   (CL:DECLARE (CL:TYPE CL:FIXNUM DIM1))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIM1 CL:FIXNUM)
   (CL:LET* ((SELF NULL)) (CL:SETQ SELF (CL:MAKE-INSTANCE (CL:QUOTE 1D-ARRAY))) (CL:SETF (%DIM1 SELF) DIM1) (CL:SETF (%THE-ARRAY SELF) STELLA::NULL-1D-ARRAY)
    (INITIALIZE-DIMENSIONAL-ARRAY SELF) (CL:RETURN-FROM NEW-1D-ARRAY SELF)))
@@ -1905,7 +1905,7 @@ less equivalent to VECTOR (fewer methods) but kept here for symmetry."))
   "Return the 1D address of the element at position `[i]'.
 This is useful for fast element-wise iteration that doesn't need arithmetic."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
   (CL:RETURN-FROM 1D-AREF-ADDRESS I))
 
@@ -1913,14 +1913,14 @@ This is useful for fast element-wise iteration that doesn't need arithmetic."
   "Set the element of `self' at position `[i]' to `value'
 and return the result."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
   (CL:RETURN-FROM 1D-AREF-SETTER (CL:SETF (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY SELF)) I) VALUE)))
 
 (CL:DEFMETHOD 1D-AREF ((SELF 1D-ARRAY) I)
   "Return the element of `self' at position `[i]'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
   (CL:RETURN-FROM 1D-AREF (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY SELF)) I)))
 
@@ -1947,7 +1947,7 @@ and return the result."
 
 (CL:DEFUN NEW-1D-FLOAT-ARRAY (DIM1)
   (CL:DECLARE (CL:TYPE CL:FIXNUM DIM1))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIM1 CL:FIXNUM)
   (CL:LET* ((SELF NULL)) (CL:SETQ SELF (CL:MAKE-INSTANCE (CL:QUOTE 1D-FLOAT-ARRAY))) (CL:SETF (%DIM1 SELF) DIM1) (CL:SETF (%THE-ARRAY SELF) STELLA::NULL-1D-ARRAY)
    (INITIALIZE-DIMENSIONAL-ARRAY SELF) (CL:RETURN-FROM NEW-1D-FLOAT-ARRAY SELF)))
@@ -1959,7 +1959,7 @@ and return the result."
   "Return the 1D address of the element at position `[i]'.
 This is useful for fast element-wise iteration that doesn't need arithmetic."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
   (CL:RETURN-FROM 1D-AREF-ADDRESS I))
 
@@ -1967,23 +1967,23 @@ This is useful for fast element-wise iteration that doesn't need arithmetic."
   "Set the element of `self' at position `[i]' to `value'
 and return the result."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT VALUE) (CL:TYPE CL:FIXNUM I))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VALUE CL:DOUBLE-FLOAT)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
   (CL:RETURN-FROM 1D-AREF-SETTER (CL:SETF (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY SELF)) I) VALUE)))
 
 (CL:DEFMETHOD 1D-AREF ((SELF 1D-FLOAT-ARRAY) I)
   "Return the element of `self' at position `[i]'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
   (CL:RETURN-FROM 1D-AREF (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY SELF)) I)))
 
 (CL:DEFMETHOD INITIALIZE-ARRAY ((SELF 1D-FLOAT-ARRAY) INITIALVALUE)
   "Initialize the elements of `self' with `initialValue'."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT INITIALVALUE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE INITIALVALUE CL:DOUBLE-FLOAT)
   (CL:LET* ((ARRAY (%THE-ARRAY SELF))) (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR ARRAY))
    (CL:LET* ((I NULL-INTEGER) (ITER-000 0) (UPPER-BOUND-000 (CL:1- (LENGTH SELF)))) (CL:DECLARE (CL:TYPE CL:FIXNUM I ITER-000 UPPER-BOUND-000))
@@ -2007,9 +2007,9 @@ and return the result."
 
 (CL:DEFUN NEW-2D-ARRAY (DIM2 DIM1)
   (CL:DECLARE (CL:TYPE CL:FIXNUM DIM2 DIM1))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIM2 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIM1 CL:FIXNUM)
   (CL:LET* ((SELF NULL)) (CL:SETQ SELF (CL:MAKE-INSTANCE (CL:QUOTE 2D-ARRAY))) (CL:SETF (%DIM2 SELF) DIM2) (CL:SETF (%DIM1 SELF) DIM1)
    (CL:SETF (%THE-ARRAY SELF) STELLA::NULL-1D-ARRAY) (INITIALIZE-DIMENSIONAL-ARRAY SELF) (CL:RETURN-FROM NEW-2D-ARRAY SELF)))
@@ -2021,9 +2021,9 @@ and return the result."
   "Return the 1D address of the element at position `[i, j]'.
 This is useful for fast element-wise iteration that doesn't need arithmetic."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I J))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE J CL:FIXNUM)
   (CL:RETURN-FROM 2D-AREF-ADDRESS (CL:+ (CL:* I (%DIM2 SELF)) J)))
 
@@ -2031,18 +2031,18 @@ This is useful for fast element-wise iteration that doesn't need arithmetic."
   "Set the element of `self' at position `[i, j]' to `value'
 and return the result."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I J))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE J CL:FIXNUM)
   (CL:RETURN-FROM 2D-AREF-SETTER (CL:SETF (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY SELF)) (CL:THE CL:FIXNUM (CL:+ (CL:* I (%DIM2 SELF)) J))) VALUE)))
 
 (CL:DEFMETHOD 2D-AREF ((SELF 2D-ARRAY) I J)
   "Return the element of `self' at position `[i, j]'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I J))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE J CL:FIXNUM)
   (CL:RETURN-FROM 2D-AREF (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY SELF)) (CL:THE CL:FIXNUM (CL:+ (CL:* I (%DIM2 SELF)) J)))))
 
@@ -2054,7 +2054,7 @@ and return the result."
   "Return the 1D address of the element at position `[i]'.
 This is useful for fast element-wise iteration that doesn't need arithmetic."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
   (CL:RETURN-FROM 1D-AREF-ADDRESS I))
 
@@ -2062,14 +2062,14 @@ This is useful for fast element-wise iteration that doesn't need arithmetic."
   "Set the element of `self' at position `[i]' to `value'
 and return the result."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
   (CL:RETURN-FROM 1D-AREF-SETTER (CL:SETF (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY SELF)) I) VALUE)))
 
 (CL:DEFMETHOD 1D-AREF ((SELF 2D-ARRAY) I)
   "Return the element of `self' at position `[i]'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
   (CL:RETURN-FROM 1D-AREF (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY SELF)) I)))
 
@@ -2089,9 +2089,9 @@ and return the result."
 
 (CL:DEFUN NEW-2D-FLOAT-ARRAY (DIM2 DIM1)
   (CL:DECLARE (CL:TYPE CL:FIXNUM DIM2 DIM1))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIM2 CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE DIM1 CL:FIXNUM)
   (CL:LET* ((SELF NULL)) (CL:SETQ SELF (CL:MAKE-INSTANCE (CL:QUOTE 2D-FLOAT-ARRAY))) (CL:SETF (%DIM2 SELF) DIM2) (CL:SETF (%DIM1 SELF) DIM1)
    (CL:SETF (%THE-ARRAY SELF) STELLA::NULL-1D-ARRAY) (INITIALIZE-DIMENSIONAL-ARRAY SELF) (CL:RETURN-FROM NEW-2D-FLOAT-ARRAY SELF)))
@@ -2103,9 +2103,9 @@ and return the result."
   "Return the 1D address of the element at position `[i, j]'.
 This is useful for fast element-wise iteration that doesn't need arithmetic."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I J))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE J CL:FIXNUM)
   (CL:RETURN-FROM 2D-AREF-ADDRESS (CL:+ (CL:* I (%DIM2 SELF)) J)))
 
@@ -2113,20 +2113,20 @@ This is useful for fast element-wise iteration that doesn't need arithmetic."
   "Set the element of `self' at position `[i, j]' to `value'
 and return the result."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT VALUE) (CL:TYPE CL:FIXNUM I J))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VALUE CL:DOUBLE-FLOAT)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE J CL:FIXNUM)
   (CL:RETURN-FROM 2D-AREF-SETTER (CL:SETF (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY SELF)) (CL:THE CL:FIXNUM (CL:+ (CL:* I (%DIM2 SELF)) J))) VALUE)))
 
 (CL:DEFMETHOD 2D-AREF ((SELF 2D-FLOAT-ARRAY) I J)
   "Return the element of `self' at position `[i, j]'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I J))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE J CL:FIXNUM)
   (CL:RETURN-FROM 2D-AREF (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY SELF)) (CL:THE CL:FIXNUM (CL:+ (CL:* I (%DIM2 SELF)) J)))))
 
@@ -2138,7 +2138,7 @@ and return the result."
   "Return the 1D address of the element at position `[i]'.
 This is useful for fast element-wise iteration that doesn't need arithmetic."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
   (CL:RETURN-FROM 1D-AREF-ADDRESS I))
 
@@ -2146,23 +2146,23 @@ This is useful for fast element-wise iteration that doesn't need arithmetic."
   "Set the element of `self' at position `[i]' to `value'
 and return the result."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT VALUE) (CL:TYPE CL:FIXNUM I))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE VALUE CL:DOUBLE-FLOAT)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
   (CL:RETURN-FROM 1D-AREF-SETTER (CL:SETF (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY SELF)) I) VALUE)))
 
 (CL:DEFMETHOD 1D-AREF ((SELF 2D-FLOAT-ARRAY) I)
   "Return the element of `self' at position `[i]'."
   (CL:DECLARE (CL:TYPE CL:FIXNUM I))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE I CL:FIXNUM)
   (CL:RETURN-FROM 1D-AREF (CL:AREF (CL:THE CL:SIMPLE-VECTOR (%THE-ARRAY SELF)) I)))
 
 (CL:DEFMETHOD INITIALIZE-ARRAY ((SELF 2D-FLOAT-ARRAY) INITIALVALUE)
   "Initialize the elements of `self' with `initialValue'."
   (CL:DECLARE (CL:TYPE CL:DOUBLE-FLOAT INITIALVALUE))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE INITIALVALUE CL:DOUBLE-FLOAT)
   (CL:LET* ((ARRAY (%THE-ARRAY SELF))) (CL:DECLARE (CL:TYPE CL:SIMPLE-VECTOR ARRAY))
    (CL:LET* ((I NULL-INTEGER) (ITER-000 0) (UPPER-BOUND-000 (CL:1- (LENGTH SELF)))) (CL:DECLARE (CL:TYPE CL:FIXNUM I ITER-000 UPPER-BOUND-000))

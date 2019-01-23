@@ -170,7 +170,7 @@ loaded STELLA systems if they do reference PowerLoom symbols in their code."
 (CL:DEFUN TEST-ENVIRONMENT-LEVEL? (ENV LEVEL)
   "Test if `env' has level set to `level'"
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING LEVEL))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE LEVEL CL:SIMPLE-STRING)
   (CL:AND (CL:NOT (CL:EQ ENV STELLA::NULL)) (STELLA::STRING-EQL? (STELLA::%LEVEL ENV) LEVEL)))
 
@@ -269,7 +269,7 @@ elements are available, `false' otherwise."
 
 (CL:DEFUN SAFELY-GET-OBJECT (NAME MODULE ENVIRONMENT)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ NAME STELLA::NULL-STRING) (CL:RETURN-FROM SAFELY-GET-OBJECT STELLA::NULL))
   (CL:LET* ((OBJECT (GET-OBJECT NAME MODULE ENVIRONMENT)))
@@ -282,7 +282,7 @@ elements are available, `false' otherwise."
 
 (CL:DEFUN SAFELY-GET-CONCEPT (NAME MODULE ENVIRONMENT)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ NAME STELLA::NULL-STRING) (CL:RETURN-FROM SAFELY-GET-CONCEPT STELLA::NULL))
   (CL:LET* ((OBJECT (GET-CONCEPT NAME MODULE ENVIRONMENT)))
@@ -295,7 +295,7 @@ elements are available, `false' otherwise."
 
 (CL:DEFUN SAFELY-GET-RELATION (NAME MODULE ENVIRONMENT)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ NAME STELLA::NULL-STRING) (CL:RETURN-FROM SAFELY-GET-RELATION STELLA::NULL))
   (CL:LET* ((OBJECT (GET-RELATION NAME MODULE ENVIRONMENT)))
@@ -308,7 +308,7 @@ elements are available, `false' otherwise."
 
 (CL:DEFUN SAFELY-GET-MODULE (NAME ENVIRONMENT)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:SETQ ENVIRONMENT ENVIRONMENT)
   (CL:WHEN (CL:OR (CL:EQ NAME STELLA::NULL-STRING) (STELLA::STRING-EQL? NAME "")) (CL:RETURN-FROM SAFELY-GET-MODULE STELLA::*MODULE*))
@@ -318,7 +318,7 @@ elements are available, `false' otherwise."
 
 (CL:DEFUN SAFELY-GET-OBJECT-OR-NULL (NAME MODULE ENVIRONMENT)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:WHEN (CL:OR (CL:EQ MODULE STELLA::NULL) (CL:EQ NAME STELLA::NULL-STRING) (STELLA::STRING-EQL? NAME "") (STELLA::STRING-EQUAL? NAME "null"))
    (CL:RETURN-FROM SAFELY-GET-OBJECT-OR-NULL STELLA::NULL))
@@ -352,7 +352,7 @@ elements are available, `false' otherwise."
 
 (CL:DEFUN EXPLODE-STRING-LIST (STRINGLIST MODULE)
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRINGLIST))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRINGLIST CL:SIMPLE-STRING)
   (CL:LET* ((STELLA::*MODULE* MODULE) (STELLA::*CONTEXT* STELLA::*MODULE*)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*))
    (CL:LET* ((EXPRESSION (STELLA::READ-S-EXPRESSION-FROM-STRING STRINGLIST)) (TERM STELLA::NULL) (RESULT STELLA::NIL))
@@ -377,7 +377,7 @@ elements are available, `false' otherwise."
 (CL:DEFUN GET-KEYWORD (NAME)
   "Returns the Stella KEYWORD `name' if it exists.  Case sensitive."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (STELLA::LOOKUP-KEYWORD NAME))
 
@@ -387,7 +387,7 @@ elements are available, `false' otherwise."
   "Returns the Stella SYMBOL `name' visible in `module' if it
 exists.  `name' is ALWAYS treated case sensitively."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
    (CL:LET* ((STELLA::*MODULE* MDL-000) (STELLA::*CONTEXT* CXT-000)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*)) (CL:SETQ ENVIRONMENT ENVIRONMENT)
@@ -399,7 +399,7 @@ exists.  `name' is ALWAYS treated case sensitively."
   "Returns the logical operator object (a Stella SYMBOL) for `name'.
 If no such operator exists then a `no-such-object' exception is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:WHEN (CL:NOT (STELLA::ALL-UPPER-CASE-STRING? NAME)) (CL:SETQ NAME (STELLA::STRING-UPCASE NAME)))
   (CL:LET* ((OPERATOR (STELLA::LOOKUP-SYMBOL-IN-MODULE NAME STELLA::*LOGIC-MODULE* CL:NIL)))
@@ -413,7 +413,7 @@ If no such operator exists then a `no-such-object' exception is thrown."
   "Look for an object named `name' that is local to
 or visible from the module `module'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
    (CL:LET* ((STELLA::*MODULE* MDL-000) (STELLA::*CONTEXT* CXT-000)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*)) (CL:SETQ ENVIRONMENT ENVIRONMENT)
@@ -427,9 +427,9 @@ or visible from the module `module-name'.  A module name of `null' or the
 empty string refers to the current module.  If no module can be found
 with the name `module-name', then a Stella `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (GET-OBJECT NAME (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT) ENVIRONMENT))
 
@@ -439,7 +439,7 @@ with the name `module-name', then a Stella `no-such-context-exception' is thrown
   "Return a class/concept named `name' that is local to
 or visible from the module `module'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
    (CL:LET* ((STELLA::*MODULE* MDL-000) (STELLA::*CONTEXT* CXT-000)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*)) (CL:SETQ ENVIRONMENT ENVIRONMENT)
@@ -453,9 +453,9 @@ or visible from the module `module-name'.  A module name of `null' or the
 empty string refers to the current module.  If no module can be found
 with the name `module-name', then a Stella `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (GET-CONCEPT NAME (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT) ENVIRONMENT))
 
@@ -465,7 +465,7 @@ with the name `module-name', then a Stella `no-such-context-exception' is thrown
   "Return a concept or relation named `name' that is local to
 or visible from the module `module'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
    (CL:LET* ((STELLA::*MODULE* MDL-000) (STELLA::*CONTEXT* CXT-000)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*)) (CL:SETQ ENVIRONMENT ENVIRONMENT)
@@ -479,9 +479,9 @@ or visible from the module `module-name'.  A module name of `null' or the
 empty string refers to the current module.  If no module can be found
 with the name `module-name', then a Stella `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (GET-RELATION NAME (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT) ENVIRONMENT))
 
@@ -621,7 +621,7 @@ correct interpretation of `string'.
 
 Currently `type' only has an effect on the interpretation of literal types."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING STRING))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE STRING CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
    (CL:LET* ((STELLA::*MODULE* MDL-000) (STELLA::*CONTEXT* CXT-000)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*)) (CL:SETQ ENVIRONMENT ENVIRONMENT)
@@ -687,7 +687,7 @@ Currently `type' only has an effect on the interpretation of literal types."
 
 (CL:DEFUN HELP-GET-PROPOSITIONS (RELATION ARGUMENTS LIMIT MODULE ENVIRONMENT)
   (CL:DECLARE (CL:TYPE CL:FIXNUM LIMIT))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE LIMIT CL:FIXNUM)
   (CL:WHEN (CL:EQ RELATION STELLA::NULL) (CL:RETURN-FROM HELP-GET-PROPOSITIONS STELLA::NIL))
   (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
@@ -757,9 +757,9 @@ A module name of `null' or the
 empty string refers to the current module.  If no module can be found
 with the name `module-name', then a Stella `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING RELATION-AND-ARGUMENTS MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE RELATION-AND-ARGUMENTS CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET*
    ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (ELEMENTS (EXPLODE-STRING-LIST RELATION-AND-ARGUMENTS MODULE)) (RELATION (STELLA::%%VALUE ELEMENTS))
@@ -791,9 +791,9 @@ A module name of `null' or the
 empty string refers to the current module.  If no module can be found
 with the name `module-name', then a Stella `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING RELATION-AND-ARGUMENTS MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE RELATION-AND-ARGUMENTS CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET*
    ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (ELEMENTS (EXPLODE-STRING-LIST RELATION-AND-ARGUMENTS MODULE)) (RELATION (STELLA::%%VALUE ELEMENTS))
@@ -866,11 +866,11 @@ A module name of `null' or the empty string refers to the current module.
 If no module can be found with the name `module-name', then a Stella 
 `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING RELATION-NAME ARG-NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE RELATION-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARG-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET*
    ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (RELATION (SAFELY-GET-RELATION RELATION-NAME MODULE ENVIRONMENT))
@@ -896,9 +896,9 @@ A module name of `null' or the empty string refers to the current module.
 If no module can be found with the name `module-name', then a Stella 
 `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING OBJECT-NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE OBJECT-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (OBJECT (SAFELY-GET-OBJECT OBJECT-NAME MODULE ENVIRONMENT)))
    (CL:IF (CL:NOT (CL:EQ OBJECT STELLA::NULL)) (GET-PROPOSITIONS-OF OBJECT MODULE ENVIRONMENT) EMPTY-PL-ITERATOR)))
@@ -953,9 +953,9 @@ A module name of `null' or the empty string refers to the current module.
 If no module can be found with the name `module-name', then a Stella 
 `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING RELATION-AND-ARGUMENTS MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE RELATION-AND-ARGUMENTS CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:NOT (CL:EQ (S-GET-PROPOSITION RELATION-AND-ARGUMENTS MODULE-NAME ENVIRONMENT) STELLA::NULL)))
 
@@ -1037,9 +1037,9 @@ A module name of `null' or the empty string refers to the current module.
 If no module can be found with the name `module-name', then a Stella 
 `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING CONCEPT-NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CONCEPT-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (CONCEPT (SAFELY-GET-CONCEPT CONCEPT-NAME MODULE ENVIRONMENT)))
    (CL:IF (CL:NOT (CL:EQ CONCEPT STELLA::NULL)) (GET-CONCEPT-INSTANCES CONCEPT MODULE ENVIRONMENT) EMPTY-PL-ITERATOR)))
@@ -1079,9 +1079,9 @@ A module name of `null' or the empty string refers to the current module.
 If no module can be found with the name `module-name', then a Stella 
 `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING CONCEPT-NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CONCEPT-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (CONCEPT (SAFELY-GET-CONCEPT CONCEPT-NAME MODULE ENVIRONMENT)))
    (CL:IF (CL:NOT (CL:EQ CONCEPT STELLA::NULL)) (GET-DIRECT-CONCEPT-INSTANCES CONCEPT MODULE ENVIRONMENT) EMPTY-PL-ITERATOR)))
@@ -1162,7 +1162,7 @@ Include propositions that satisfy subrelations of `relation'."
   "Return propositions that satisfy the relation named
 `relation-name'.  Include propositions that satisfy subrelations of the relation."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING RELATION-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE RELATION-NAME CL:SIMPLE-STRING)
   (CL:LET* ((RELATION (SAFELY-GET-RELATION RELATION-NAME MODULE ENVIRONMENT)))
    (CL:IF (CL:NOT (CL:EQ RELATION STELLA::NULL)) (GET-RELATION-EXTENSION RELATION MODULE ENVIRONMENT) EMPTY-PL-ITERATOR)))
@@ -1172,7 +1172,7 @@ Include propositions that satisfy subrelations of `relation'."
 (CL:DEFUN GET-MODULE (NAME ENVIRONMENT)
   "Return a module named `name'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:SETQ ENVIRONMENT ENVIRONMENT)
   (STELLA::GET-STELLA-MODULE NAME CL:NIL))
@@ -1205,7 +1205,7 @@ not included in the list."
 `case-sensitive?' controls whether names read in this module will be
 case sensitive or not."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET*
    ((FULL-NAME (CL:IF (CL:NOT (CL:EQ PARENT STELLA::NULL)) (STELLA::CONCATENATE (STELLA::%MODULE-FULL-NAME PARENT) "/" NAME) NAME))
@@ -1219,9 +1219,9 @@ case sensitive or not."
 `case-sensitive?' controls whether names read in this module will be
 case sensitive or not."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME PARENT-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PARENT-NAME CL:SIMPLE-STRING)
   (CREATE-MODULE NAME (SAFELY-GET-MODULE PARENT-NAME ENVIRONMENT) CASE-SENSITIVE?))
 
@@ -1243,7 +1243,7 @@ the empty string.  In that case, the current module is returned.
 If no module named `name' exists, a Stella `no-such-context-exception'
 is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CHANGE-MODULE (SAFELY-GET-MODULE NAME ENVIRONMENT)))
 
@@ -1262,7 +1262,7 @@ the contents of all of its children, recursively."
 well as the contents of all of its children, recursively.  If no module
 named `name' exists, a Stella `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE NAME ENVIRONMENT))) (STELLA::CALL-CLEAR-MODULE (STELLA::CONS-LIST MODULE)) MODULE))
 
@@ -1288,7 +1288,7 @@ named `name' exists, a Stella `no-such-context-exception' is thrown."
 If no module named `name' exists, a Stella `no-such-context-exception'
 is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (GET-CHILD-MODULES (SAFELY-GET-MODULE NAME ENVIRONMENT)))
 
@@ -1305,7 +1305,7 @@ is thrown."
 If no module named `name' exists, a Stella `no-such-context-exception'
 is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (GET-PARENT-MODULES (SAFELY-GET-MODULE NAME ENVIRONMENT)))
 
@@ -1317,7 +1317,7 @@ is thrown."
 is not currently in use in `module.'  In a non-case-sensitive module, the returned
 name will be all upper case (This latter feature may change!)"
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING PREFIX))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PREFIX CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
    (CL:LET* ((STELLA::*MODULE* MDL-000) (STELLA::*CONTEXT* CXT-000)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*)) (CL:SETQ ENVIRONMENT ENVIRONMENT)
@@ -1332,7 +1332,7 @@ name will be all upper case (This latter feature may change!)"
 necessary.  `name' is treated case-sensitively.  This should
 generally not be necessary to do."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (STELLA::INTERN-RIGID-SYMBOL-WRT-MODULE NAME STELLA::*MODULE* STELLA::KEYWORD-SYM))
 
@@ -1344,7 +1344,7 @@ creating it if necessary.  `name' is ALWAYS treated case-sensitively,
 even if `module' is case insensitive. This should generally not be
 necessary to do."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
    (CL:LET* ((STELLA::*MODULE* MDL-000) (STELLA::*CONTEXT* CXT-000)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*)) (CL:SETQ ENVIRONMENT ENVIRONMENT)
@@ -1371,7 +1371,7 @@ exactly.
 
 Return the object."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
    (CL:LET* ((STELLA::*MODULE* MDL-000) (STELLA::*CONTEXT* CXT-000)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*)) (CL:SETQ ENVIRONMENT ENVIRONMENT)
@@ -1410,11 +1410,11 @@ the name of the returned object may not match `name' exactly.
 
 Return the object."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME CONCEPT-NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE CONCEPT-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT))) (CREATE-OBJECT NAME (SAFELY-GET-CONCEPT CONCEPT-NAME MODULE ENVIRONMENT) MODULE ENVIRONMENT)))
 
@@ -1429,7 +1429,7 @@ that a specified `parent' concept needs to be created separately.
 Note that because names in modules that are not case-sensitive are canonicalized,
 the name of the returned object may not match `name' exactly."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
    (CL:LET* ((STELLA::*MODULE* MDL-000) (STELLA::*CONTEXT* CXT-000)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*)) (CL:SETQ ENVIRONMENT ENVIRONMENT)
@@ -1455,11 +1455,11 @@ If no module can be found with the name `module-name', then a Stella
 Note that because names in modules that are not case-sensitive are canonicalized,
 the name of the returned object may not match `name' exactly."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME PARENT-NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE PARENT-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT))) (CREATE-CONCEPT NAME (SAFELY-GET-CONCEPT PARENT-NAME MODULE ENVIRONMENT) MODULE ENVIRONMENT)))
 
@@ -1473,9 +1473,9 @@ of `nth-domain' (or `domain' and `range') relations.
 Note that because names in modules that are not case-sensitive are canonicalized,
 the name of the returned object may not match `name' exactly."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME) (CL:TYPE CL:FIXNUM ARITY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARITY CL:FIXNUM)
   (CL:WHEN (CL:<= ARITY 0)
    (CL:LET* ((STREAM-000 (STELLA::NEW-OUTPUT-STRING-STREAM)))
@@ -1512,11 +1512,11 @@ If no module can be found with the name `module-name', then a Stella
 Note that because names in modules that are not case-sensitive are canonicalized,
 the name of the returned object may not match `name' exactly."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME MODULE-NAME) (CL:TYPE CL:FIXNUM ARITY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARITY CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CREATE-RELATION NAME ARITY (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT) ENVIRONMENT))
 
@@ -1530,9 +1530,9 @@ the name of the returned object may not match `name' exactly."
 Note that because names in modules that are not case-sensitive are canonicalized,
 the name of the returned object may not match `name' exactly."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME) (CL:TYPE CL:FIXNUM ARITY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARITY CL:FIXNUM)
   (CL:WHEN (CL:<= ARITY 0)
    (CL:LET* ((STREAM-000 (STELLA::NEW-OUTPUT-STRING-STREAM)))
@@ -1569,11 +1569,11 @@ If no module can be found with the name `module-name', then a Stella
 Note that because names in modules that are not case-sensitive are canonicalized,
 the name of the returned object may not match `name' exactly."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME MODULE-NAME) (CL:TYPE CL:FIXNUM ARITY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARITY CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CREATE-FUNCTION NAME ARITY (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT) ENVIRONMENT))
 
@@ -1592,7 +1592,7 @@ programming language.  The following type mappings are used:
   Common Lisp:  FUNCTION   (result of #' or (FUNCTION ...))
          Java:  java.lang.reflect.Method"
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
    (CL:LET* ((STELLA::*MODULE* MDL-000) (STELLA::*CONTEXT* CXT-000)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*)) (CL:SETQ ENVIRONMENT ENVIRONMENT)
@@ -1614,11 +1614,11 @@ language.  The following type mappings are used:
                 looked up using the Reflection tools.
 The function found must conform to the signature for specialist functions."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME NATIVE-NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NATIVE-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (CXT-000 MDL-000))
    (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
@@ -1642,9 +1642,9 @@ programming language.  The following type mappings are used:
   Common Lisp:  FUNCTION   (result of #' or (FUNCTION ...))
          Java:  java.lang.reflect.Method"
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME) (CL:TYPE CL:FIXNUM ARITY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARITY CL:FIXNUM)
   (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
    (CL:LET* ((STELLA::*MODULE* MDL-000) (STELLA::*CONTEXT* CXT-000)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*)) (CL:SETQ ENVIRONMENT ENVIRONMENT)
@@ -1667,13 +1667,13 @@ language.  The following type mappings are used:
 The function found must conform to the signature for computation functions.
 Arity specifies the number of arguments the computation accepts."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME NATIVE-NAME MODULE-NAME) (CL:TYPE CL:FIXNUM ARITY))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NATIVE-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE ARITY CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (CXT-000 MDL-000))
    (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
@@ -1719,9 +1719,9 @@ A module name of `null' or the empty string refers to the current module.
 If no module can be found with the name `module-name', then a Stella 
 `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING OBJECT-NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE OBJECT-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (OBJECT (SAFELY-GET-OBJECT OBJECT-NAME MODULE ENVIRONMENT)))
    (CL:WHEN (CL:NOT (CL:EQ OBJECT STELLA::NULL)) (DESTROY-OBJECT OBJECT))))
@@ -1807,9 +1807,9 @@ then a Stella `no-such-context-exception' is thrown.
 
 Return an iterator of the propositions resulting from sentence."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SENTENCE MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SENTENCE CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (PROPOSITIONS STELLA::NULL) (RETURN-VALUE STELLA::NULL))
    (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
@@ -1840,9 +1840,9 @@ then a Stella `no-such-context-exception' is thrown.
 
 Return an iterator of the retracted propositions resulting from sentence."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SENTENCE MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SENTENCE CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (PROPOSITIONS STELLA::NULL) (RETURN-VALUE STELLA::NULL))
    (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
@@ -1902,9 +1902,9 @@ If no module can be found with the name `module-name', then a Stella
 
 Signals a `Proposition-Error' if PowerLoom could not conceive `sentence'."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING SENTENCE MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE SENTENCE CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)))
    (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
@@ -1931,9 +1931,9 @@ A module name of `null' or the empty string refers to the current module.
 If no module can be found with the name `module-name', then a Stella
 `No-Such-Context-Exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING RELATION-NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE RELATION-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (RELATION (SAFELY-GET-RELATION RELATION-NAME MODULE ENVIRONMENT)))
    (GET-RULES RELATION MODULE ENVIRONMENT)))
@@ -1947,9 +1947,9 @@ A module name of `null' or the empty string refers to the
 current module.  If no module can be found with the name `module-name',
 then a Stella `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:WHEN (CL:EQ STREAM STELLA::NULL) (CL:SETQ STREAM STELLA::STANDARD-OUTPUT))
   (CL:LET* ((RULE STELLA::NULL) (ITER-000 (S-GET-RULES NAME MODULE-NAME ENVIRONMENT)))
@@ -1991,9 +1991,9 @@ called again."
 current module.  If no module can be found with the name `module-name',
 then a Stella `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING RELATION-NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE RELATION-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (RELATION (SAFELY-GET-RELATION RELATION-NAME MODULE ENVIRONMENT)))
    (CL:IF (CL:NOT (CL:EQ RELATION STELLA::NULL)) (GET-ARITY RELATION) STELLA::NULL-INTEGER)))
@@ -2015,9 +2015,9 @@ A module name of `null' or the empty string refers to the
 current module.  If no module can be found with the name `module-name',
 then a Stella `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING RELATION-NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE RELATION-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (RELATION (SAFELY-GET-RELATION RELATION-NAME MODULE ENVIRONMENT)))
    (CL:IF (CL:NOT (CL:EQ RELATION STELLA::NULL)) (GET-DOMAIN RELATION) STELLA::NULL)))
@@ -2039,9 +2039,9 @@ A module name of `null' or the empty string refers to the
 current module.  If no module can be found with the name `module-name',
 then a Stella `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING RELATION-NAME MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE RELATION-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (RELATION (SAFELY-GET-RELATION RELATION-NAME MODULE ENVIRONMENT)))
    (CL:IF (CL:NOT (CL:EQ RELATION STELLA::NULL)) (GET-RANGE RELATION) STELLA::NULL)))
@@ -2054,7 +2054,7 @@ relation `relation'.  Counting starts at zero.  NOTE: if there are multiple
 `nth-domain' propositions for `relation', this arbitrarily returns one of them;
 it does not look for the most specific one (which might have to be created)."
   (CL:DECLARE (CL:TYPE CL:FIXNUM N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:FIXNUM)
   (CL:WHEN (STELLA::CLASS? RELATION) (CL:RETURN-FROM GET-NTH-DOMAIN (CL:IF (CL:= N 0) RELATION STELLA::NULL)))
   (CL:COND
@@ -2083,11 +2083,11 @@ A module name of `null' or the empty string refers to the
 current module.  If no module can be found with the name `module-name',
 then a Stella `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING RELATION-NAME MODULE-NAME) (CL:TYPE CL:FIXNUM N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE RELATION-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:FIXNUM)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)) (RELATION (SAFELY-GET-RELATION RELATION-NAME MODULE ENVIRONMENT)))
    (CL:IF (CL:NOT (CL:EQ RELATION STELLA::NULL)) (GET-NTH-DOMAIN RELATION N) STELLA::NULL)))
@@ -2100,7 +2100,7 @@ The file should contain an `in-module' declaration that specifies the module
 within which all remaining commands are to be evaluated.  The remaining commands
 are evaluated one-by-one, applying the function `evaluate' to each of them."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING FILENAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILENAME CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 STELLA::*MODULE*) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
    (CL:LET* ((STELLA::*MODULE* MDL-000) (STELLA::*CONTEXT* CXT-000)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*)) (CL:SETQ ENVIRONMENT ENVIRONMENT)
@@ -2117,7 +2117,7 @@ not contain an `in-module' declaration, an error will be signaled.
 The remaining commands are evaluated one-by-one, applying the function
 `evaluate' to each of them."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING FILENAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILENAME CL:SIMPLE-STRING)
   (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
    (CL:LET* ((STELLA::*MODULE* MDL-000) (STELLA::*CONTEXT* CXT-000)) (CL:DECLARE (CL:SPECIAL STELLA::*MODULE* STELLA::*CONTEXT*)) (CL:SETQ ENVIRONMENT ENVIRONMENT)
@@ -2194,9 +2194,9 @@ value of `ifexists'.  Possible values are \"ASK\", \"REPLACE\", \"WARN\" and \"E
   ASK     => Ask the user whether to overwrite or not.  If not overwritten, an 
              exception is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING FILENAME IFEXISTS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILENAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE IFEXISTS CL:SIMPLE-STRING)
   (CL:LET* ((EXISTS? (STELLA::PROBE-FILE? FILENAME)))
    (CL:COND ((CL:OR (CL:NOT EXISTS?) (STELLA::STRING-EQUAL? IFEXISTS "REPLACE")))
@@ -2233,11 +2233,11 @@ A module name of `null' or the empty string refers to the
 current module.  If no module can be found with the name `module-name',
 then a Stella `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING MODULE-NAME FILENAME IFEXISTS))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE FILENAME CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE IFEXISTS CL:SIMPLE-STRING)
   (SAVE-MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT) FILENAME IFEXISTS ENVIRONMENT))
 
@@ -2280,7 +2280,7 @@ As a special case, a column number of zero will also return `sequence' itself
 if it is not one of the types enumerated above.  This is done to allow the
 use of `get-nth-value' on PL-iterators with only a single return variable."
   (CL:DECLARE (CL:TYPE CL:FIXNUM N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:FIXNUM)
   (CL:WHEN (CL:OR (CL:>= N (GET-COLUMN-COUNT SEQUENCE)) (CL:< N 0))
    (CL:LET* ((STREAM-000 (STELLA::NEW-OUTPUT-STRING-STREAM)))
@@ -2320,7 +2320,7 @@ As a special case, a column number of zero will also return `sequence' itself
 as a string if it is not one of the types enumerated above.  This is done to 
 allow the use of `get-nth-string' on PL-iterators with only a single return variable."
   (CL:DECLARE (CL:TYPE CL:FIXNUM N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:FIXNUM)
   (OBJECT-TO-STRING (GET-NTH-VALUE SEQUENCE N MODULE ENVIRONMENT)))
 
@@ -2342,7 +2342,7 @@ above.   This allows the use of `get-nth-integer' on PL-iterators with
 only a single return variable.  If  `sequence' cannot be turned into an
 integer, an exception will be thrown."
   (CL:DECLARE (CL:TYPE CL:FIXNUM N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:FIXNUM)
   (OBJECT-TO-INTEGER (GET-NTH-VALUE SEQUENCE N MODULE ENVIRONMENT)))
 
@@ -2364,7 +2364,7 @@ above.  This allows the use of `get-nth-float' on PL-iterators with only
 a single return variable.    If  `sequence' cannot be turned into a floating
 point value, an exception will be thrown."
   (CL:DECLARE (CL:TYPE CL:FIXNUM N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:FIXNUM)
   (OBJECT-TO-FLOAT (GET-NTH-VALUE SEQUENCE N MODULE ENVIRONMENT)))
 
@@ -2384,7 +2384,7 @@ if it is not one of the types enumerated above.  This is done to allow the
 use of `get-nth-value' on PL-iterators with only a single return variable.
 If `sequence' is not a LOGIC-OBJECT, an exception is thrown."
   (CL:DECLARE (CL:TYPE CL:FIXNUM N))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE N CL:FIXNUM)
   (CL:LET* ((VALUE (GET-NTH-VALUE SEQUENCE N MODULE ENVIRONMENT)))
    (CL:IF (STELLA::ISA? VALUE SGT-PLI-LOGIC-LOGIC-OBJECT) VALUE
@@ -2427,9 +2427,9 @@ global variables is supported.
 current module.  If no module can be found with the name `module-name',
 then a Stella `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING COMMAND MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE COMMAND CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)))
    (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
@@ -2580,9 +2580,9 @@ The returned truth value represents the logical truth of the queried sentence
 as determined by PowerLoom.  It can be be tested via the functions `is-true',
 `is-false' and `is-unknown' (which see)."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING QUERY MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE QUERY CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((QUERYFORM STELLA::NIL) (MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)))
    (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
@@ -2671,9 +2671,9 @@ A null `module-name' or the empty string refers to the current module.
 If no module can be found with the name `module-name', then a STELLA
 `no-such-context-exception' is thrown."
   (CL:DECLARE (CL:TYPE CL:SIMPLE-STRING QUERY MODULE-NAME))
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE QUERY CL:SIMPLE-STRING)
-  #+MCL
+  #+(or MCL OpenMCL)
   (CL:CHECK-TYPE MODULE-NAME CL:SIMPLE-STRING)
   (CL:LET* ((QUERYFORM STELLA::NIL) (MODULE (SAFELY-GET-MODULE MODULE-NAME ENVIRONMENT)))
    (CL:LET* ((MDL-000 MODULE) (CXT-000 MDL-000)) (CL:WHEN (CL:EQ MDL-000 STELLA::NULL) (CL:SETQ MDL-000 STELLA::*MODULE*) (CL:SETQ CXT-000 STELLA::*CONTEXT*))
