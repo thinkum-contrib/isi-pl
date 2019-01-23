@@ -1781,7 +1781,7 @@
     (when (and include-type-checks? (>= *safety* 1))
       (foreach decl in declarations
           do (when (<= *safety* 2)
-               (pushq typechecks (new VERBATIM-STRING-WRAPPER :wrapper-value "#+MCL")))
+               (pushq typechecks (new VERBATIM-STRING-WRAPPER :wrapper-value "#+(or MCL OpenMCL)")))
              (pushq typechecks
                     (bquote (cl:check-type & (third decl) & (second decl)))))
       (setq typechecks (reverse typechecks)))
