@@ -515,7 +515,7 @@
      ,@(CL:when (CL:not (CL:eq selfType 'CL:CONS))
          `((CL:defmethod ,name ((,selfVar CL:CONS) ,@otherArgs)
        ,@body)))
-     (CL:defmethod ,name ((,selfVar (CL:eql CL:nil)) ,@otherArgs)
+     (CL:defmethod ,name ((,selfVar CL:NULL) ,@otherArgs)
        ,@body)))
 
 (CL:defvar CLSYS-NULL-CONS (CL:cons NULL CL:NIL))
