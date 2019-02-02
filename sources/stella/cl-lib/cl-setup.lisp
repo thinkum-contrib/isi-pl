@@ -996,7 +996,7 @@
 
 (cl:defmacro with-redefinition-warnings-suppressed (CL:&body forms)
   ;; Wrap form with code to suppress redefinition warnings
-  `(cl:let (#+:(or MCL OpenMCL) (CCL::*WARN-IF-REDEFINE* CL:NIL)
+  `(cl:let (#+(or :MCL :OpenMCL) (CCL::*WARN-IF-REDEFINE* CL:NIL)
 	    #+:EXCL(EXCL::*REDEFINITION-WARNINGS* CL:NIL)
 	    #+:LUCID(USER::*REDEFINITION-ACTION* CL:NIL)
 	    #+:TI(TICL::INHIBIT-FDEFINE-WARNINGS CL:T)
