@@ -557,12 +557,12 @@
   ;; We keep the dynamic approach for now until we decide to translate all
   ;; literal methods into functions similar to what we do in C++ & Java
   ;; (which would also result in more efficient code).
-  #+(or allegro cmu sbcl)
+  #+(or allegro cmu sbcl openmcl)
   ;; Both ACL and CMUCL (and maybe others) support methods on
   ;; CL:FIXNUM, so nothing special needs to be done there:
   `(CL:defmethod ,name ((,selfVar ,selfType) ,@otherArgs)
        ,@body)
-  #-(or allegro cmu sbcl)
+  #-(or allegro cmu sbcl openmcl)
   ;; Otherwise, we treat the bignum method as the main method, and the
   ;; fixnum method as an around method that catches fixnums dynamically:
   (CL:ecase selfType
