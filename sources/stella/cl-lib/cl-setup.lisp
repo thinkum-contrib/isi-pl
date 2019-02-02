@@ -756,7 +756,7 @@
 	   (host (sb-bsd-sockets:host-ent-address (sb-bsd-sockets:get-host-by-name host))))
     (sb-bsd-sockets:socket-connect s host port)
     (sb-bsd-sockets:socket-make-stream s :input cl:t :output cl:t :buffering :none))
-  #-(or :allegro :MCL :Lispworks :CLISP :CMU :SBCL)
+  #-(or :allegro :MCL :OpenMCL :Lispworks :CLISP :CMU :SBCL)
   (CL:error "Don't know how to open a network stream in this Lisp dialect (~s:~s)" host port)
   )
 
@@ -798,6 +798,7 @@
   (cl:let ((cl:*debug-io* stream))
     #+:EXCL  (tpl::zoom-print-stack-1 stream 20)
     #+:MCL   (ccl:print-call-history)
+    #+:OpenMCL (ccl:print-call-history :stream stream)
     #+:CMU   (debug:backtrace)
     #+:SBCL  (sb-debug:backtrace)
     #+:CLISP (system::print-backtrace :out stream)
@@ -974,7 +975,7 @@
   #+(or MCL OpenMCL)       (CCL:MAKE-LOCK)
   #+CMU       (MULTIPROCESSING:MAKE-LOCK)
   #+SBCL      (SB-THREAD:MAKE-MUTEX)
-  #-(or Allegro Lispworks MCL CMU SBCL) 'NO-LOCK)
+  #-(or Allegro Lispworks MCL OpenMCL CMU SBCL) 'NO-LOCK)
 
 (cl:defmacro with-process-lock (lock CL:&body forms)
   ;; Macro to synchronize a body of code based on a lock.  Conditionalized
@@ -984,8 +985,8 @@
     #+(or MCL OpenMCL)       CCL:WITH-LOCK-GRABBED
     #+CMU       MULTIPROCESSING:WITH-LOCK-HELD
     #+SBCL      SB-THREAD:WITH-RECURSIVE-LOCK
-    #+(or Allegro Lispworks MCL CMU SBCL) (,lock)
-    #-(or Allegro Lispworks MCL CMU SBCL) CL:PROGN
+    #+(or Allegro Lispworks MCL OpenMCL CMU SBCL) (,lock)
+    #-(or Allegro Lispworks MCL OpenMCL CMU SBCL) CL:PROGN
     ,@(CL:when lock CL:nil) ;; avoid unused var warnings for the PROGN case
     ,@forms))
 
