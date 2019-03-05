@@ -18,15 +18,31 @@ software components including:
 
 * The [STELLA Programming Language][stella] - functional language, with
   source code synthesis for implementation of the PowerLoom(R) Knowledge
-  Representation System (KRS) in Common Lisp, C++, and Java(R)
-  programming languages
+  Representation System (KRS) in Common Lisp, C++, IDL, and Java(R)
+  programming languages.
 
-* PowerLoom(R) System Support Components, such as for the PowerLoom(R)
-  server, RDBMS services for PowerLoom(R), and Ontosaurus
+* The PowerLoom logic system and PowerLoom command line interface
+
+* PowerLoom(R) network service components, such as the PowerLoom(R)
+  SOAP server (PL `webtools` system), DBMS services for PowerLoom(R)
+  (PL `sdbc` system) and Ontosaurus (PL `ontosaurus` system)
 
 * Example Knowledgebases
 
 * Documentation
+
+The STELLA, PowerLoom logic, and PowerLoom command line interface (CLI)
+components are documented in the PowerLoom manual. The PowerLoom manual
+is available in PDF, Texinfo, and HTML formats -- within this source
+code repository -- under the pathname `sources/powerloom/doc/`
+
+The STELLA language is documented in the PowerLoom manual and in a
+separate manual, avaialble individually. The STELLA subset of the
+documentation is avaialble under the pathname `sources/stella/doc/`.
+
+Numerous academic articles about PowerLoom may also be available, such
+as via the [PowerLoom(R) web site][pl] and normal academic publishing
+services.
 
 
 # Existing Works
@@ -34,8 +50,8 @@ software components including:
 * PowerLoom(R)
 * OKBC
 * Loom(R)
+* GFP (SRI)
 * KL-ONE
-
 
 # Repository Structure
 

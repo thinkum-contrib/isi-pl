@@ -79,7 +79,7 @@
   ;; disabling this for Lispworks might break proper printing of
   ;;    STELLA/Lisp conses though, since we need CL:NIL to print as `()':
   "#-:lispworks
-   (CL:defmethod cl:print-object ((self (CL:eql CL:NIL)) stream)
+   (CL:defmethod cl:print-object ((self CL:NULL) stream)
      (CL:write-string \"()\" stream))")
 
 

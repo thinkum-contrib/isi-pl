@@ -515,7 +515,7 @@
      ,@(CL:when (CL:not (CL:eq selfType 'CL:CONS))
          `((CL:defmethod ,name ((,selfVar CL:CONS) ,@otherArgs)
        ,@body)))
-     (CL:defmethod ,name ((,selfVar (CL:eql CL:nil)) ,@otherArgs)
+     (CL:defmethod ,name ((,selfVar CL:NULL) ,@otherArgs)
        ,@body)))
 
 (CL:defvar CLSYS-NULL-CONS (CL:cons NULL CL:NIL))
@@ -557,12 +557,12 @@
   ;; We keep the dynamic approach for now until we decide to translate all
   ;; literal methods into functions similar to what we do in C++ & Java
   ;; (which would also result in more efficient code).
-  #+(or allegro cmu sbcl)
+  #+(or allegro cmu sbcl openmcl)
   ;; Both ACL and CMUCL (and maybe others) support methods on
   ;; CL:FIXNUM, so nothing special needs to be done there:
   `(CL:defmethod ,name ((,selfVar ,selfType) ,@otherArgs)
        ,@body)
-  #-(or allegro cmu sbcl)
+  #-(or allegro cmu sbcl openmcl)
   ;; Otherwise, we treat the bignum method as the main method, and the
   ;; fixnum method as an around method that catches fixnums dynamically:
   (CL:ecase selfType
@@ -756,7 +756,7 @@
 	   (host (sb-bsd-sockets:host-ent-address (sb-bsd-sockets:get-host-by-name host))))
     (sb-bsd-sockets:socket-connect s host port)
     (sb-bsd-sockets:socket-make-stream s :input cl:t :output cl:t :buffering :none))
-  #-(or :allegro :MCL :Lispworks :CLISP :CMU :SBCL)
+  #-(or :allegro :MCL :OpenMCL :Lispworks :CLISP :CMU :SBCL)
   (CL:error "Don't know how to open a network stream in this Lisp dialect (~s:~s)" host port)
   )
 
@@ -798,6 +798,7 @@
   (cl:let ((cl:*debug-io* stream))
     #+:EXCL  (tpl::zoom-print-stack-1 stream 20)
     #+:MCL   (ccl:print-call-history)
+    #+:OpenMCL (ccl:print-call-history :stream stream)
     #+:CMU   (debug:backtrace)
     #+:SBCL  (sb-debug:backtrace)
     #+:CLISP (system::print-backtrace :out stream)
@@ -974,7 +975,7 @@
   #+(or MCL OpenMCL)       (CCL:MAKE-LOCK)
   #+CMU       (MULTIPROCESSING:MAKE-LOCK)
   #+SBCL      (SB-THREAD:MAKE-MUTEX)
-  #-(or Allegro Lispworks MCL CMU SBCL) 'NO-LOCK)
+  #-(or Allegro Lispworks MCL OpenMCL CMU SBCL) 'NO-LOCK)
 
 (cl:defmacro with-process-lock (lock CL:&body forms)
   ;; Macro to synchronize a body of code based on a lock.  Conditionalized
@@ -984,8 +985,8 @@
     #+(or MCL OpenMCL)       CCL:WITH-LOCK-GRABBED
     #+CMU       MULTIPROCESSING:WITH-LOCK-HELD
     #+SBCL      SB-THREAD:WITH-RECURSIVE-LOCK
-    #+(or Allegro Lispworks MCL CMU SBCL) (,lock)
-    #-(or Allegro Lispworks MCL CMU SBCL) CL:PROGN
+    #+(or Allegro Lispworks MCL OpenMCL CMU SBCL) (,lock)
+    #-(or Allegro Lispworks MCL OpenMCL CMU SBCL) CL:PROGN
     ,@(CL:when lock CL:nil) ;; avoid unused var warnings for the PROGN case
     ,@forms))
 
@@ -995,7 +996,7 @@
 
 (cl:defmacro with-redefinition-warnings-suppressed (CL:&body forms)
   ;; Wrap form with code to suppress redefinition warnings
-  `(cl:let (#+:MCL(CCL::*WARN-IF-REDEFINE* CL:NIL)
+  `(cl:let (#+(or :MCL :OpenMCL) (CCL::*WARN-IF-REDEFINE* CL:NIL)
 	    #+:EXCL(EXCL::*REDEFINITION-WARNINGS* CL:NIL)
 	    #+:LUCID(USER::*REDEFINITION-ACTION* CL:NIL)
 	    #+:TI(TICL::INHIBIT-FDEFINE-WARNINGS CL:T)
