@@ -60,8 +60,10 @@
 
 ;; --
 
-(defvar *stella-verbose?* #-sbcl t #+sbcl nil)
+;;(defvar *stella-verbose?* #-sbcl t #+sbcl nil)
 ;; ^ try to prevent print methods during build with SBCL - cf. cl-primal
+
+(defvar *stella-verbose?* t)
 
 (defvar *stella-compiler-optimization*
   '(optimize (debug 3) (safety 3) (space 1) (speed 1)))
@@ -76,6 +78,8 @@
 ;; NB Later:
 ;; (stella-c&l-translated "cl-lib" "cl-setup")
 ;; --
+
+;; -- from #p"PL:native;lisp;stella;load-stella.lisp"
 
 ;;; These globals are here to facilitate bootstrapping (before STELLA is up):
 ;;; They need to include a directory separator at the end:
