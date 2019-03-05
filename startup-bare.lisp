@@ -39,6 +39,24 @@
 ;                                                                            ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; END LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;
+;; startup-bare.lisp - Initialization utility for debugging with STELLA systems
+;;
+;; Synopsis:
+;;
+;; This file serves as a partial aggregate of top-level forms from the
+;; following source files in the original PowerLoom source tree.
+;;
+;;   #p"PL:load-stella.lisp"
+;;   #p"PL:native;lisp;stella;load-stella.lisp"
+;;
+;; As a matter of difference, this file does not in itself initialize
+;; STELLA logic servces. This may be of use, for instance, when
+;; debugging how some Lisp implementations, on some hardware
+;; and OS architectures, may behave when compiling some STELLA systems.
+;;
+;; [spchamp]
+
 
 ;; TD: DEFVAR CL-USER::*INITIALIZE-STELLA* NIL & patch src (STELLA, LOGIC, PL)
 
@@ -53,7 +71,7 @@
   (trace cl:add-method) ;; vry informative
 
   ;; prevent metacircular errors for print-object method definition
-  ;; during compile (may be required when loading this file with SBCL)
+  ;; during compile (useful when loading this file with SBCL)
   (setq *COMPILE-VERBOSE* nil)
 
 )
