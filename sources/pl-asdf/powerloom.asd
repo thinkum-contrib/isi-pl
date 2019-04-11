@@ -46,11 +46,12 @@
 
 (in-package #:powerloom-system)
 
+#-(and)
 (defsystem #:powerloom
-  ;; xref: ./load-powerloom.lisp
+  ;; xref: load-powerloom.lisp, ...
   :depends-on (:stella)
   :components
   (
-   
+
   )
- 
+ )

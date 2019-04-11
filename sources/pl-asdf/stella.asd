@@ -243,6 +243,10 @@ pl:sources;powerloom;doc;*.pdf
 (in-package #:stella-system)
 
 
+;; NB: As a protype towards extending the ASDF interface contract onto
+;; evaluation of PowerLoom STELLA systems, this system definition
+;; requires that STELLA has already been initialized.
+
 (defmacro setv (name value &optional docstring)
   `(cond
      ((boundp (quote ,name))
