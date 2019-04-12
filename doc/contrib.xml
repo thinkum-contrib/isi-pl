@@ -65,24 +65,61 @@
 
     <abstract>
 
-      <para><remark>(introduction - contributed documentation for ISI PL</remark></para>
+      <para><remark>(introduction - contributed documentation for ISI
+      PL) (NB development and distribution of PL at USC ISI) (NB PL
+      implementations in Common Lisp, C++, Java and - with further
+      contributed code - .. refer to PL homepage.) </remark></para>
 
-      <para><remark>(references to OKBC and GFP initiatives - SRI AIC et
-      al. Make expanded reference in main text, with bibliographical
-      references there. See also, Stanford KSL, LOOM(r) and &pl; release
-      notes, LOOM(r) and &pl; published articles)</remark></para>
+      <para><remark>(references the OKBC and earlier GFP initiatives -
+      SRI AIC et al. Make expanded reference in main text, with
+      bibliographical references there. See also, Stanford KSL, and - at
+      USC ISI - LOOM(r) and &pl; release notes, LOOM(r) and &pl;
+      published articles)</remark></para>
 
-      <para><remark>(KIF - TBD: Origins, proposed standards for KIF as
-      approximately a category of knowledge representation notations
-      sharing a common syntax and semantics. Note, perhaps, the earlier
-      KL-ONE and (cf. Hewitt) ACTOR systems</remark></para>
+      <para><remark>Note that PL develops a manner of a KIF-like syntax,
+      in PLI and - more generally - STELLA eource forms.  (TBD: Origins,
+      proposed standards for KIF as approximately a category of knowledge
+      representation notations sharing a common syntax and semantics. Note the
+      earlier KL-ONE[KL-ONE] and ACTOR systems [Hewitt]. Note other notational
+      systems in knowledge representation - IDP [DTAI]; Prolog [KSL]; DAML,
+      DAML+OIL (TBD) and subsq RDF, OWL; Common Logic [RiceU]; cf. OKBC, ODM
+      [OMG] (individual ODM metamodels, and ODM profiles onto the UML
+      metamodel). Try to include reference to FIPA [ISO?], as may pertainin to
+      any approaches for knowledge sharing across distributed systems. Note,
+      then, PL SOAP (and thus, SDBC) systems.
+
+      [DTAI] https://dtai.cs.kuleuven.be/software/idp
+
+      [KL-ONE] cf. articles, note the "Original KL-ONE initiative"
+      pedagogically, and subsq. developments published at the CMU AI
+      Repository
+      http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/areas/kr/systems/kl_one/0.html
+
+      [Hewitt]
+
+      [TBD] DAML, DAML+OIL
+      [W3C] RDF, OWL
+
+      [KSL] Prolog, Epilog, ...
+
+      [RiceU, ISO] Common Logic - articles, WG proceedings
+
+      [OMG] MOF, XMI, UML, UML-DI, ODM
+
+      [FIPA] TBD
+      </remark></para>
+
+      <para><remark>Note RDF in extension - highlighting LoC and GVP
+      initiatives, if not also RDF in Netscape/Firefox XUL, RDF in DOAP
+      vocab, etc. @ software/syatems</remark></para>,
 
       <para>
         Editor's Note: This documentation has been contributed for &pl;
         in an effort to aid in further development of software systems,
-        such that may be derived from &pl;. This is not to
-        replace &mdash; though it may serve to augment &mdash; the
-        original &pl; manual and &pl; source code.
+        such that may be derived from &pl; or may make reference to
+        &pl;. This is not to replace &mdash; though it is hoped that it
+        may serve to augment &mdash; the original &pl; manual and &pl;
+        source code.
       </para>
 
       <para><remark>NB Availability - source code, and public fork -
