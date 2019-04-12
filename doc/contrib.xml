@@ -62,6 +62,36 @@
         </revremark>
       </revision>
     </revhistory>
+
+    <abstract>
+
+      <para><remark>(introduction - contributed documentation for ISI PL</remark></para>
+
+      <para><remark>(references to OKBC and GFP initiatives - SRI AIC et
+      al. Make expanded reference in main text, with bibliographical
+      references there. See also, Stanford KSL, LOOM(r) and &pl; release
+      notes, LOOM(r) and &pl; published articles)</remark></para>
+
+      <para><remark>(KIF - TBD: Origins, proposed standards for KIF as
+      approximately a category of knowledge representation notations
+      sharing a common syntax and semantics. Note, perhaps, the earlier
+      KL-ONE and (cf. Hewitt) ACTOR systems</remark></para>
+
+      <para>
+        Editor's Note: This documentation has been contributed for &pl;
+        in an effort to aid in further development of software systems,
+        such that may be derived from &pl;. This is not to
+        replace &mdash; though it may serve to augment &mdash; the
+        original &pl; manual and &pl; source code.
+      </para>
+
+      <para><remark>NB Availability - source code, and public fork -
+      address, to detail, in preface</remark></para>
+
+      <para><remark>NB Marks of trade - ensure statements are published in frontmatter</remark></para>
+
+    </abstract>
+
   </info>
 
   <xi:include href="contrib.ov.xml"/>
