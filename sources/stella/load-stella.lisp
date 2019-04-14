@@ -204,7 +204,7 @@ hash tables grow large).")
 #+allegro (setq excl:*print-nickname* t)
 #+allegro (tpl:setq-default excl:*print-nickname* t)
 
-#-:cmu
+#-(or :cmu :sbcl)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (fboundp 'with-compilation-unit)
     (defmacro with-compilation-unit ((&rest options) &body body)
