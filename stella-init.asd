@@ -1,4 +1,4 @@
-;; stella-init.asd
+;; stella-init.asd - Extending ASDF onto PowerLOOM(r), early init  -*- lisp -*-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; BEGIN LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -94,6 +94,7 @@
 ;; Misc init for PL-ASDF and PL/STELLA in Common Lisp
 
 (defmacro defconst (name value &optional docstr)
+  ;; utility macro
   `(defconstant ,name
      ,@(when docstr (list docstr))
      (cond
@@ -102,18 +103,28 @@
        (t ,value))))
 
 (defconst +pl-asdf-cache-name+ "pl-asdf")
+;; +pl-asdf-cache-name+ - remarks:
+;;
+;;  - Used in the subsequent defvar, as the name of a subdirectory onto
+;;    XDG DATA DIR. Subsequently, will be suffixed with a subdirectory
+;;    denoting an implementation-specific pathname computed by
+;;    ASDF. That pathname will then be used as a prefix pathname for
+;;    output files produced with pl-asdf
+;;
+;;  - May be of use elsewhere in pl-asdf (To Do: install-source-op)
+;;
+;;  - Denotes, in effect, a symbol used in computing a base pathname
+;;    for ASDF operations onto the PL source tree and any subsequent
+;;    output files, as may be produced directly with ASDF operations
+;;    onto that source tree.
+;;
 
-(defvar *pl-asdf-bin-cache*
+(defvar *pl-asdf-output-cache*
+  ;; cache dir for outpit files, onto the ASDF output file translations API
+  ;;
+  ;; e.g used by:
+  ;;  ensure-pathname-translations
   (uiop/configuration:xdg-cache-home +pl-asdf-cache-name+ :implementation))
-
-(defgeneric compute-fasl-root (op c) ;; ?
-  (:method ((op asdf:compile-op) (c asdf:cl-source-file))
-    
-    )
-  (:method ((op asdf:load-op) (c asdf:cl-source-file))
-    
-    )
-  )
 
 (defgeneric compute-relative-fasl-path (op c)  ;; ?
   ;; compute a relative fasl path for C onto its outermost system definition
@@ -127,22 +138,20 @@
 
 
 (defun ensure-pathname-translations (basename)
+  ;; define a set of logical pathanme translations in a manner that
+  ;; should retain portability onto upstream PowerLOOM(r)
+  ;;
+  ;; referencing PL:translations.lisp,- NB `wild-version-value'
+  ;; (May be addressed portably onto ASDF)
+  ;;
   (assert (probe-file basename) (basename))
-  (let* ((basenamep (pathname basename))
-         (wild-version
-          ;; sourcing PL:translations.lisp cf. `wild-version-value`
-          (cond
-            ((ignore-errors (make-pathname
-                             :version :wild
-                             :defaults basenamep))
-             :wild)
-            (t nil))))
-    (declare (dynamic-extent basenamep wild-version))
-    (labels ((mk-logname (tok)
+  (let ((basenamep (pathname basename)))
+    (declare (dynamic-extent basenamep))
+    (labels ((mk-subwild-logname (tok)
                (format nil "~a;**;*.*.*" tok))
              (mk-template-translate (tok base)
-               ;; NB: Using portable pathname hacks from ASDF, at runtime,
-               ;;     to ensure portability across/beyond CLtL2 implementations
+               ;; NB: Using portable pathname API from ASDF, at runtime,
+               ;;     to ensure portability across CLtL2 implementations
                (let ((stub (make-pathname
                             :directory (list :relative tok
                                              uiop/pathname::*wild-inferiors-component*)
@@ -154,13 +163,13 @@
                (mk-template-translate tok basenamep))
              (mk-asdf-bin-translate ()
                ;; NB ASDF UIOP/PATHNAME:*OUTPUT-TRANSLATION-FUNCTION*
-               ;;    default value ASDF/OUTPUT-TRANSLATIONS:APPLY-OUTPUT-TRANSLATIONS
+               ;;    local value ASDF/OUTPUT-TRANSLATIONS:APPLY-OUTPUT-TRANSLATIONS
                ;;    used by UIOP/LISP-BUILD:COMPILE-FILE-PATHNAME*
                ;;      used by UIOP/LISP-BUILD:COMPILE-FILE-TYPE
                ;;       and sometimes by UIOP/LISP-BUILD:COMPILE-FILE*
                ;;           used by ASDF/LISP-ACTION:PERFORM-LISP-COMPILATION
                ;;                used by ASDF/ACTION:PERFORM (COMPILE-OP CL-SOURCE-FILE)
-               ;; ... so, it uses ASDF Class definitions only in dispatching for PERFORM (??)
+               ;; NB: Uses ASDF Class definitions insofar as dispatching for PERFORM (??)
                (mk-template-translate "bin"
                                       ;; TBD compute base pathname for "This sysdef, this ASDF, this implementation"
                                       ;;
@@ -172,19 +181,23 @@
                                       ;;
                                       ;; So, alternately
                                       ;;  (uiop/configuration:xdg-cache-home +pl-asdf-cache-name+ :implementation)
-                                      *pl-asdf-bin-cache*)))
+                                      *pl-asdf-output-cache*)))
   (setf (logical-pathname-translations "PL")
-        ;; mk-logname + mk-src-translate "sources" "native" "kbs"
-        ;; mk-logname + mk-asdf-bin-translate "bin"
-        (cons (list (mk-logname "bin") (mk-asdf-bin-translate))
-              (mapcar #'(lambda (tok)
-                          (list (mk-logname tok) (mk-src-translate tok)))
-                      ;; NB This does not handle any install-source oprn [FIXME]
-                      '("sources" "native" "kbs")))))))
+        ;; mk-subwild-logname + mk-src-translate "sources" "native" "kbs"
+        ;; mk-subwild-logname + mk-asdf-bin-translate "bin"
+        (append
+         (list
+          (list "*.*.*" basenamep) ;; ensure files in top src dir are accessible
+          (list (mk-subwild-logname "bin") (mk-asdf-bin-translate)))
+         (mapcar #'(lambda (tok)
+                          (list (mk-subwild-logname tok) (mk-src-translate tok)))
+                 ;; NB This does not handle any install-source oprn [FIXME]
+                 '("sources" "native" "kbs")))))))
 
 
 ;; (ensure-pathname-translations (component-pathname (find-system "stella-init")))
 ;; (probe-file "PL:sources;")
+;; (probe-file "PL:stella-init.asd")
 
 
 (defun impl-check ()
