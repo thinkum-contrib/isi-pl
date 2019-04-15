@@ -137,16 +137,16 @@
   )
 
 
-(defun ensure-pathname-translations (basename)
+(defun ensure-pathname-translations (src-prefix)
   ;; define a set of logical pathanme translations in a manner that
   ;; should retain portability onto upstream PowerLOOM(r)
   ;;
   ;; referencing PL:translations.lisp,- NB `wild-version-value'
   ;; (May be addressed portably onto ASDF)
   ;;
-  (assert (probe-file basename) (basename))
-  (let ((basenamep (pathname basename)))
-    (declare (dynamic-extent basenamep))
+  (assert (probe-file src-prefix) (src-prefix))
+  (let ((src-prefix-path (pathname src-prefix)))
+    (declare (dynamic-extent src-prefix-path))
     (labels ((mk-subwild-logname (tok)
                (format nil "~a;**;*.*.*" tok))
              (mk-template-translate (tok base)
@@ -160,7 +160,7 @@
                             :defaults base)))
                  (merge-pathnames stub base)))
              (mk-src-translate (tok)
-               (mk-template-translate tok basenamep))
+               (mk-template-translate tok src-prefix-path))
              (mk-asdf-bin-translate ()
                ;; NB ASDF UIOP/PATHNAME:*OUTPUT-TRANSLATION-FUNCTION*
                ;;    local value ASDF/OUTPUT-TRANSLATIONS:APPLY-OUTPUT-TRANSLATIONS
@@ -187,7 +187,7 @@
         ;; mk-subwild-logname + mk-asdf-bin-translate "bin"
         (append
          (list
-          (list "*.*.*" basenamep) ;; ensure files in top src dir are accessible
+          (list "*.*.*" src-prefix-path) ;; ensure files in top src dir are accessible
           (list (mk-subwild-logname "bin") (mk-asdf-bin-translate)))
          (mapcar #'(lambda (tok)
                           (list (mk-subwild-logname tok) (mk-src-translate tok)))
