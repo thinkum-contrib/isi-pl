@@ -293,7 +293,7 @@ hash tables grow large).")
 (defgeneric (setf system-component-source-prefix) (new-value component))
 
 
-;; ---- Protocol function used in PERFORM methods
+;; ---- Protocol functions used in PERFORM methods
 
 (defgeneric proclamations-for (op component)
   (:method ((op operation) (component source-file))
@@ -302,13 +302,29 @@ hash tables grow large).")
 (defgeneric muffle-conditions-list (op component)
   ;; return a list of ASDF condition designators for conditions to
   ;; muffle in OP on COMPONENT
-  (:method ((op t) (component t))
+  (:method ((op t) (component asdf:cl-source-file))
     ;; FIXME may have to set uiop/lisp-build:*uninteresting-conditions*
     ;; lexically, to prevent these from being shadowed?
     (values
      (append
-      #+sbcl (sb-ext:compiler-note)
-      uiop/lisp-build:*usual-uninteresting-conditions*))))
+      #+sbcl '(sb-ext:compiler-note) ;; still not being muffled, even at this more generic type?
+      (let (s)
+        (dolist (spec uiop/lisp-build:*usual-uninteresting-conditions* s)
+          (when (symbolp spec)
+            (setq s (cons spec s)))))))))
+
+(defmacro muffle-for ((op c &rest more) &body body )
+  ;; Workaround for some quirks in ASDF
+  (let ((cdn (make-symbol "%cdn"))
+        (types (make-symbol "%types"))
+        (s (make-symbol "%s")))
+    `(let ((,types (append (muffle-conditions-list ,op ,c)
+                           (quote ,more))))
+       (handler-bind ((t #'(lambda (,cdn)
+                             (dolist (,s ,types)
+                               (when (typep ,cdn ,s)
+                                 (muffle-warning ,cdn))))))
+         ,@body))))
 
 
 ;; ---- Generic Class Definitions, Method Specialations, API
@@ -332,32 +348,69 @@ hash tables grow large).")
 
 
 (defmacro proclaim-for (op component)
+  ;; NB ASDF GET-OPTIMIZATION-SETTINGS
   (let ((procls (make-symbol "%procls")))
     `(let ((,procls (proclamations-for ,op ,component)))
        (when ,procls
          (proclaim ,procls)))))
 
+#-(and)
+(defmacro operate-main (o c)
+  `(with-compilation-unit ()
+    (proclaim-for ,o ,c)
+    (let ((uiop/lisp-build:*uninteresting-conditions*
+           ;; FIXME Regardless of where it's being set locally,
+           ;; it seems this muffled conditions list
+           ;; - in some places - is being shadowed with NIL
+           ;; and elswehere, not used correctly for it symbol elements
+           (muffle-conditions-list o c)))
+      (when (next-method-p) (call-next-method)))))
+
+;; (trace UIOP/UTILITY:MATCH-ANY-CONDITION-P)
+;; ^ Being called somewhere in ASDF
+;; Is that call overriding all containing handler-bind specs?
 
 (defmacro operate-main (o c)
   `(with-compilation-unit ()
     (proclaim-for ,o ,c)
-    (when (next-method-p) (call-next-method))))
+    (muffle-for (,o ,c)
+      (when (next-method-p) (call-next-method)))))
+
+(eval-when () ;; TMP
+  (muffle-conditions-list (make-instance 'compile-op)
+                          (car
+                           (module-components
+                            (find-system "stella-init"))))
+
+  (muffle-conditions-list (make-instance 'load-op)
+                          (car
+                           (module-components
+                            (find-system "stella-init"))))
+
+  ;; WHERE is the conditions specifier list turning up null?
+  )
 
 
-
+#+NIL
 (defmethod asdf:operate ((o asdf:compile-op) (c stella-lisp-source-component)
                          &rest op-args &key &allow-other-keys)
   (declare (ignore op-args))
   (flet ((method-main () (operate-main o c)))
     (uiop/utility:call-with-muffled-conditions #'method-main
+                                               ;; FIXME May be redundant now:
                                                (muffle-conditions-list o c))))
+
+
+(defmethod asdf:operate ((o asdf:compile-op) (c stella-lisp-source-component)
+                         &rest op-args &key &allow-other-keys)
+  (declare (ignore op-args))
+  (operate-main o c))
 
 ;; ---- Pathname Functions
 
 (declaim (inline split-logical-dir-1))
 (defun split-logical-dir-1 (str)
-  (declare (type character c)
-           (type string str))
+  (declare (type string str))
   (let ((idx (position #\; str :test #'char=)))
     (cond
       (idx
