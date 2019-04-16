@@ -125,7 +125,7 @@
 (CL:defvar NULL-STRING (cl:make-string 1 :initial-element (CL:code-char 0)))
 (CL:defvar NULL-NATIVE-VECTOR (cl:vector))
 
-;; values for cl-array-null 
+;; values for cl-array-null
 ;; NOTE:  Any change to the set of supported null values also needs
 ;;        to change the type declaration function LOOKUP-CL-TYPE-FROM-STELLA-TYPE
 ;;        in file cl-translate.ste
@@ -144,7 +144,7 @@
 
 (CL:defun null-array? (value)
   (CL:TYPECASE value
-    (CL:ARRAY    
+    (CL:ARRAY
      (CL:CASE (CL:ARRAY-RANK value)
        (1 (CL:eq value NULL-1D-ARRAY))
        (2 (CL:eq value NULL-2D-ARRAY))
@@ -730,7 +730,7 @@
   #+allegro
   (socket:make-socket :remote-host host :remote-port port
 		      :address-family :internet
-		      :type :stream 
+		      :type :stream
 		      :connect :active
 		      :format
                       #.(CL:read-from-string
@@ -739,7 +739,7 @@
   #+OPENMCL
   (ccl:make-socket :remote-host host :remote-port port
                    :address-family :internet
-                   :type :stream 
+                   :type :stream
                    :connect :active
                    :format :bivalent)
   #+(and MCL (not OPENMCL))
@@ -787,7 +787,7 @@
   ;; Note that the CL spec only requires defined message strings for
   ;;  subtypes of CL:SIMPLE-ERROR, not CL:ERROR in general.
   (cl:if (cl:typep condition 'cl:simple-condition)
-    (cl:apply #'cl:format cl:nil 
+    (cl:apply #'cl:format cl:nil
 	      (%%simple-condition-format-control condition)
 	      (cl:simple-condition-format-arguments condition))
     (cl:princ-to-string condition)))
@@ -825,7 +825,7 @@
 ;;    CLSYS-ROOT-STRUCT and CLSYS-ROOT-OBJECT below:
 
 (CL:eval-when (:compile-toplevel :load-toplevel)
-  
+
 (CL:defstruct clsys-test-struct slot-a slot-b)
 (CL:defclass clsys-test-class () ((slot-a) (slot-b)))
 
@@ -1011,7 +1011,7 @@
 
 (cl:defmacro with-undefined-function-warnings-suppressed (CL:&body forms)
   ;; Wrap form with code to suppress undefined function warnings
-  `(#-:EXCL Cl:with-compilation-unit #+:EXCL CL:handler-bind 
+  `(#-:EXCL Cl:with-compilation-unit #+:EXCL CL:handler-bind
    (  #+:EXCL(EXCL:compiler-undefined-functions-called-warning
 	      #'(Cl:lambda (c) (CL:declare (CL:ignore c))
 			   (CL:muffle-warning))))
@@ -1023,7 +1023,7 @@
   ;; disabled full warning for now, since some of these warnings are
   ;; important clues (e.g., that CMUCL's aggressive type inference
   ;; might cause problems):
-  `(CL:handler-bind 
+  `(CL:handler-bind
        (; (CL:style-warning #'CL:muffle-warning)
 	#+:sbcl (SB-KERNEL:REDEFINITION-WARNING #'CL:muffle-warning)
         #+:sbcl (SB-EXT:IMPLICIT-GENERIC-FUNCTION-WARNING #'CL:muffle-warning)
