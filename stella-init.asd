@@ -301,25 +301,26 @@ hash tables grow large).")
 
 (defgeneric muffle-conditions-list (op component)
   ;; return a list of ASDF condition designators for conditions to
-  ;; muffle in OP on COMPONENT
+  ;; muffle in an environment of OP on COMPONENT
   (:method ((op t) (component asdf:cl-source-file))
     ;; FIXME may have to set uiop/lisp-build:*uninteresting-conditions*
     ;; lexically, to prevent these from being shadowed? [DNW]
     (values
      (append
-      #+sbcl '(sb-ext:compiler-note) ;; still not being muffled, even at this more generic type?
+      #+sbcl '(sb-ext:compiler-note)
       (let (s)
         (dolist (spec uiop/lisp-build:*usual-uninteresting-conditions* s)
           (when (symbolp spec)
             (setq s (cons spec s))))))))
   (:method ((op t) (component asdf:system))
+    ;; NB This might not be called when expected, if ASDF is not
+    ;; producing recursive PERFORM calls
     (let ((proto (make-instance
                   (asdf/component:module-default-component-class component))))
-      (muffle-conditions-list op proto)
-      )))
+      (muffle-conditions-list op proto))))
+
 
 (defmacro muffle-for ((op c &rest more) &body body )
-  ;; Workaround for some quirks in ASDF ...
   (let ((cdn (make-symbol "%cdn"))
         (types (make-symbol "%types"))
         (s (make-symbol "%s")))
@@ -366,7 +367,7 @@ hash tables grow large).")
     (let ((uiop/lisp-build:*uninteresting-conditions*
            ;; FIXME Regardless of where it's being set locally,
            ;; it seems this muffled conditions list
-           ;; - in some places - is being shadowed with NIL
+           ;; - in some places - was being shadowed with NIL
            ;;
            ;; SO, try declaring the lexical binding as special, here
            ;; - also, as dynamic-extent (DNW)
@@ -375,16 +376,18 @@ hash tables grow large).")
            ;; to shadow UIOP/UTILITY:MATCH-ANY-CONDITION-P (DNW)
            ;;
            ;; Lastly, try overriding the global special binding
-           ;; onto uiop/lisp-build:*uninteresting-conditions*
-           ;; in local :PERFORM methods
+           ;; onto uiop/lisp-build:*uninteresting-conditions* (...)
+           ;; [FIXME] Why is this the only working approach?
+           ;;
            (muffle-conditions-list o c)))
-      (flet ((uiop/utility:match-any-condition-p (c list)
-               ;; NB/prov: Shadowing this onto ASDF ... DNW
-               (declare (ignore list))
-               (dolist (spec uiop/lisp-build:*uninteresting-conditions*)
-                 (when (uiop/utility:match-condition-p spec c)
-                   (return spec)))))
-        (declare (special uiop/lisp-build:*uninteresting-conditions*)
+      (flet (#-(and)
+               (uiop/utility:match-any-condition-p (c list)
+                 ;; NB Shadowing this onto ASDF ... DNW
+                 (declare (ignore list))
+                 (dolist (spec uiop/lisp-build:*uninteresting-conditions*)
+                   (when (uiop/utility:match-condition-p spec c)
+                     (return spec)))))
+        (declare (special uiop/lisp-build:*uninteresting-conditions*) ;; DNW
                  (dynamic-extent uiop/lisp-build:*uninteresting-conditions*))
         (when (next-method-p) (call-next-method))))))
 
@@ -731,7 +734,6 @@ definition, relative to the system definition's component pathname")
 (defmethod asdf:operate :around ((o asdf:compile-op) (c stella-asdf-system)
                                  &key &allow-other-keys)
   ;; is this even being called, this method? whether or not spec'd as :around?
-  ;; called lastly, is it?
   (system-eval-main o c))
 
 
