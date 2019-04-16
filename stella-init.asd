@@ -380,24 +380,18 @@
          (cpath (component-pathname container))
          ;; NB Assumption: CONTAINER is a STELLA-ASDF-SYSTEM
          ;; (This feature of the API may be revised at a later time)
-         (prefix (system-component-source-prefix container))
-         (src-type (asdf/component:source-file-type component container)))
+         (prefix (system-component-source-prefix container)))
     ;; FIXME use CPATH if PREFIX is null
     (cond
       (prefix
-       (merge-pathnames (make-pathname
-                         :name (component-name component)
-                         ;; directory nil
-                         :type src-type
-                         :defaults cpath)
+       (merge-pathnames (asdf/component:component-relative-pathname component)
                         (parse-prefix-path prefix cpath)))
       (t cpath))))
 
 (eval-when ()
-  ;; FIXME This bazic form seems to "Work OK," but COMPONENT-PATHNAME still fails
-  ;; w/ source prefix specified.
-  ;;
-  ;; is it because of method dispatching (??)
+  ;; NB This basic form seems to "Work OK"
+  ;; Note also, tests on COMPONENT-PATHNAME  w/ source prefix specified.
+  ;; in sysdef
   (let* ((sys (find-system "stella-init"))
          (pfx (system-component-source-prefix sys)))
     (values pfx
