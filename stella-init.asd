@@ -304,17 +304,22 @@ hash tables grow large).")
   ;; muffle in OP on COMPONENT
   (:method ((op t) (component asdf:cl-source-file))
     ;; FIXME may have to set uiop/lisp-build:*uninteresting-conditions*
-    ;; lexically, to prevent these from being shadowed?
+    ;; lexically, to prevent these from being shadowed? [DNW]
     (values
      (append
       #+sbcl '(sb-ext:compiler-note) ;; still not being muffled, even at this more generic type?
       (let (s)
         (dolist (spec uiop/lisp-build:*usual-uninteresting-conditions* s)
           (when (symbolp spec)
-            (setq s (cons spec s)))))))))
+            (setq s (cons spec s))))))))
+  (:method ((op t) (component asdf:system))
+    (let ((proto (make-instance
+                  (asdf/component:module-default-component-class component))))
+      (muffle-conditions-list op proto)
+      )))
 
 (defmacro muffle-for ((op c &rest more) &body body )
-  ;; Workaround for some quirks in ASDF
+  ;; Workaround for some quirks in ASDF ...
   (let ((cdn (make-symbol "%cdn"))
         (types (make-symbol "%types"))
         (s (make-symbol "%s")))
@@ -354,7 +359,7 @@ hash tables grow large).")
        (when ,procls
          (proclaim ,procls)))))
 
-#-(and)
+;; #-(and)
 (defmacro operate-main (o c)
   `(with-compilation-unit ()
     (proclaim-for ,o ,c)
@@ -362,15 +367,43 @@ hash tables grow large).")
            ;; FIXME Regardless of where it's being set locally,
            ;; it seems this muffled conditions list
            ;; - in some places - is being shadowed with NIL
-           ;; and elswehere, not used correctly for it symbol elements
+           ;;
+           ;; SO, try declaring the lexical binding as special, here
+           ;; - also, as dynamic-extent (DNW)
+           ;;
+           ;; Next thing: Try declaring a lexicaly scoped function as
+           ;; to shadow UIOP/UTILITY:MATCH-ANY-CONDITION-P (DNW)
+           ;;
+           ;; Lastly, try overriding the global special binding
+           ;; onto uiop/lisp-build:*uninteresting-conditions*
+           ;; in local :PERFORM methods
            (muffle-conditions-list o c)))
-      (when (next-method-p) (call-next-method)))))
+      (flet ((uiop/utility:match-any-condition-p (c list)
+               ;; NB/prov: Shadowing this onto ASDF ... DNW
+               (declare (ignore list))
+               (dolist (spec uiop/lisp-build:*uninteresting-conditions*)
+                 (when (uiop/utility:match-condition-p spec c)
+                   (return spec)))))
+        (declare (special uiop/lisp-build:*uninteresting-conditions*)
+                 (dynamic-extent uiop/lisp-build:*uninteresting-conditions*))
+        (when (next-method-p) (call-next-method))))))
 
 ;; (trace UIOP/UTILITY:MATCH-ANY-CONDITION-P)
 ;; ^ Being called somewhere in ASDF
 ;; Is that call overriding all containing handler-bind specs?
 
-(defmacro operate-main (o c)
+(defun set-global-unconditions (o c) ;; see previous NB
+  ;; Not being called (??)
+  ;;
+  ;; Does SLIME have to be restarted after each test ?? (DNW)
+  (uiop/utility:style-warn
+   "~<In (~A ~A)~>~< : set *uninteresting-conditions* globally~>"
+   o c)
+  (setq uiop/lisp-build:*uninteresting-conditions*
+        (muffle-conditions-list o c)))
+
+#-(and)
+(defmacro operate-main (o c) ;; DNW [FIXME]
   `(with-compilation-unit ()
     (proclaim-for ,o ,c)
     (muffle-for (,o ,c)
@@ -393,17 +426,23 @@ hash tables grow large).")
 
 #+NIL
 (defmethod asdf:operate ((o asdf:compile-op) (c stella-lisp-source-component)
-                         &rest op-args &key &allow-other-keys)
-  (declare (ignore op-args))
+                          &key &allow-other-keys)
   (flet ((method-main () (operate-main o c)))
     (uiop/utility:call-with-muffled-conditions #'method-main
                                                ;; FIXME May be redundant now:
                                                (muffle-conditions-list o c))))
 
 
-(defmethod asdf:operate ((o asdf:compile-op) (c stella-lisp-source-component)
-                         &rest op-args &key &allow-other-keys)
-  (declare (ignore op-args))
+(defmethod asdf:operate :around ((o asdf:compile-op) (c stella-lisp-source-component)
+                                 &key &allow-other-keys)
+  (operate-main o c))
+
+(defmethod asdf:operate :around ((o asdf:load-op) (c stella-lisp-source-component)
+                                 &key &allow-other-keys)
+  (operate-main o c))
+
+(defmethod asdf:operate :around ((o asdf:load-source-op) (c stella-lisp-source-component)
+                                 &key &allow-other-keys)
   (operate-main o c))
 
 ;; ---- Pathname Functions
@@ -679,18 +718,30 @@ definition, relative to the system definition's component pathname")
   (find-class 'stella-lisp-source-file))
 
 
-(defmethod asdf:operate ((o asdf:compile-op) (c stella-asdf-system)
-                         &key &allow-other-keys)
-  ;; NB apply impl-check to all system definitions using STELLA-ASDF-SYSTEM
-  (impl-check)
-  (when (next-method-p) (call-next-method)))
+(defmacro system-eval-main (op c)
+  `(progn
+     ;; NB apply impl-check to all system definitions using STELLA-ASDF-SYSTEM
+     (impl-check)
+     (ensure-feature :pl-asdf)
+     (ensure-system-pathname-translations)
+     (set-global-unconditions ,op ,c)
+     (when (next-method-p) (call-next-method))))
 
 
-(defmethod asdf:operate ((o asdf:compile-op) (c stella-asdf-system)
-                         &key &allow-other-keys)
-  ;; NB apply impl-check to all system definitions using STELLA-ASDF-SYSTEM
-  (impl-check)
-  (when (next-method-p) (call-next-method)))
+(defmethod asdf:operate :around ((o asdf:compile-op) (c stella-asdf-system)
+                                 &key &allow-other-keys)
+  ;; is this even being called, this method? whether or not spec'd as :around?
+  ;; called lastly, is it?
+  (system-eval-main o c))
+
+
+(defmethod asdf:operate :around ((o asdf:load-op) (c stella-asdf-system)
+                                 &key &allow-other-keys)
+  (system-eval-main o c))
+
+(defmethod asdf:operate :around ((o asdf:load-source-op) (c stella-asdf-system)
+                                 &key &allow-other-keys)
+  (system-eval-main o c))
 
 
 ;; -- STELLA-INIT System Definition
@@ -703,7 +754,7 @@ definition, relative to the system definition's component pathname")
         (fdef (make-symbol "%fdef")))
     `(multiple-value-bind (,s ,vis)
          (find-symbol (symbol-name (quote ,name))
-                      (quote ,pkg))
+                      (or (quote ,pkg) *package*))
        (let ((,fdef (when (and ,vis (fboundp ,s))
                       (fdefinition ,s))))
        (cond
@@ -783,15 +834,21 @@ definition, relative to the system definition's component pathname")
   ;; STELA Common Lisp implementation source code, original STELLA
   ;; source code, and corresponding STELLA cl-lib forms.
 
-  :perform (compile-op :before (op c)
-                       (ensure-feature :pl-asdf)
-                       (ensure-system-pathname-translations))
-  :perform (load-op :before (op c)
-                    (ensure-feature :pl-asdf)
-                    (ensure-system-pathname-translations))
-  :perform (load-source-op :before (op c)
-                           (ensure-feature :pl-asdf)
-                           (ensure-system-pathname-translations))
+  ;; FIXME Are these :perform :before methods even being called?
+  ;; NB .. called too late ! FIXME
+
+  ;; :perform (compile-op :before (op c)
+  ;;                      (ensure-feature :pl-asdf)
+  ;;                      (ensure-system-pathname-translations)
+  ;;                      (set-global-unconditions op c))
+  ;; :perform (load-op :before (op c)
+  ;;                   (ensure-feature :pl-asdf)
+  ;;                   (ensure-system-pathname-translations)
+  ;;                   (set-global-unconditions op c))
+  ;; :perform (load-source-op :before (op c)
+  ;;                          (ensure-feature :pl-asdf)
+  ;;                          (ensure-system-pathname-translations)
+  ;;                          (set-global-unconditions op c))
 
   :perform (load-op :after (op c)
                     (safe-fcall (#:startup-stella-system #:stella)))
