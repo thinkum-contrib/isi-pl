@@ -386,7 +386,8 @@
       (prefix
        (merge-pathnames (asdf/component:component-relative-pathname component)
                         (parse-prefix-path prefix cpath)))
-      (t cpath))))
+      (t (call-next-method)))))
+
 
 (eval-when ()
   ;; NB This basic form seems to "Work OK"
