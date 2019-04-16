@@ -392,13 +392,10 @@ hash tables grow large).")
         (when (next-method-p) (call-next-method))))))
 
 ;; (trace UIOP/UTILITY:MATCH-ANY-CONDITION-P)
-;; ^ Being called somewhere in ASDF
-;; Is that call overriding all containing handler-bind specs?
+;; ^ It's being called in ASDF.
+;; Is that call possibly overriding all containing handler-bind specs?
 
 (defun set-global-unconditions (o c) ;; see previous NB
-  ;; Not being called (??)
-  ;;
-  ;; Does SLIME have to be restarted after each test ?? (DNW)
   (uiop/utility:style-warn
    "~<In (~A ~A)~>~< : set *uninteresting-conditions* globally~>"
    o c)
@@ -406,7 +403,7 @@ hash tables grow large).")
         (muffle-conditions-list o c)))
 
 #-(and)
-(defmacro operate-main (o c) ;; DNW [FIXME]
+(defmacro operate-main (o c) ;; DNW/sometimes
   `(with-compilation-unit ()
     (proclaim-for ,o ,c)
     (muffle-for (,o ,c)
@@ -438,6 +435,7 @@ hash tables grow large).")
 
 (defmethod asdf:operate :around ((o asdf:compile-op) (c stella-lisp-source-component)
                                  &key &allow-other-keys)
+  ;; FIXME When is this method being called, within a build managed with ASDF?
   (operate-main o c))
 
 (defmethod asdf:operate :around ((o asdf:load-op) (c stella-lisp-source-component)
@@ -599,6 +597,8 @@ hash tables grow large).")
   )
 
 
+;; --
+
 (defclass stella-source-file (stella-source-component)
   ;; i.e *.ste file
   ())
@@ -688,7 +688,6 @@ definition, relative to the system definition's component pathname")
   ;; NB Cheap/Convenient default setter - slot initform in shared-initialize
   ;;    for COMPONENT-SOURCE-PREFIX
 
-  ;; FIXME - using portable, logical pathname syntax in :component-source-prefix DNW [SBCL]
   (when
       (and (or (eq slots 't)
                (and (consp slots)
@@ -697,7 +696,7 @@ definition, relative to the system definition's component pathname")
     (setf (system-component-source-prefix instance)
           ;; FIXME May break if system definition relative-pathname not set previously
           ;;
-          ;; FIXME May break calling functions if COMPONENT-PATHNAME returns NIL
+          ;; FIXME May break some calling functions if COMPONENT-PATHNAME returns NIL
           #-SWANK
           (component-pathname instance)
           ;; ... so, support interactive defsystem eval w/ SLIME/SWANK
@@ -723,7 +722,7 @@ definition, relative to the system definition's component pathname")
 
 (defmacro system-eval-main (op c)
   `(progn
-     ;; NB apply impl-check to all system definitions using STELLA-ASDF-SYSTEM
+     ;; NB this applies impl-check to all system definitions using STELLA-ASDF-SYSTEM
      (impl-check)
      (ensure-feature :pl-asdf)
      (ensure-system-pathname-translations)
@@ -836,8 +835,8 @@ definition, relative to the system definition's component pathname")
   ;; STELA Common Lisp implementation source code, original STELLA
   ;; source code, and corresponding STELLA cl-lib forms.
 
-  ;; FIXME Are these :perform :before methods even being called?
-  ;; NB .. called too late ! FIXME
+  ;; FIXME Are these :perform :before methods being called, when defined?
+  ;;       If so, called at what instance during the build?
 
   ;; :perform (compile-op :before (op c)
   ;;                      (ensure-feature :pl-asdf)
@@ -861,6 +860,7 @@ definition, relative to the system definition's component pathname")
   :serial t
 
   ;;; NB use all of the following files as under native/lisp/stella/
+  ;;; using a portable pathname syntax in the system definition
   :component-source-prefix "native;lisp;stella;"
 
   ;; FIXME note the section in sources/stella/cl-lib/cl-setup.lisp
@@ -930,19 +930,3 @@ definition, relative to the system definition's component pathname")
    (:file "startup-system")
    ))
 
-
-#-(and)
-(eval-when () ;; [TMP]
-
-  (ensure-system-pathname-translations)
-
-  (let* ((c1 (car (module-components (find-system "stella-init"))))
-         (c1p1 (component-pathname c1))
-         ;; (c1p2 (uiop/pathname:ensure-absolute-pathname c1))
-         )
-    (values c1p1
-      (probe-file c1p1)
-      ;; c1p2
-      (mapcar #'component-pathname (module-components (find-system "stella-init")))
-      ))
-    )
