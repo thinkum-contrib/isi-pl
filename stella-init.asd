@@ -95,6 +95,16 @@
 
 ;; -- Initialization forms for PL STELLA
 
+
+;; FIXME #'CL-USER::stella-need-to-compile?
+;; is referenced in STELLA implementation source files
+;; pl:**;cl-translate-file.lisp
+;;
+;; This function may need a portable implementation or PL-ASDF.
+;;
+;; The function is referenced within the STELLA implementation source
+;; for the Common Liap function, STELLA::CL-COMPILE-AND-LOAD-FILES
+
 ;; ---- sourcing root load-stella.lisp and impl load-stella.lisp'
 
 ;;; If this is T, Stella will compile/load/startup verbosely:
@@ -851,10 +861,17 @@ definition, relative to the system definition's component pathname")
   ;;                          (ensure-system-pathname-translations)
   ;;                          (set-global-unconditions op c))
 
+  ;; NB call STELLA system startup functions after system load
+  ;; cf. source files
+  ;;       pl:sources;stella;cl-lib;make-stella.lisp
+  ;;       pl:native;lisp;stella;cl-lib;make-stella.lisp
+
   :perform (load-op :after (op c)
-                    (safe-fcall (#:startup-stella-system #:stella)))
+                    (safe-fcall (#:startup-stella-system #:stella))
+                    (safe-fcall (#:startup-stella-to-cl #:stella)))
   :perform (load-source-op :after (op c)
-                           (safe-fcall (#:startup-stella-system #:stella)))
+                           (safe-fcall (#:startup-stella-system #:stella))
+                           (safe-fcall (#:startup-stella-to-cl #:stella)))
 
 
   :serial t
