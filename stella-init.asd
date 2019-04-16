@@ -82,28 +82,13 @@
 ;; but should be usable, portably, onto ASDF
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-
-  ;; FIXME DEFPACKAGE STELLA
-  ;; cf. sources/stella/cl-lib/cl-setup.lisp
-
   (defpackage #:stella-system
     (:use #:asdf #:cl)
-
-    ;;;; Use ASDF wrappers here - cf. local muffle-conditions-list
-    ;; #+CMUCL
-    ;; (:shadowing-import-from #:ext #:inhibit-warnings)
-    ;; #+SBCL
-    ;; (:shadowing-import-from #:sb-ext #:muffle-conditions #:inhibit-warnings)
-    ;; #+SBCL
-    ;; (:shadowing-import-from #:sb-kernel #:redefinition-warning)
-    ;; #+EXCL
-    ;; (:shadowing-import-from #:excl compiler-undefined-functions-called-warning)
-
     #.(list* :shadowing-import-from
              (quote #:cl-user)
              +stella-user-symbols+
-             )) ;; DEFPACKAGE STELLA-SYSTEM
-  ) ;; EVAL-WHEN
+             ))
+  )
 
 
 (in-package #:stella-system)
@@ -179,6 +164,8 @@ hash tables grow large).")
 ;;    ASDF. That pathname will then be used as a prefix pathname for
 ;;    output files produced with pl-asdf
 ;;
+;;  - Used in ENSURE-PATHNAME-TRANSLATIONS, defined below
+;;
 ;;  - May be of use elsewhere in pl-asdf (To Do: install-source-op)
 ;;
 ;;  - Denotes, in effect, a symbol used in computing a base pathname
@@ -194,7 +181,8 @@ hash tables grow large).")
   ;; e.g used by:
   ;;  ensure-pathname-translations
   ;;
-  ;;; FIXME use in a method onto OUTPUT-FILES or similar
+
+ ;;; FIXME use in a method onto OUTPUT-FILES or similar
   (uiop/configuration:xdg-cache-home +pl-asdf-cache-name+ :implementation))
 
 
@@ -239,22 +227,9 @@ hash tables grow large).")
                ;;       and sometimes by UIOP/LISP-BUILD:COMPILE-FILE*
                ;;           used by ASDF/LISP-ACTION:PERFORM-LISP-COMPILATION
                ;;                used by ASDF/ACTION:PERFORM (COMPILE-OP CL-SOURCE-FILE)
-               ;; NB: Uses ASDF Class definitions insofar as dispatching for PERFORM (??)
-               (mk-template-translate "bin"
-                                      ;; TBD compute base pathname for "This sysdef, this ASDF, this implementation"
-                                      ;;
-                                      ;; cf. (??) uiop/configuration::compute-user-cache (??)
-                                      ;; e.g
-                                      ;;   (UIOP/CONFIGURATION::COMPUTE-USER-CACHE) and subsq UIOP/CONFIGURATION:*USER-CACHE*
-                                      ;;   => #P"/home/user/.cache/common-lisp/sbcl-1.3.12-linux-arm/"
-                                      ;;   ... which provides a filesytem translation onto "/"
-                                      ;;
-                                      ;; So, alternately
-                                      ;;  (uiop/configuration:xdg-cache-home +pl-asdf-cache-name+ :implementation)
-                                      *pl-asdf-output-cache*)))
+               ;; NB: Uses ASDF Class definitions insofar as pathname propertiess and dispatching for PERFORM
+               (mk-template-translate "bin" *pl-asdf-output-cache*)))
   (setf (logical-pathname-translations "PL")
-        ;; mk-subwild-logname + mk-src-translate "sources" "native" "kbs"
-        ;; mk-subwild-logname + mk-asdf-bin-translate "bin"
         (append
          (list
           (list "*.*.*" src-prefix-path) ;; ensure files in top src dir are accessible
@@ -264,7 +239,7 @@ hash tables grow large).")
                  ;; NB This does not handle any install-source oprn [FIXME]
                  '("sources" "native" "kbs")))))))
 
-
+;;; Inline test forms
 ;; (ensure-pathname-translations (component-pathname (find-system "stella-init")))
 ;; (probe-file "PL:sources;")
 ;; (probe-file "PL:stella-init.asd")
@@ -310,20 +285,74 @@ hash tables grow large).")
 
 ;; -- PL-ASDF Source Component API
 
+
+;; ---- Accessor functions onto `stella-asdf-system'
+
 (defgeneric system-component-source-prefix (component))
-;; NB: cf. `stella-asdf-system' [class]
 
 (defgeneric (setf system-component-source-prefix) (new-value component))
+
+
+;; ---- Protocol function used in PERFORM methods
 
 (defgeneric proclamations-for (op component)
   (:method ((op operation) (component source-file))
     (values nil)))
 
+(defgeneric muffle-conditions-list (op component)
+  ;; return a list of ASDF condition designators for conditions to
+  ;; muffle in OP on COMPONENT
+  (:method ((op t) (component t))
+    ;; FIXME may have to set uiop/lisp-build:*uninteresting-conditions*
+    ;; lexically, to prevent these from being shadowed?
+    (values
+     (append
+      #+sbcl (sb-ext:compiler-note)
+      uiop/lisp-build:*usual-uninteresting-conditions*))))
 
-(defclass stella-source-component (asdf:source-file)
-  ;; NB Generic class
+
+;; ---- Generic Class Definitions, Method Specialations, API
+
+
+(defclass stella-component (asdf:component)
   ())
 
+
+(defmethod proclamations-for ((op asdf:operation)
+                              (component stella-component))
+  (declare (ignore op component))
+  (values *stella-compiler-optimization*))
+
+
+(defclass stella-source-component (stella-component asdf:source-file)
+  ())
+
+(defclass stella-lisp-source-component (stella-source-component asdf:cl-source-file)
+  ())
+
+
+(defmacro proclaim-for (op component)
+  (let ((procls (make-symbol "%procls")))
+    `(let ((,procls (proclamations-for ,op ,component)))
+       (when ,procls
+         (proclaim ,procls)))))
+
+
+(defmacro operate-main (o c)
+  `(with-compilation-unit ()
+    (proclaim-for ,o ,c)
+    (when (next-method-p) (call-next-method))))
+
+
+
+(defmethod asdf:operate ((o asdf:compile-op) (c stella-lisp-source-component)
+                         &rest op-args &key &allow-other-keys)
+  (declare (ignore op-args))
+  (flet ((method-main () (operate-main o c)))
+    (uiop/utility:call-with-muffled-conditions #'method-main
+                                               (muffle-conditions-list o c))))
+
+;; ---- Pathname Functions
 
 (declaim (inline split-logical-dir-1))
 (defun split-logical-dir-1 (str)
@@ -480,19 +509,8 @@ hash tables grow large).")
   ())
 
 
-(defmethod proclamations-for ((op asdf:operation)
-                              (component stella-source-file))
-  (declare (ignore op component))
-  (values *stella-compiler-optimization*))
-
-
-(defclass stella-lisp-source-file (stella-source-component asdf:cl-source-file)
+(defclass stella-lisp-source-file (stella-lisp-source-component)
   ())
-
-(defmethod proclamations-for ((op asdf:operation)
-                              (component stella-lisp-source-file))
-  (declare (ignore op component))
-  (values *stella-compiler-optimization*))
 
 
 (defclass stella-cl-lib-source-file (stella-lisp-source-file)
@@ -509,15 +527,12 @@ hash tables grow large).")
   ;; NB Convenience method for computing the source pathname from a
   ;; specification of a STELLA cl-lib source file.
   ;;
-  ;; Used twice, in STELLA-INIT ASDF sysdef
+  ;; Used in STELLA-INIT ASDF sysdef
 
   ;; FIXME this should be by-in-large portable onto STELLA cpp-lib and
   ;; javalib source components (May be revised subsequent of deriving
   ;; ASDF system definitions from STELLA system specifications)
 
-  ;; NB asdf/component:source-file-type
-
-  ;; NB UIOP/LISP-BUILD:COMPILE-FILE-TYPE, component output translations
   (let* ((container (asdf/component:component-parent component))
          ;; NB Assumption: CONTAINER is a STELLA-ASDF-SYSTEM
          ;; (This feature of the API may be revised at a later time)
@@ -535,6 +550,7 @@ hash tables grow large).")
 
 (defclass stella-c++-header-file (stella-source-component asdf:c-source-file) ;; FIXME
   ;; NB C++ preprocessors & source linkage; toolchains
+  ;; TBD Component model for makefile synthesis (bmake, GNU make, others)
   ())
 
 (defclass stella-c++-source-file (stella-source-component asdf:c-source-file) ;; FIXME
@@ -544,55 +560,6 @@ hash tables grow large).")
   ())
 
 ;; TBD: FOSS toolchains for IDL language - STELLA source translation & testing
-
-
-
-(defmacro proclaim-for (op component)
-  (let ((procls (make-symbol "%procls")))
-    `(let ((,procls (proclamations-for ,op ,component)))
-       (when ,procls
-         (proclaim ,procls)))))
-
-
-(defmacro operate-main (o c)
-  `(with-compilation-unit ()
-    (proclaim-for ,o ,c)
-    (when (next-method-p) (call-next-method))))
-
-(defgeneric muffle-conditions-list (op component)
-  ;; return a list of ASDF condition designstors for conditions to
-  ;; muffle in OP on COMPONENT
-  (:method ((op t) (component t))
-    ;; FIXME may have to set uiop/lisp-build:*uninteresting-conditions*
-    ;; lexically, to prevent these from being shadowed?
-    (values
-     (append
-      #+sbcl (sb-ext:compiler-note)
-      uiop/lisp-build:*usual-uninteresting-conditions*))))
-
-
-(defmethod asdf:operate ((o asdf:compile-op) (c stella-lisp-source-file)
-                         &rest op-args &key &allow-other-keys)
-  (declare (ignore op-args))
-  (flet ((method-main () (operate-main o c)))
-    (uiop/utility:call-with-muffled-conditions #'method-main
-                                               (muffle-conditions-list o c))))`
-
-
-(defmethod asdf:operate ((o asdf:load-op) (c stella-lisp-source-file)
-                         &rest op-args &key &allow-other-keys)
-  (declare (ignore op-args))
-  (flet ((method-main () (operate-main o c)))
-    (uiop/utility:call-with-muffled-conditions #'method-main
-                                               (muffle-conditions-list o c))))
-
-
-(defmethod asdf:operate ((o asdf:load-source-op) (c stella-lisp-source-file)
-                         &rest op-args &key &allow-other-keys)
-  (declare (ignore op-args))
-  (flet ((method-main () (operate-main o c)))
-    (uiop/utility:call-with-muffled-conditions #'method-main
-                                             `(muffle-conditions-list o c))))
 
 
 ;; -- PL-ASDF System Definition Extensions to ASDF
@@ -730,7 +697,7 @@ definition, relative to the system definition's component pathname")
 
 
 (defsystem #:stella-init
-  :class stella-asdf-system ;; ? this initarg !
+  :class stella-asdf-system
 
   ;; NB The following ordered set of filenames, under :components
   ;; locally, is retained from the file -- in STELLA cl-lib src --
@@ -766,16 +733,15 @@ definition, relative to the system definition's component pathname")
   :perform (compile-op :before (op c)
                        (ensure-feature :pl-asdf)
                        (ensure-system-pathname-translations))
-  :perform (load-source-op :before (op c)
-                           (ensure-feature :pl-asdf)
-                           (ensure-system-pathname-translations))
   :perform (load-op :before (op c)
                     (ensure-feature :pl-asdf)
                     (ensure-system-pathname-translations))
+  :perform (load-source-op :before (op c)
+                           (ensure-feature :pl-asdf)
+                           (ensure-system-pathname-translations))
 
   :perform (load-op :after (op c)
                     (safe-fcall (#:startup-stella-system #:stella)))
-
   :perform (load-source-op :after (op c)
                            (safe-fcall (#:startup-stella-system #:stella)))
 
