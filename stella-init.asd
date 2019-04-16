@@ -52,14 +52,23 @@
     ;; and
     ;;   pl:sources;stella;cl-lib;make-stella.lisp
     (cond
-       ((boundp (quote +stella-user-symbols+))
-        (symbol-value (quote +stella-user-symbols+)))
-       (t
-        '(*load-cl-struct-stella?* ;; FIXME/NB #:+stella-struct
-          *stella-verbose?*
-          ;; *stella-compiler-optimization* ;; T.D. Note corresp. to decls in STELLA system defs
-          ;; *stella-memoization-default* ;; T.D New (contrib)
-          ;; *use-stella-hash-tables?* ;; NB! from pl:sources;stella;load-stella.lisp
+      ((boundp (quote +stella-user-symbols+))
+       (symbol-value (quote +stella-user-symbols+)))
+      (t
+        '(*load-cl-struct-stella?* ;; NB (Needs tests)
+          *stella-verbose?* ;; FIXME ASDF integr
+          ;; ^ NB used in STELLA cl-translate-file
+          *stella-compiler-optimization* ;;  FIXME ASDF integr. Note corresp. decls in STELLA system defs
+          ;; ^ NB used in STELLA cl-translate-file
+          ;;   /NB uiop/lisp-build:with-optimization-settings
+          *stella-memoization-default* ;; T.D New (contrib)
+          *use-stella-hash-tables?* ;; NB! from pl:sources;stella;load-stella.lisp
+          ;; ^ NB usage notes
+          ;; - STELLA::CLSYS-TEST-SXHASH-SUPPORT & subsq.
+          ;; - STELLA collections src
+          ;;   - STELLA source forms: sources/stella/collections.ste
+          ;;   - Implementation source (non-struct STELLA):
+          ;;     native/lisp/stella/collections.lisp
           ))))
 
   )
@@ -73,6 +82,9 @@
 ;; but should be usable, portably, onto ASDF
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+
+  ;; FIXME DEFPACKAGE STELLA
+  ;; cf. sources/stella/cl-lib/cl-setup.lisp
 
   (defpackage #:stella-system
     (:use #:asdf #:cl)
@@ -95,6 +107,57 @@
 
 
 (in-package #:stella-system)
+
+;; -- Initialization forms for PL STELLA
+
+;; ---- sourcing root load-stella.lisp and impl load-stella.lisp'
+
+;;; If this is T, Stella will compile/load/startup verbosely:
+(defvar *stella-verbose?* *load-verbose*)
+
+(defvar *load-cl-struct-stella?* NIL
+  "If T load the version of STELLA that uses Lisp structs instead of
+CLOS objects to implement STELLA objects.  This greatly improves slot
+access speed for the price of less flexibility with class redefinition.
+Use for production versions only.")
+
+(defvar *use-stella-hash-tables?* #+allegro T #-allegro NIL
+  "If T use STELLA's implementation of hash tables instead of native
+Lisp hash tables.  Useful if native hash tables are fraught with
+performance problems (as happens in some versions of Allegro once
+hash tables grow large).")
+
+
+;; Set this to t to use structs instead of CLOS objects as the implementation
+;; of STELLA classes.  Structs are significantly faster but can cause problems
+;; when classes are redefined.  Use for production versions only.
+#-stella-struct
+(defvar *load-cl-struct-stella?* nil)
+#+stella-struct
+(defvar *load-cl-struct-stella?* t)
+
+;; In CMUCL and derivatives, use low optimization levels to more
+;; easily uncover issues due to imprecise type declarations (or too
+;; agressive CMUCL type inference); however, to achieve reasonable
+;; speed, we need speed=3; also turn down verbosity levels so we can
+;; actually see what's going on during compilation:
+#+(or cmu sbcl)
+(progn (defparameter *stella-compiler-optimization*
+         '(optimize (speed 3) (safety 1) (space 1) (debug 1)))
+       (setq *compile-verbose* nil
+             *compile-print* nil)
+       #+cmu
+       (setq *gc-verbose* nil))
+
+;; Work around a compiler bug that surfaces with safety=1 in ACL 8.1:
+#+allegro-v8.1
+(defparameter *stella-compiler-optimization*
+  '(optimize (speed 3) (safety 2) (space 0) (debug 1)))
+
+
+;; contrib. cf. STELLA::*MEMOIZATION-ENABLED*, memoize.lisp, memoize.ste
+(defvar *stella-memoization-default* nil)
+
 
 ;; -- Initialization forms for PL-ASDF
 
@@ -130,6 +193,8 @@
   ;;
   ;; e.g used by:
   ;;  ensure-pathname-translations
+  ;;
+  ;;; FIXME use in a method onto OUTPUT-FILES or similar
   (uiop/configuration:xdg-cache-home +pl-asdf-cache-name+ :implementation))
 
 
@@ -242,12 +307,18 @@
 (~D)~%is too small.  It must be at least 24 bits."
            len))))
 
+
 ;; -- PL-ASDF Source Component API
 
 (defgeneric system-component-source-prefix (component))
 ;; NB: cf. `stella-asdf-system' [class]
 
 (defgeneric (setf system-component-source-prefix) (new-value component))
+
+(defgeneric proclamations-for (op component)
+  (:method ((op operation) (component source-file))
+    (values nil)))
+
 
 (defclass stella-source-component (asdf:source-file)
   ;; NB Generic class
@@ -389,9 +460,10 @@
       (t (call-next-method)))))
 
 
+#-(and)
 (eval-when ()
   ;; NB This basic form seems to "Work OK"
-  ;; Note also, tests on COMPONENT-PATHNAME  w/ source prefix specified.
+  ;; Note also, tests on COMPONENT-PATHNAME w/ source prefix specified
   ;; in sysdef
   (let* ((sys (find-system "stella-init"))
          (pfx (system-component-source-prefix sys)))
@@ -402,13 +474,25 @@
                                  (component-pathname sys)))))
   )
 
+
 (defclass stella-source-file (stella-source-component)
   ;; i.e *.ste file
   ())
 
 
+(defmethod proclamations-for ((op asdf:operation)
+                              (component stella-source-file))
+  (declare (ignore op component))
+  (values *stella-compiler-optimization*))
+
+
 (defclass stella-lisp-source-file (stella-source-component asdf:cl-source-file)
   ())
+
+(defmethod proclamations-for ((op asdf:operation)
+                              (component stella-lisp-source-file))
+  (declare (ignore op component))
+  (values *stella-compiler-optimization*))
 
 
 (defclass stella-cl-lib-source-file (stella-lisp-source-file)
@@ -462,38 +546,53 @@
 ;; TBD: FOSS toolchains for IDL language - STELLA source translation & testing
 
 
+
+(defmacro proclaim-for (op component)
+  (let ((procls (make-symbol "%procls")))
+    `(let ((,procls (proclamations-for ,op ,component)))
+       (when ,procls
+         (proclaim ,procls)))))
+
+
+(defmacro operate-main (o c)
+  `(with-compilation-unit ()
+    (proclaim-for ,o ,c)
+    (when (next-method-p) (call-next-method))))
+
 (defgeneric muffle-conditions-list (op component)
   ;; return a list of ASDF condition designstors for conditions to
   ;; muffle in OP on COMPONENT
   (:method ((op t) (component t))
-    (values uiop/lisp-build:*usual-uninteresting-conditions*)))
+    ;; FIXME may have to set uiop/lisp-build:*uninteresting-conditions*
+    ;; lexically, to prevent these from being shadowed?
+    (values
+     (append
+      #+sbcl (sb-ext:compiler-note)
+      uiop/lisp-build:*usual-uninteresting-conditions*))))
 
 
 (defmethod asdf:operate ((o asdf:compile-op) (c stella-lisp-source-file)
                          &rest op-args &key &allow-other-keys)
   (declare (ignore op-args))
-  (flet ((method-main ()
-           (when (next-method-p) (call-next-method))))
-  (uiop/utility:call-with-muffled-conditions #'method-main
-                                             (muffle-conditions-list o c))))
+  (flet ((method-main () (operate-main o c)))
+    (uiop/utility:call-with-muffled-conditions #'method-main
+                                               (muffle-conditions-list o c))))`
 
 
 (defmethod asdf:operate ((o asdf:load-op) (c stella-lisp-source-file)
                          &rest op-args &key &allow-other-keys)
   (declare (ignore op-args))
-  (flet ((method-main ()
-           (when (next-method-p) (call-next-method))))
-  (uiop/utility:call-with-muffled-conditions #'method-main
-                                             (muffle-conditions-list o c))))
+  (flet ((method-main () (operate-main o c)))
+    (uiop/utility:call-with-muffled-conditions #'method-main
+                                               (muffle-conditions-list o c))))
 
 
 (defmethod asdf:operate ((o asdf:load-source-op) (c stella-lisp-source-file)
                          &rest op-args &key &allow-other-keys)
   (declare (ignore op-args))
-  (flet ((method-main ()
-           (when (next-method-p) (call-next-method))))
-  (uiop/utility:call-with-muffled-conditions #'method-main
-                                             (muffle-conditions-list o c))))
+  (flet ((method-main () (operate-main o c)))
+    (uiop/utility:call-with-muffled-conditions #'method-main
+                                             `(muffle-conditions-list o c))))
 
 
 ;; -- PL-ASDF System Definition Extensions to ASDF
@@ -576,6 +675,34 @@ definition, relative to the system definition's component pathname")
 
 ;; -- STELLA-INIT System Definition
 
+(defmacro safe-fcall ((name &optional pkg) &rest args)
+  ;; NB Trivial macro for forward reference onto undefined functions.
+  ;;    used within :PERFORM methods, defined in the following
+  (let ((s (make-symbol "%s"))
+        (vis (make-symbol "%vis"))
+        (fdef (make-symbol "%fdef")))
+    `(multiple-value-bind (,s ,vis)
+         (find-symbol (symbol-name (quote ,name))
+                      (quote ,pkg))
+       (let ((,fdef (when (and ,vis (fboundp ,s))
+                      (fdefinition ,s))))
+       (cond
+         (,fdef (funcall (the function ,fdef)
+                         ,@args))
+         (,vis (error "No function definition found for symbol ~S" ,s))
+         (t (error "No symbol for ~A found in package ~A"
+                   (quote ,name)
+                   (or (quote ,pkg)
+                       *package*))))))))
+
+
+;; (safe-fcall (#:startup-stella-system #:stella))
+
+;; (safe-fcall (#:nop #:cl))
+
+;; (safe-fcall (#:*standard-output* #:cl))
+
+
 ;; Remark - Provenance
 ;;
 ;; The following is partially referenced onto the STELLA system source
@@ -638,30 +765,38 @@ definition, relative to the system definition's component pathname")
 
   :perform (compile-op :before (op c)
                        (ensure-feature :pl-asdf)
-                       (ensure-system-pathname-tranalations))
+                       (ensure-system-pathname-translations))
   :perform (load-source-op :before (op c)
                            (ensure-feature :pl-asdf)
-                           (ensure-system-pathname-tranalations))
+                           (ensure-system-pathname-translations))
   :perform (load-op :before (op c)
                     (ensure-feature :pl-asdf)
-                    (ensure-system-pathname-tranalations))
+                    (ensure-system-pathname-translations))
 
-  ;; NB: (STELLA::STARTUP-STELLA-SYSTEM) - make-stella.lisp
+  :perform (load-op :after (op c)
+                    (safe-fcall (#:startup-stella-system #:stella)))
+
+  :perform (load-source-op :after (op c)
+                           (safe-fcall (#:startup-stella-system #:stella)))
+
 
   :serial t
 
   ;;; NB use all of the following files as under native/lisp/stella/
-  ;; :component-source-prefix "pl:native;lisp;stella;"
   :component-source-prefix "native;lisp;stella;"
-  ;; :component-source-prefix ";native;lisp;stella;"
+
+  ;; FIXME note the section in sources/stella/cl-lib/cl-setup.lisp
+  ;; where "Load support libraries for TCP/IP"
   ;;
-  ;; :component-source-prefix "pl:;native;lisp;stella;" ;; this notation fails badly
-  ;;
-  ;;; ^ FIXME DNW when using a relative or absolute logical pathname syntax [SBCL]
+  ;; Update this system for portability.
+  ;; - STELLA::%%OPEN-NETWORK-STREAM
+  ;; - Also "Synchronization Support" in cl-setup.lisp
+  :depends-on
+  (#+SBCL :SB-BSD-SOCKETS)
 
   :components
-  (#+stella-struct
-   (:file "stella-system-structs")
+  ((stella-cl-lib-source-file "cl-setup")
+   #+stella-struct (:file "stella-system-structs")
    (:file "hierarchy")
    (:file "streams")
    (:file "taxonomies")
@@ -718,7 +853,7 @@ definition, relative to the system definition's component pathname")
    ))
 
 
-
+#-(and)
 (eval-when () ;; [TMP]
 
   (ensure-system-pathname-translations)
