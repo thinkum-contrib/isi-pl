@@ -53,6 +53,7 @@
 
 ;; NB/QA cl-user::*stella-default-external-format* [contrib] cf. SLIME streams w/ STELLA
 
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
   (defconstant +stella-user-symbols+
