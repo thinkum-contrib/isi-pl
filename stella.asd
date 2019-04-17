@@ -89,3 +89,14 @@
 ;;     load-stella.lisp process flow.) This system definition may be
 ;;     unique, as such. (TBD: Testing STELLA source synthesis with STELLA
 ;;     init in each of C++, Java, IDL)
+
+
+;; NB in lieu of a system definition lib, extensional to ASDF,
+;; the following should result in stella-init.asd being evaluated
+;; as a Lisp source file
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (asdf:find-system "stella-init")
+  )
+
+(in-package #:stella-system)
+
