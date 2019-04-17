@@ -48,6 +48,7 @@
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  #-PL-ASDF ;; When evaluated w/ ASDF, test should have completed before load/compile [spchamp]
   (unless (>= (eval '(integer-length most-positive-fixnum)) 24) ;; use `eval' to avoid unreachable code warns
     (error "The maximum fixnum size of this lisp implementation (~D)~%is too small.  It must be at least 24 bits."
 	   (integer-length most-positive-fixnum)))
@@ -86,7 +87,12 @@
     (require :OPENTRANSPORT)))
 #+Lispworks
 (require "comm")
-#+:SBCL
+;; FIXME (PL-ASDF) This source file needs port/patch updates,
+;; should be fairly straightforward. See also:
+;;  pl:sources;systems;stella-system.ste
+;;  pl:native;lisp;stella;cl-lib;cl-setup.lisp
+;;  pl:native;lisp;stella;cl-lib;cl-setup.slisp
+#+(and :SBCL (not :PL-ASDF)) ;; load via sysdef when PL-ASDF [spchamp]
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require :sb-bsd-sockets))
 
