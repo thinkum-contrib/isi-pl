@@ -61,8 +61,9 @@
 (progn (setq *stella-compiler-optimization*
          '(optimize (speed 3) (safety 1) (space 1) (debug 1)))
        (setq *compile-verbose* nil
-             *compile-print* nil
-             *gc-verbose* nil))
+             *compile-print* nil)
+       #+cmu
+       (setq *gc-verbose* nil))
 
 ;; Work around a compiler bug that surfaces with safety=1 in ACL 8.1:
 #+allegro-v8.1
