@@ -18,10 +18,16 @@
 ;; The Original Code is this system definition                                ;
 ;;                                                                            ;
 ;; The Initial Developer of the Original Code is                              ;
-;; Sean Champ spchamp@users.noreply.github.com                                ;
+;;  Sean Champ spchamp@users.noreply.github.com                               ;
+;; with some code excerpted from original developments by USC ISI, i.e        ;
+;;  UNIVERSITY OF SOUTHERN CALIFORNIA, INFORMATION SCIENCES INSTITUTE         ;
+;;  4676 Admiralty Way, Marina Del Rey, California 90292, U.S.A.              ;
 ;;                                                                            ;
-;; Portions created by the Initial Developer are Copyright (C) 2015           ;
+;; Portions created by the Initial Developer are Copyright (C) 2015-2019      ;
 ;; the Initial Developer. All Rights Reserved.                                ;
+;;                                                                            ;
+;; Portions created by USC ISI are Copyright (C) 1996-2006                    ;
+;; USC ISI. All Rights Reserved.                                              ;
 ;;                                                                            ;
 ;; Alternatively, the contents of this file may be used under the terms of    ;
 ;; either the GNU General Public License Version 2 or later (the "GPL"), or   ;
