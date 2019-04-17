@@ -51,6 +51,8 @@
 
 ;; See also: stella.asd
 
+;; NB/QA cl-user::*stella-default-external-format* [contrib] cf. SLIME streams w/ STELLA
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
   (defconstant +stella-user-symbols+
@@ -604,10 +606,16 @@ hash tables grow large).")
 
 ;; --
 
-(defclass stella-source-file (stella-source-component)
-  ;; i.e *.ste file
-  ())
-
+(eval-when () ;; TMP ESC
+  (defclass stella-implementation-source-file (stella-source-component)
+    () ;; TBD: Mapping to original *.ste sys defn, *.ste source file
+    ;; FIXME: Integrate this class into the following
+    ;;  - STELLA-LISP-SOURCE-FILE
+    ;;  - ...
+    ;;
+    ;; NB: Generic class, disjunct to STELLA-SOURCE-FILE (*.ste)
+    )
+  ))
 
 (defclass stella-lisp-source-file (stella-lisp-source-component)
   ())
@@ -651,20 +659,30 @@ hash tables grow large).")
 (defclass stella-c++-header-file (stella-source-component asdf:c-source-file) ;; FIXME
   ;; NB C++ preprocessors & source linkage; toolchains
   ;; TBD Component model for makefile synthesis (bmake, GNU make, others)
+
+  ;; NB STELLA-C++-SYSTEM, stella.asd
   ())
 
 (defclass stella-c++-source-file (stella-source-component asdf:c-source-file) ;; FIXME
+
+  ;; NB STELLA-C++-SYSTEM, stella.asd
   ())
 
 (defclass stella-java-source-file (stella-source-component asdf:c-source-file) ;; FIXME
+
+  ;; NB STELLA-JAVA-SYSTEM, stella.asd
   ())
 
 ;; TBD: FOSS toolchains for IDL language - STELLA source translation & testing
-
+;; NB STELLA-IDL-SYSTEM, stella.asd
 
 ;; -- PL-ASDF System Definition Extensions
 
 (defclass stella-asdf-system (asdf:system)
+  ;; NB Representative of a STELLA implementation source system
+  ;;    onto Common Lisp, with a statically defined ASDF system
+  ;;
+  ;; NB: Shared generalizations onto STELLA-SYSTEM/STELLA-SYSTEM-TEMPLATE
   ((component-source-prefix
       :initarg :component-source-prefix
       :initform nil
