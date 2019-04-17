@@ -41,7 +41,34 @@
 (in-package #:cl-user)
 
 ;; FIXME In the interest of portability/maintainability, move the
-;; following into a source system e.g pl-asdf-systems[.asd]
+;; following into separate files of a source system e.g pl-asdf-systems[.asd]
+
+
+;; NB PL impl source files
+;;   native/lisp/powerloom/powerloom.lisp
+;;   native/lisp/powerloom/startup-system.lisp
+;;   and native/lisp/logic/*.lisp
+;; subsq #'stella::powerloom (??)
+;; or (stella::startup-powerloom-system)
+;; and (in-module "STELLA") by default
+;; cf. load-powerloom.lisp
+;;
+;; or (TBD side effects)
+;; (stella::make-system "powerloom")
+;; .. which needs an implementation of
+;;    CL-USER::STELLA-NEED-TO-COMPILE? [Function]
+;;    or a broader port/patch for PL-ASDF [FIXME]
+;;
+;; see also
+;; - sources/systems/logic-system.ste
+;;   and correspomdingly sources/logic/*.ste
+;;   - as towards native/lisp/logic/*.lisp
+;;   - NB :lisp-only-files ("loom-api.lisp")
+;; - sources/systems/powerloom.ste
+;; * note that *.ste files can be evaluated, subsq of stella-init
+;;
+;; Concept: Constructing an ASDF sysdef for a STELLA system for which,
+;;   Common Lisp implementation source code has already been produced.
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
