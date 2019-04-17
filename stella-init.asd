@@ -133,12 +133,12 @@
 ;; is referenced in STELLA implementation source files
 ;; pl:**;cl-translate-file.lisp
 ;;
-;; This function may need a portable implementation or PL-ASDF.
+;; This function may need a portable implementation for PL-ASDF.
 ;;
 ;; The function is referenced within the STELLA implementation source
-;; for the Common Liap function, STELLA::CL-COMPILE-AND-LOAD-FILES
+;; for the Common Lisp function, STELLA::CL-COMPILE-AND-LOAD-FILES
 
-;; ---- sourcing root load-stella.lisp and impl load-stella.lisp'
+;; ---- sourcing root load-stella.lisp and impl load-stella.lisp
 
 ;;; If this is T, Stella will compile/load/startup verbosely:
 (defvar *stella-verbose?* *load-verbose*)
@@ -237,7 +237,7 @@ hash tables grow large).")
   ;; (May be addressed portably onto ASDF)
   ;;
   ;; NB:
-  ;; - [FIXME/TO-DO] Does not support any INSTALL-SOURCE-OP
+  ;; - [FIXME] This, as yet, does not support any INSTALL-SOURCE-OP
   ;;
   ;; - [FIXME/TBD] Does not differentiate onto source systems, when
   ;;   computing the output translation path for the "bin" logical
@@ -376,7 +376,7 @@ hash tables grow large).")
          ,@body))))
 
 
-;; ---- Generic Class Definitions, Method Specialations, API
+;; ---- Generic Class Definitions, Method Specializations, API
 
 
 (defclass stella-component (asdf:component)
@@ -412,13 +412,13 @@ hash tables grow large).")
            ;; it seems this muffled conditions list
            ;; - in some places - was being shadowed with NIL
            ;;
-           ;; SO, try declaring the lexical binding as special, here
+           ;; So, tried declaring the lexical binding as special, here
            ;; - also, as dynamic-extent (DNW)
            ;;
-           ;; Next thing: Try declaring a lexicaly scoped function as
+           ;; Next thing: Tried declaring a lexicaly scoped function as
            ;; to shadow UIOP/UTILITY:MATCH-ANY-CONDITION-P (DNW)
            ;;
-           ;; Lastly, try overriding the global special binding
+           ;; Lastly, tried overriding the global special binding
            ;; onto uiop/lisp-build:*uninteresting-conditions* (...)
            ;; [FIXME] Why is this the only working approach?
            ;;
@@ -463,7 +463,8 @@ hash tables grow large).")
                            (module-components
                             (find-system "stella-init"))))
 
-  ;; WHERE is the conditions specifier list turning up null?
+  ;; Where was the conditions specifier list turning up null,
+  ;; when lexically bound and declared special, with a non-null value?
   )
 
 
@@ -479,6 +480,7 @@ hash tables grow large).")
 (defmethod asdf:operate :around ((o asdf:compile-op) (c stella-lisp-source-component)
                                  &key &allow-other-keys)
   ;; FIXME When is this method being called, within a build managed with ASDF?
+  ;; NB Concerning something of an old recursive-peform patch for ASDF : extant?
   (operate-main o c))
 
 (defmethod asdf:operate :around ((o asdf:load-op) (c stella-lisp-source-component)
@@ -491,7 +493,10 @@ hash tables grow large).")
 
 ;; ---- Pathname Functions
 
-(declaim (inline split-logical-dir-1))
+(declaim (inline split-logical-dir-1
+                 parse-logical-directory
+                 split-logical-path))
+
 (defun split-logical-dir-1 (str)
   (declare (type string str))
   (let ((idx (position #\; str :test #'char=)))
@@ -567,7 +572,7 @@ hash tables grow large).")
        (let ((len (length pstr))
              (hidx+ (1+ hidx)))
          (declare (dynamic-extent len)
-                  ;; NB approximate types
+                  ;; NB approximate type decls
                   (type (integer 0 #.array-dimension-limit)
                         hidx hidx+ len))
          (values (subseq pstr 0 hidx)
@@ -610,34 +615,16 @@ hash tables grow large).")
 
 (defmethod asdf/component:component-pathname ((component stella-source-component))
   ;; NB Integrate SYSTEM-COMPONENT-SOURCE-PREFIX
-  ;;
-  ;; NB Needs testing [FIXME]
   (let* ((container (asdf/component:component-parent component))
          (cpath (component-pathname container))
          ;; NB Assumption: CONTAINER is a STELLA-ASDF-SYSTEM
          ;; (This feature of the API may be revised at a later time)
          (prefix (system-component-source-prefix container)))
-    ;; FIXME use CPATH if PREFIX is null
     (cond
       (prefix
        (merge-pathnames (asdf/component:component-relative-pathname component)
                         (parse-prefix-path prefix cpath)))
       (t (call-next-method)))))
-
-
-#-(and)
-(eval-when ()
-  ;; NB This basic form seems to "Work OK"
-  ;; Note also, tests on COMPONENT-PATHNAME w/ source prefix specified
-  ;; in sysdef
-  (let* ((sys (find-system "stella-init"))
-         (pfx (system-component-source-prefix sys)))
-    (values pfx
-            (component-pathname sys)
-            (when pfx
-              (parse-prefix-path pfx
-                                 (component-pathname sys)))))
-  )
 
 
 ;; --
@@ -700,7 +687,7 @@ hash tables grow large).")
 ;; TBD: FOSS toolchains for IDL language - STELLA source translation & testing
 
 
-;; -- PL-ASDF System Definition Extensions to ASDF
+;; -- PL-ASDF System Definition Extensions
 
 (defclass stella-asdf-system (asdf:system)
   ((component-source-prefix
@@ -775,7 +762,6 @@ definition, relative to the system definition's component pathname")
 
 (defmethod asdf:operate :around ((o asdf:compile-op) (c stella-asdf-system)
                                  &key &allow-other-keys)
-  ;; is this even being called, this method? whether or not spec'd as :around?
   (system-eval-main o c))
 
 
@@ -792,7 +778,7 @@ definition, relative to the system definition's component pathname")
 
 (defmacro safe-fcall ((name &optional pkg) &rest args)
   ;; NB Trivial macro for forward reference onto undefined functions.
-  ;;    used within :PERFORM methods, defined in the following
+  ;;    Used within :PERFORM methods, as defined in the following src
   (let ((s (make-symbol "%s"))
         (vis (make-symbol "%vis"))
         (fdef (make-symbol "%fdef")))
