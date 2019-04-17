@@ -67,11 +67,12 @@
 ;;
 ;; see also
 ;; - sources/systems/logic-system.ste
-;;   and correspomdingly sources/logic/*.ste
+;;   and correspondingly sources/logic/*.ste
 ;;   - as towards native/lisp/logic/*.lisp
 ;;   - NB :lisp-only-files ("loom-api.lisp")
 ;; - sources/systems/powerloom.ste
 ;; * note that *.ste files can be evaluated, subsq of stella-init
+;;   - see also: stella.asd
 ;;
 ;; Concept: Constructing an ASDF sysdef for a STELLA system for which,
 ;;   Common Lisp implementation source code has already been produced.
