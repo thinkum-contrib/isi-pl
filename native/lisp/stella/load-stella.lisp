@@ -236,7 +236,6 @@ hash tables grow large).")
 (cond
  ((and (find-package "STELLA")
        (fboundp (find-symbol "STARTUP" (find-package "STELLA"))))
-  ;; FIXME Not always true e.g when debugging
   (format t "~%STELLA has already been loaded.~%"))
  (t
   (stella-c&l-translated "cl-lib" "cl-setup")
