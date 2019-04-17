@@ -24,6 +24,7 @@
 ; the Initial Developer. All Rights Reserved.                                ;
 ;                                                                            ;
 ; Contributor(s):                                                            ;
+;   Sean Champ, spchamp@users.noreply.github.com                             ;
 ;                                                                            ;
 ; Alternatively, the contents of this file may be used under the terms of    ;
 ; either the GNU General Public License Version 2 or later (the "GPL"), or   ;
@@ -41,6 +42,8 @@
 
 ;;
 ;; startup-bare.lisp - Initialization utility for debugging with STELLA systems
+;;
+;; NB Early prototype for stella-init.asd
 ;;
 ;; Synopsis:
 ;;
@@ -65,15 +68,22 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   #+ccl
-  (pushnew '#:mcl *features* :test #'eq)
+  (pushnew :mcl *features* :test #'eq) ;; should not be necc.
 
   #+(or sbcl ccl)
-  (trace cl:add-method) ;; vry informative
+  ;; (trace cl:add-method) ;; informative
 
   ;; prevent metacircular errors for print-object method definition
   ;; during compile (useful when loading this file with SBCL)
   (setq *COMPILE-VERBOSE* nil)
 
+
+  (setq *stella-memoization-default* nil)
+  ;; ^ New param for stella memoize.lisp
+  ;; cf. changeset 6770bf4 [NEEDS REVIEW before introd to *.ste sources]
+  ;; Default should be nil
+  ;; TD: Test when set to T
+  ;; NB see also, STELLA::ENABLE-MEMOIZATION, STELLA::DISABLE-MEMOIZATION
 )
 
 ;; --
@@ -81,7 +91,9 @@
 ;;(defvar *stella-verbose?* #-sbcl t #+sbcl nil)
 ;; ^ try to prevent print methods during build with SBCL - cf. cl-primal
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defvar *stella-verbose?* t)
+) ;; ... should also wrap the following two defvar (??)
 
 (defvar *stella-compiler-optimization*
   '(optimize (debug 3) (safety 3) (space 1) (speed 1)))
@@ -98,6 +110,9 @@
 ;; --
 
 ;; -- from #p"PL:native;lisp;stella;load-stella.lisp"
+;;
+;; see also: #p"PL:sources;stella;load-stella.lisp"
+
 
 ;;; These globals are here to facilitate bootstrapping (before STELLA is up):
 ;;; They need to include a directory separator at the end:
@@ -203,6 +218,8 @@ hash tables grow large).")
 
 (defun stella-need-to-compile? (sourceFile binaryFile)
   ;; T if 'sourceFile' needs to be compiled to yield 'binaryFile'.
+  ;;
+  ;; NB w/ ASDF filename translations, binaryFile may be &optional
   (or (not (probe-file binaryFile))
       (not (file-write-date sourceFile))
       (not (file-write-date binaryFile))
@@ -248,7 +265,7 @@ hash tables grow large).")
         (*load-verbose* *stella-verbose?*))
     (when (stella-need-to-compile? stellaFileName binaryFileName)
       (proclaim *stella-compiler-optimization*)
-      (ensure-directories-exist binaryFileName) 
+      (ensure-directories-exist binaryFileName)
       (compile-file stellaFileName :output-file binaryFileName))
     (load binaryFileName)))
 
@@ -270,6 +287,14 @@ hash tables grow large).")
 )
 
 ;; -- sourcing PL:native/lisp/stella/cl-lib/make-stella.lisp
+;;
+;; see also PL:sources/stella/cl-lib/make-stella.lisp
+;;
+;; NB also (same contents) PL:native/lisp/stella/cl-lib/make-stella.slisp
+;;
+;; The following represents principally a syntactic adapatation onto the
+;; original (sources path) make-stella.lisp
+
 
 (in-package #:stella)
 
@@ -278,6 +303,10 @@ hash tables grow large).")
     (with-undefined-function-warnings-suppressed
       (CL:when CL-USER::*load-cl-struct-stella?*
 	(CL-USER::stella-c&l-translated "stella-system-structs"))
+      ;; NB: The following filename list is hard-coded in STELLA,
+      ;; in the original (sources path) make-stella.lisp
+      ;;
+      ;; This filename list differs substantially onto that provided in pl:sources/systems/stella-system.ste
       (cl:dolist (lib '("hierarchy"
                         "streams"
                         "taxonomies"
@@ -290,7 +319,7 @@ hash tables grow large).")
                         "collections"
                         "iterators"
                         "symbols" ;; NB: CL:DEFUN STELLA::INITIALIZE-KERNEL-MODULES
-                        ;;  "boot-symbols"
+                        ;;  "boot-symbols" ;; NB DNE (PL Public src)
                         "literals"
                         "classes"
                         "methods"
@@ -304,15 +333,15 @@ hash tables grow large).")
                         "dynamic-literal-slots"
                         "cl-translate"
                         "macros"
-                        "memoize"
+                        "memoize" ;; NB: cl-user::*STELLA-MEMOIZATION-DEFAULT*, STELLA::*MEMOIZATION-ENABLED*
                         "describe"
                         "demons"
                         "more-demons"
                         "name-utility"
-                        "modules"
-                        "contexts"
-                        "read"
-                        "xml"
+                        "modules" ;; X
+                        "contexts" ;; X
+                        "read" ;; X
+                        "xml" ;; X
                         "translate-file"
                         "systems"
                         "cl-translate-file"
@@ -329,15 +358,20 @@ hash tables grow large).")
                         "idl-class-out"
                         "idl-output"
                         "tools"
-                        ("cl-lib" "stella-to-cl")
-                        "startup-system"
+                        ("cl-lib" "stella-to-cl") ;; X...
+                        "startup-system" ;; X
+                        ;; [X] : Differs onto stella-system.ste (only in make-stella.lisp)
                         ))
-        ;; where is this output being dumped to?
+        ;; TBD: Where is this output being dumped to w/ SLIME/SWANK?
         (cl:when cl-user::*stella-verbose?*
+          ;; TD w/ ASDF-based builds, set STELLA-VERBOSE from a call
+          ;; onto (oprn, component)
           (cl:terpri cl:*error-output*)
           (cl:format cl:*error-output* "#-- Startup: Load ~A" lib)
           (cl:terpri cl:*error-output*))
 
+        ;; TD w/ ASDF-based builds, dervive the compilation-unit plist args
+        ;; (allowing per-impl customization) from a call onto (oprn, component)
         (cl:with-compilation-unit #+sbcl (:policy cl-user::*stella-compiler-optimization*)
                                   #-sbcl ()
           (cl:etypecase lib
