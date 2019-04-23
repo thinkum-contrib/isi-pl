@@ -439,7 +439,7 @@ with `context' supplying context for the error message."
 
 ;;; File streams are opened with a call to 'new', for example,
 ;;;
-;;;   (new OUTPUT-FILE-STREAM :filename "foo.lisp")
+;;;   (new FILE-OUTPUT-STREAM :filename "foo.lisp")
 ;;;
 ;;; or a call to one of the `open-...-file' functions, for example,
 ;;;

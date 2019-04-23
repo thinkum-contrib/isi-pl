@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE chapter [
+<!ENTITY document.ent SYSTEM "document.ent">
+
+%document.ent;
+
+]>
+<chapter xml:id="stella.systems"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="https://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+  >
+  <info>
+    <title><productname>STELLA</productname> Systems</title>
+
+    <abstract xml:id="stella.systems.ov">
+      <title>Overview</title>
+
+      <para>
+        <remark>NB: Not to replace the PL Guide/Manual</remark>
+      </para>
+    </abstract>
+
+  </info>
+
+<!-- NB This chapter should be preceded by, in at at least:
+
+ - Introduction to the STELLA Language (Chapter w/ no Reference appendix)
+   - Overview cf. ISI PowerLoom
+     - Note earlier LOOM system at USC ISI
+     - Note STELLA as a functional basis for the ISI PowerLoom knowledge
+     representation system
+     - (in context: PL) note earlier OKBC, GFP initiatives cf. SRI AIC
+   - STELLA {Generic Langauge}
+     - Lisp-like syntax
+     - NB Strong Typing in STELLA
+   - STELLA as an advanced macro-like language; STELLA Implememtations
+     - Lisp; C++; Java
+     - xref to implementation-specific manuals (TD/WIP)
+
+ - STELLA Symbols (as classifiers); STELLA Modules (as classifier namespaces)
+
+ - STELLA Types
+   - STELLA Type Declaration Operators
+   - Type Reflection in STELLA
+   - xref to (TD) reference manuals for individual STELLA
+     implementations (Lisp; C++; Java) - types in the STELLA &lang.x implementation
+     - NB STELLA 'Typed CONS' and 'Typed LIST' types (and iterators in STELLA ??)
+      (max depth 1?? e.g STELLA "CONS of CONS")
+
+ - STELLA Exceptions
+
+ - STELLA Streams
+   - NB
+     - streams.ste; walk-error; ... cf. STELLA exceptions
+     - streams.ste; STELLA and file I/O - (NEW FILE-OUTPUT-STREAM ...) examples, and OPEN-OUTPUT-FILE
+     - streams.ste; format-string-message-arguments (?? STELLA utils ??)
+-->
+
+<!-- NB This chapter should describe, in furthermore:
+ - STELLA implementation source synthesis
+   - "Walk" forms for STELLA source streams
+   - "Translate" forms, onto indiv. STELLA implementation languages
+ 
+-->
+
+<!--
+  <section>
+    <title><remark>(TBD)</remark></title>
+
+    <remark>in STELLA; cf. translate-file.ste - refer to STELLA
+    documentation strings</remark>
+
+    <simplelist>
+      <member>
+        <symbol>*record-signatures?*</symbol>
+      </member>
+      <member>
+        <symbol>*walk-with-recorded-signatures?*</symbol>
+      </member>
+      <member>
+        <symbol>*useRecordedSignatures?*</symbol>
+      </member>
+    </simplelist>
+
+  </section>
+-->
+
+<!--
+  <section>
+    <title><remark>(TBD)</remark></title>
+
+    <remark>in STELLA; cf. translate-file.ste - refer to STELLA
+    documentation strings</remark>
+
+    <remark>
+      Two STELLA special variables - no doubt, in the STELLA Lisp
+      implementation, lexically bound in some environment, when
+      processing a STELLA system definition
+    </remark>
+
+    <simplelist>
+      <member>
+        <symbol>*currentSystemDefinition*</symbol>
+      </member>
+      <member>
+        <symbol>*currentSystemDefinitionSubdirectory*</symbol>
+      </member>
+    </simplelist>
+
+  </section>
+-->
+
+  <section>
+    <title>
+      Pathnames in STELLA Systems
+    </title>
+
+    <remark>
+      TBD: Support for "LPN-like" pathname syntax in STELLA
+      implementation systems (Lisp, C++, Java)
+    </remark>
+
+    <segmentedlist>
+      <segtitle>Variable</segtitle>
+      <segtitle>Function</segtitle>
+      <segtitle>Default</segtitle>
+
+      <seglistitem>
+        <seg><symbol>*rootSourceDirectory*</symbol></seg>
+        <seg><function>root-source-directory</function></seg>
+        <seg><quote>PL:sources;</quote></seg>
+      </seglistitem>
+
+      <seglistitem>
+        <seg><symbol>*rootNativeDirectory*</symbol></seg>
+        <seg><function>root-native-directory</function></seg>
+        <seg><quote>PL:native;</quote></seg>
+      </seglistitem>
+
+      <seglistitem>
+        <seg><symbol>*rootBinaryDirectory*</symbol></seg>
+        <seg><function>root-binary-directory</function></seg>
+        <seg><quote>PL:bin;</quote></seg>
+      </seglistitem>
+    </segmentedlist>
+
+    <remark>
+      Furthermore, note the function,
+      <function>system-definitions-directory</function>. This function
+      returns a single STELLA <type>FILE-NAME</type>. By default, the
+      return value is computed as a translation of the pathname,
+      <quote>PL:sources;systems;</quote>.
+    </remark>
+
+  </section> <!-- Pathnames in STELLA -->
+
+  <section>
+    <title>Source Traversal and Synthesis of Implementation Sources in STELLA Systems</title>
+
+    <section>
+      <title>Top-Level Forms in STELLA</title>
+
+      <para>
+        In a review of the STELLA source for the function,
+        <function>walk-top-level-tree</function>
+        (<filename>walk.ste</filename>) one may interpret that at least the
+        following generalized <emphasis>definition types</emphasis> are
+        available, in STELLA source definitions.
+      </para>
+
+      <simplelist>
+        <member><symbol>DEFCLASS</symbol></member>
+        <member><symbol>DEFSLOT</symbol></member>
+        <member>
+          <symbol>DEFMETHOD</symbol>,
+          <symbol>DEFUN</symbol>, and
+          <symbol>DEFOPERATOR</symbol>
+        </member>
+        <member>
+          <symbol>DEFGLOBAL</symbol>,
+          <symbol>DEFSPECIAL</symbol>, and
+          <symbol>DEFCONSTANT</symbol>
+        </member>
+        <member><symbol>DEFTYPE</symbol></member>
+        <member><symbol>DEFMODULE</symbol></member>
+        <member><symbol>DEFMACRO</symbol></member>
+        <member><symbol>STARTUP-TIME-PROGN</symbol></member>
+        <member><symbol>VERBATIM</symbol></member>
+        <member><symbol>PROGN</symbol></member>
+      </simplelist>
+
+    </section> <!-- Top-level forms -->
+
+
+
+  </section> <!-- Source traversal and synthesis -->
+
+
+  <!-- fourth-to-last section - reference for STELLA defs -->
+
+  <xi:include href="stella.systems.ref.xml"/>
+
+
+  <!-- next three sections (TD) - reference for each of three STELLA
+       implementation defs - Common Lisp, C++ (Non-standalone) and Java (Non-standalone)
+  -->
+
+</chapter>

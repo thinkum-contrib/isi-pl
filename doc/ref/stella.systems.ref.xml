@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE reference [
+<!ENTITY document.ent SYSTEM "document.ent">
+
+%document.ent;
+
+]>
+<reference xml:id="stella.systems.ref"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="https://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+  >
+  <info>
+    <title>
+      <productname>STELLA</productname> Systems - Reference
+    </title>
+
+    <abstract xml:id="stella.systems.ref.ov">
+      <title>Overview</title>
+      <para>
+        <remark>NB: Not to replace the PL Guide/Manual</remark>
+        <!-- Ed. NB - Code Coverage in this Documentation
+
+             Many STELLA forms may be described - in the most part,
+             thoroughly - in the corresponding 'Concepts' text. Any
+             system users may make reference to the source code, for any
+             further details.
+
+             Considering the significant number of symbols used in
+             STELLA, It may seem plainly too exhaustive, to document
+             every usable STELLA symbol in this XML 'Reference' text.
+
+             cf. stella.systems.xml (e.g)
+
+        -->
+
+      </para>
+    </abstract>
+
+  </info>
+
+<!-- NB cf. stella.systems.xml
+
+    <simplelist>
+      <member>
+        <symbol>*record-signatures?*</symbol>
+      </member>
+      <member>
+        <symbol>*walk-with-recorded-signatures?*</symbol>
+      </member>
+      <member>
+        <symbol>*useRecordedSignatures?*</symbol>
+      </member>
+    </simplelist>
+
+
+-->
+
+
+  <!-- individual reference pages -->
+
+  <xi:include href="ref.stella.param.current-stella-features.xml"/>
+
+  <xi:include href="ref.stella.op.translate-system.xml"/>
+
+
+</reference>
