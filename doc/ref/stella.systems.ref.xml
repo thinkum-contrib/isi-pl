@@ -101,8 +101,8 @@
         <funcprototype>
           <modifier>public</modifier>
           <modifier>command</modifier>
-          <modifier>boolean</modifier>
           <funcdef>
+            <type>boolean</type>
             <function>translate-system</function>
           </funcdef>
           <paramdef>
