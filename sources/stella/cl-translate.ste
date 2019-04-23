@@ -356,7 +356,7 @@
 (defmethod (cl-translate-atomic-tree OBJECT) ((tree SYMBOL))
   ;; Translate a reference to the symbol 'tree'.
   ;; BUG: This might generate incorrect code if a local variable has the
-  ;;      same name as a global!! (which argues for a new parse tree) 
+  ;;      same name as a global!! (which argues for a new parse tree)
   ;; Special case TRUE and FALSE symbols
   (cond ((eq? tree (quote TRUE))
          (return *cl-true-string-wrapper*))
@@ -408,7 +408,7 @@
     (case (compute-symbol-escape-code lispSymbolName false)
       (:UNESCAPED
        NULL)                            ; Already OK
-      (:ESCAPED 
+      (:ESCAPED
        (setq lispSymbolName
 	     (concatenate "|" (concatenate lispSymbolName "|"))))
       (:COMPLEX-ESCAPED                 ; Slow, but really rare
@@ -416,7 +416,7 @@
          (print-symbol-name-readably lispSymbolName s false)
          (setq lispSymbolName (the-string s)))))
     (return lispSymbolName)))
-  
+
 (defun (yield-global-lisp-symbol OBJECT)
     ((symbolModule MODULE) (symbolName STRING))
   ;; Yield a Lisp symbol that can be used as a translation of the global
@@ -563,7 +563,7 @@
         (oTree (yield-slot-value-reader-tree slotName objRef objType)))
     (return oTree) ))
 
-(defun (cl-translate-fixed-slot-value-setter-tree CONS) ((tree CONS))       
+(defun (cl-translate-fixed-slot-value-setter-tree CONS) ((tree CONS))
   ;; Return parse tree code that writes a CLOS slot.  'tree' has the form
   ;;    '(SYS-SLOT-VALUE-SETTER <objType> <slotName> <objRef> <valueRef>)'.
   ;; Assumes that 'slot' has allocation :instance or :class.
@@ -1045,7 +1045,7 @@
           (if invert?
               (return (bquote (CL:not & tree)))
             (return tree)))
-         
+
          (EQ?
           (when (optimize-boolean-tests?)
             ;; Optimize EQ? by using the most optimal CL equality test
@@ -1067,7 +1067,7 @@
           (if invert?
               (return (bquote (CL:not & tree)))
             (return tree)))
-         
+
          ((NULL? DEFINED?)
           (when (method-call-inlining-enabled?)
             ;; Inline NULL? and DEFINED?:
@@ -1110,7 +1110,7 @@
             (return tree)))
          (otherwise NULL))))
     (otherwise NULL))
-  
+
   ;; We have a non-optimizable case:
   (setq tree (cl-translate-a-tree tree))
   (if invert?
@@ -1138,7 +1138,7 @@
     (setf (rest (rest tree)) NIL)       ; detach before garbage collecting
     (case operator
       ((IF CHOOSE)
-       (return 
+       (return
          (bquote (CL:if & (cl-translate-boolean-test test FALSE)
                    & (cl-translate-a-tree (first body))
                    & (cl-translate-a-tree (second body))))))
@@ -1445,7 +1445,7 @@
       (return (bquote (CL:error && (yield-format-arguments tree)))))
      ((eq? stream :continuable-error)
       ;; NOT YET IMPLEMENTED CORRECTLY ('CL:cerror' TAKES TWO FORMAT STRINGS
-      ;;    AND WE PROVIDE ONLY ONE, FOR NOW, HARDCODE THE FIRST ONE): 
+      ;;    AND WE PROVIDE ONLY ONE, FOR NOW, HARDCODE THE FIRST ONE):
       (return (bquote (CL:cerror "Continue anyway? "
                                  && (yield-format-arguments tree)))))
      (otherwise (return (yield-print-tree tree))))))
@@ -1765,7 +1765,7 @@
                  (slot-name method) :common-lisp :function))))))
 	(return NULL))))
 
-(defun (cl-yield-declare-tree CONS) ((declarations (CONS OF CONS)) 
+(defun (cl-yield-declare-tree CONS) ((declarations (CONS OF CONS))
                                      (include-type-checks? BOOLEAN))
   ;; Generate a `((CL:declare DECLARATIONS...))' tree and return
   ;;    the result or NIL if `declarations' is empty.
@@ -1785,7 +1785,7 @@
              (pushq typechecks
                     (bquote (cl:check-type & (third decl) & (second decl)))))
       (setq typechecks (reverse typechecks)))
-      
+
     ;; Combine multiple type declarations so there is only one per type
     ;;    (this is somewhat quadratic, but we operate on short lists):
     (foreach decl in declarations
@@ -2033,7 +2033,7 @@
     (when (defined? documentation)
       (setq documentationForm (bquote (:DOCUMENTATION & documentation))))
     (return
-     (bquote 
+     (bquote
       (& (cl-translate-global-symbol slotName)
          ;; NOTE: C++ needs explicit initialization, so we do that
          ;;    in the constructor instead of here.
@@ -2064,9 +2064,9 @@
              (when (not (eql? (native-slot-home slot class) class))
                (when (and (defined? (slot-base-type slot))
                           (not (defined? (type-class (slot-base-type slot)))))
-                 (warn "Can't generate a native slot named " (slot-name slot) 
+                 (warn "Can't generate a native slot named " (slot-name slot)
                        " for the class " (class-name class) EOL
-                       " because the slot's :type " (slot-base-type slot) 
+                       " because the slot's :type " (slot-base-type slot)
                        " is undefined."))
                (continue))
              collect (yield-CLOS-slot-tree slot)
@@ -2153,9 +2153,9 @@
              (when (not (eql? (native-slot-home slot class) class))
                (when (and (defined? (slot-base-type slot))
                           (not (defined? (type-class (slot-base-type slot)))))
-                 (warn "Can't generate a native slot named " (slot-name slot) 
+                 (warn "Can't generate a native slot named " (slot-name slot)
                        " for the class " (class-name class) EOL
-                       " because the slot's :type " (slot-base-type slot) 
+                       " because the slot's :type " (slot-base-type slot)
                        " is undefined."))
                (continue))
              collect (yield-struct-slot-tree slot)

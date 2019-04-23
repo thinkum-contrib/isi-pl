@@ -195,7 +195,7 @@ no stream form is provided, then STANDARD-OUTPUT will be used."
     (return (bquote (foreach i in (interval 1 & (second body))
 			do (ignore i)
 			   (print-stream & (first body) " "))))))
-    
+
 
 (defmacro inform (&body (body CONS))
   :public? TRUE
@@ -222,10 +222,10 @@ and terminating with a newline."
   ;; Special handling of case of a simple string error:
   (if (and (= (length body) 1)
 	   (isa? (first body) @STRING-WRAPPER))
-    (return 
+    (return
       (bquote (signal-exception (new & type :message & (first body)))))
     (let ((streamVar (local-gensym "STREAM")))
-      (return 
+      (return
 	(bquote
 	 (let ((& streamVar  (new OUTPUT-STRING-STREAM)))
 	   (print-stream & streamVar && (format-message-arguments body FALSE))
@@ -236,8 +236,6 @@ and terminating with a newline."
   :documentation "Signal error message, placing non-string arguments in quotes."
   (return (bquote (signal STELLA-EXCEPTION && body))))
 
-
-;; TO DO: FIGURE OUT IF C++ HAS AN ANALOGUE OF 'CL:cerror':
 (defmacro continuable-error (&body (body CONS))
   :public? TRUE
   :documentation "Signal error message, placing non-string arguments in quotes."
@@ -246,12 +244,12 @@ and terminating with a newline."
     ;; Special handling of case of a simple string error:
     (if (and (= (length body) 1)
 	     (isa? (first body) @STRING-WRAPPER))
-      (return 
+      (return
 	(bquote (let ((error_message_ & (wrapper-value (cast (first body) STRING-WRAPPER))))
 		  (verbatim :java "Native.continuableError(error_message_)"
 			    )) ))
       (let ((streamVar (local-gensym "STREAM")))
-	(return 
+	(return
 	  ;; Need to use nested LETs so that we don't have to worry about variable
 	  ;;  capture, since we can't get a GENSYM'd variable into a verbatim string.
 	  (bquote
@@ -275,7 +273,7 @@ type `NO-SUCH-FILE-EXCEPTION' is thrown with `context' supplying
 context for the error message."
   (unless (probe-file? filename)
     (let ((ex (new NO-SUCH-FILE-EXCEPTION
-		   :message (concatenate context ": file " filename 
+		   :message (concatenate context ": file " filename
 					 " does not exist")
 		   :filename filename )))
       (signal-exception ex))))
@@ -301,14 +299,14 @@ with `context' supplying context for the error message."
            (let ((item (value it)))
              (typecase item
                (SYMBOL
-                (unless (eql? item EOL) 
+                (unless (eql? item EOL)
                   (setf (value it) (bquote (de-uglify-parse-tree & item)))))
                (otherwise NULL))))
   (return messageArgumentsTree) )
 
 (defmacro walk-error (&body (body CONS))
   ;; Print out a warning of a translation error.
-  (let ((messageArguments (format-message-arguments 
+  (let ((messageArguments (format-message-arguments
 			   (format-walk-message-arguments body) FALSE)))
     (return
      (bquote
@@ -357,7 +355,7 @@ with `context' supplying context for the error message."
 (defmacro evaluation-error (&body (body CONS))
   ;; Specialized error handler for EVALUATION errors
   (let ((streamVar (local-gensym "STREAM")))
-    (return 
+    (return
       (bquote
        (let ((& streamVar  (new OUTPUT-STRING-STREAM)))
 	 (print-stream & streamVar "While evaluating '" *evaluationTree*)
@@ -525,7 +523,7 @@ opening operation will be aborted and NULL will be returned."
        (when (probe-file? filename)
          (return)))
       (:ERROR
-       (ensure-file-does-not-exist filename "initialize-file-output-stream")) 
+       (ensure-file-does-not-exist filename "initialize-file-output-stream"))
       (otherwise
        (signal BAD-ARGUMENT-EXCEPTION
                "initialize-file-output-stream: illegal :if-exists action: "
@@ -546,7 +544,7 @@ opening operation will be aborted and NULL will be returned."
     (when (verbatim
             :cpp "!*(self->nativeStream)"
             :otherwise (eq? (native-output-stream self) NULL))
-      (signal INPUT-OUTPUT-EXCEPTION 
+      (signal INPUT-OUTPUT-EXCEPTION
               "initialize-file-output-stream: Could not open " self))
     (verbatim :cpp "*(self->nativeStream) << std::setprecision(16)"
               :otherwise NULL)
@@ -776,10 +774,10 @@ Syntax is `(WITH-INPUT-FILE (var filename options*) body+)' where `options'
 can be any that are legal for `open-input-file' (which see)."
   (let ((var SYMBOL (first binding)))
     (return
-      (bquote 
+      (bquote
        (let ((& var FILE-INPUT-STREAM NULL))
 	 (unwind-protect
-	     (progn 
+	     (progn
 	       (setq & var (open-input-file & (second binding)
                                             && (rest (rest binding))))
 	       && body)
@@ -795,10 +793,10 @@ Syntax is `(WITH-OUTPUT-FILE (var filename options*) body+)' where `options'
 can be any that are legal for `open-output-file' (which see)."
   (let ((var SYMBOL (first binding)))
     (return
-      (bquote 
+      (bquote
        (let ((& var FILE-OUTPUT-STREAM NULL))
 	 (unwind-protect
-	     (progn 
+	     (progn
 	       (setq & var (open-output-file & (second binding)
                                              && (rest (rest binding))))
 	       && body)
@@ -816,12 +814,12 @@ streams. Syntax is (WITH-NETWORK-STREAM (varIn varOut hostname port) body+)"
   (let ((var-in SYMBOL (first binding))
         (var-out SYMBOL (second binding)))
     (return
-      (bquote 
+      (bquote
        (let ((& var-in INPUT-STREAM NULL)
              (& var-out OUTPUT-STREAM NULL))
 	 (unwind-protect
-	     (progn 
-	       (mv-setq (& var-in & var-out) 
+	     (progn
+	       (mv-setq (& var-in & var-out)
                         (open-network-stream & (third binding) & (fourth binding)))
 	       && body)
 	   (when (defined? & var-in)
@@ -983,7 +981,7 @@ same as the one following the most recent token."
 	     (bquote
 	      (progn (print-stream & stream & (concatenate "<" tagvalue ">"))
 		     && body
-		     (print-stream & stream 
+		     (print-stream & stream
 				   & (concatenate "</"
 						  (subsequence tagvalue 0
 							       (position tagvalue #\space 0))
@@ -1016,7 +1014,7 @@ same as the one following the most recent token."
 		(print-stream & stream "</"
 			      (subsequence & tag 0 (position & tag #\space 0))
 			      ">"))))))
-	(OBJECT 
+	(OBJECT
 	 (setq tagvar (gensym "TAG"))
 	 (if eol?
 	   (return
@@ -1039,7 +1037,7 @@ same as the one following the most recent token."
 (defmacro with-html-tag ((tag-and-stream CONS) &body (body CONS))
   ;; (with-html-tag (<tag with attributes> <stream> [EOL?]) <body>)
   ;;
-  ;; Writes an html tag pair around body, with an empty body producing an 
+  ;; Writes an html tag pair around body, with an empty body producing an
   ;;   HTML-style empty tag.  An end of line will be added if the EOL? is
   ;;   present and TRUE
   (return (expand-markup-tag-function tag-and-stream body FALSE)))
@@ -1047,7 +1045,7 @@ same as the one following the most recent token."
 (defmacro with-xml-tag ((tag-and-stream CONS) &body (body CONS))
   ;; (with-xml-tag (<tag with attributes> <stream> [EOL?]) <body>)
   ;;
-  ;; Writes an html tag pair around body, with an empty body producing an 
+  ;; Writes an html tag pair around body, with an empty body producing an
   ;;   XML-style empty tag.  An end of line will be added if the EOL? is
   ;;   present and TRUE
   (return (expand-markup-tag-function tag-and-stream body TRUE)))
@@ -1075,7 +1073,7 @@ same as the one following the most recent token."
   (return))
 
 ;; Characters from RFC 2396
-;;  
+;;
 (defun write-html-escaping-url-special-characters ((stream NATIVE-OUTPUT-STREAM) (input STRING))
   :PUBLIC? TRUE
   :documentation "Writes a string and replaces unallowed URL characters according to RFC 2396
@@ -1128,7 +1126,7 @@ character equivalent according to RFC 2396."
 		(++ i-in)
 		(if (and (defined? char-value) ; legitimate hex character
 			 (< i-in i-max))
-		  (progn 
+		  (progn
 		    (setq escape-value (* 16 char-value))
 		    (setq char-value (hex-character-value (nth input i-in)))
 		    (if (defined? char-value) ; legitimate hex character
