@@ -223,6 +223,17 @@ hash tables grow large).")
   ;;   concerns when generating STELLA implementation source code with
   ;;   the STELLA source translation API.
   ;;
+
+  ;; NB These logical pathname translations may be used internally, in
+  ;; STELLA systems, pursuant to software source code synthesis with
+  ;; STELLA system definitions.
+  ;;
+  ;; See also, in translate-file.ste and subsq. implementation sources:
+  ;;   stella::*rootSourceDirectory* - default, "PL:sources;"
+  ;;   stella::*rootNativeDirectory* - default, "PL:native;"
+  ;;   stella::*rootBinaryDirectory* - default, "PL:bin;"
+  ;;   furthermore, STELLA function stella::system-definitions-directory
+  ;;   such that uses, by default, the pathname "PL:sources;systems;"
   (assert (probe-file src-prefix) (src-prefix))
   (let ((src-prefix-path (pathname src-prefix)))
     (declare (dynamic-extent src-prefix-path))
@@ -607,7 +618,7 @@ hash tables grow large).")
 
 ;; --
 
-(eval-when () ;; TMP ESC
+(eval-when () ;; TMP
   (defclass stella-implementation-source-file (stella-source-component)
     () ;; TBD: Mapping to original *.ste sys defn, *.ste source file
     ;; FIXME: Integrate this class into the following
@@ -616,7 +627,7 @@ hash tables grow large).")
     ;;
     ;; NB: Generic class, disjunct to STELLA-SOURCE-FILE (*.ste)
     )
-  ))
+  )
 
 (defclass stella-lisp-source-file (stella-lisp-source-component)
   ())
@@ -885,7 +896,6 @@ definition, relative to the system definition's component pathname")
   :perform (load-source-op :after (op c)
                            (safe-fcall (#:startup-stella-system #:stella))
                            (safe-fcall (#:startup-stella-to-cl #:stella)))
-
 
   :serial t
 
