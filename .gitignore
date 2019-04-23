@@ -2,9 +2,7 @@
 .#*
 *#
 *.bak
-## CCL (Linux ARM)
-*.lafsl
-## CCL (Linux x86-64)
-*.fx64fsl
+## CCL
+*.*fsl
 ## SBCL
 *.fasl
