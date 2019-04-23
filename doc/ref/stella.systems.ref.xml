@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE preface [
+<!ENTITY document.ent SYSTEM "document.ent">
+
+%document.ent;
+
+]>
+<reference xml:id="stella.systems.ref"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="https://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+  >
+  <info>
+    <title>
+      <productname>STELLA</productname> Systems - Reference
+    </title>
+
+    <abstract xml:id="stella.systems.ref.ov">
+      <title>Overview</title>
+      <para>
+        <remark>NB: Not to replace the PL Guide/Manual</remark>
+        <!-- Ed. NB - Code Coverage in this Documentation
+
+             Many STELLA forms may be described - in the most part,
+             thoroughly - in the corresponding 'Concepts' text. Any
+             system users may make reference to the source code, for any
+             further details.
+
+             Considering the significant number of symbols used in
+             STELLA, It may seem plainly too exhaustive, to document
+             every usable STELLA symbol in this XML 'Reference' text.
+
+             cf. stella.systems.xml (e.g)
+
+        -->
+
+      </para>
+    </abstract>
+
+  </info>
+
+<!-- cf. stella.systems.xml
+
+    <simplelist>
+      <member>
+        <symbol>*record-signatures?*</symbol>
+      </member>
+      <member>
+        <symbol>*walk-with-recorded-signatures?*</symbol>
+      </member>
+      <member>
+        <symbol>*useRecordedSignatures?*</symbol>
+      </member>
+    </simplelist>
+
+
+-->
+
+  <refentry xml:id="ref.stella.param.current-stella-features">
+    <refnamediv>
+      <refname><varname>*current-stella-features*</varname></refname>
+      <refpurpose>Currently enabled STELLA features</refpurpose>
+      <refclass>STELLA Systems</refclass>
+    </refnamediv>
+
+    <refsect1>
+      <title>Description</title>
+
+      <remark>Refer to STELLA documentation string, in source</remark>
+    </refsect1>
+
+    <refsect1>
+      <title>See Also</title>
+      <simplelist>
+        <member><varname>*default-stella-features*</varname></member>
+      </simplelist>
+    </refsect1>
+
+    <refsect1>
+      <title>Definition Location</title>
+
+      <para>
+        This variable is defined in STELLA <filename>walk.ste</filename>
+      </para>
+    </refsect1>
+
+  </refentry>
+
+
+  <refentry xml:id="ref.stella.op.translate-system">
+    <refnamediv>
+      <refname><function>translate-system</function></refname>
+      <refpurpose>Translate STELLA source files</refpurpose>
+      <refclass>STELLA Systems</refclass>
+    </refnamediv>
+
+    <refsect1 xml:id="ref.stella.op.translate-system.sig">
+      <title>Signature and Syntax</title>
+
+      <funcsynopsis>
+        <funcprototype>
+          <modifier>public</modifier>
+          <modifier>command</modifier>
+          <modifier>boolean</modifier>
+          <funcdef>
+            <function>translate-system</function>
+          </funcdef>
+          <paramdef>
+            <parameter>systemName</parameter>
+            <type>string</type>
+          </paramdef>
+          <varargs xreflabel="language&amp;options" />
+          <!-- FIXME &REST with RESTARG name in DocBook funcprototype -->
+        </funcprototype>
+      </funcsynopsis>
+
+      <refsect2>
+        <title>Recognized Keyword Arguments</title>
+
+        <simplelist>
+          <member><symbol>:language</symbol></member>
+          <member><symbol>:two-pass?</symbol></member>
+          <member><symbol>:force-translation?</symbol></member>
+          <member><symbol>:development-settings?</symbol></member>
+        </simplelist>
+      </refsect2>
+    </refsect1>
+
+    <refsect1>
+      <title>Description</title>
+
+      <remark>Refer to STELLA documentation string, in source</remark>
+    </refsect1>
+
+    <refsect1>
+      <title>Remarks</title>
+
+      <para>
+        If the system definition to be processed does not represent a system
+        already initialized, then any value provided for the
+        <symbol>:two-pass?</symbol> parameter will be overridden with
+        <symbol>true</symbol>.
+      </para>
+
+    </refsect1>
+
+    <refsect1>
+      <title>Definition Location</title>
+
+      <para>
+        This function is defined in STELLA <filename>translate-file.ste</filename>
+      </para>
+    </refsect1>
+
+    <refsect1>
+      <title>Implementations</title>
+
+      <remark>
+        Refer to STELLA implementation source code
+      </remark>
+    </refsect1>
+
+
+  </refentry>
+</reference>
