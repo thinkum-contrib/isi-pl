@@ -373,7 +373,7 @@ less code size and memory consumption.")
 ;;; Translation is accomplished in three phases:  In the first phase,
 ;;; top level declarations are parsed and converted into a list of
 ;;; translation units which hold Stella objects (classes, methods, etc.).
-;;; In the second phase, the Stella objects are finalized.  
+;;; In the second phase, the Stella objects are finalized.
 ;;; In the third phase, parse tree code is generated for each translation
 ;;; unit generated in the first phase, and additional translation units
 ;;; are added to hold auxiliary definitions and startup-time code.
@@ -389,7 +389,7 @@ less code size and memory consumption.")
    (tu-home-module :type MODULE :option-keyword :tu-home-module)
    ;; A Stella object or a parse tree:
    (the-object :type OBJECT)
-   ;; The category of the object, which must be one of CLASS, SLOT, 
+   ;; The category of the object, which must be one of CLASS, SLOT,
    ;; METHOD, PRINT-METHOD, GLOBAL-VARIABLE, TYPE,
    ;; STARTUP-TIME-PROGN, or VERBATIM:
    (category :type SYMBOL)
@@ -405,7 +405,7 @@ less code size and memory consumption.")
    (referenced-globals :type (LIST OF GLOBAL-VARIABLE)
 		       :allocation :embedded :component? TRUE)
    )
-  :public-methods 
+  :public-methods
   ((home-module ((self TRANSLATION-UNIT)) :type MODULE
      (return (tu-home-module self))))
   ;:recycle-method :free-list
@@ -487,7 +487,7 @@ points to the native implementation language of this STELLA instance.")
   :documentation "Set output language to `new-language'.  Return previous language."
   :command? TRUE :public? TRUE
   (let ((oldLanguage (translator-output-language)))
-    (unless (member? (bquote (:cpp :cpp-standalone :common-lisp :java :idl)) 
+    (unless (member? (bquote (:cpp :cpp-standalone :common-lisp :java :idl))
 		     new-language)
       (warn new-language " is not a legal translation language"))
     (setq *translatorOutputLanguage* new-language)
@@ -761,13 +761,13 @@ points to the native implementation language of this STELLA instance.")
   (let ((method METHOD-SLOT NULL))
     (if (not (eq? (category unit) (quote METHOD)))
 	(return FALSE)
-      (progn 
+      (progn
 	(setq method (the-object unit))
 	(cond ((method-constructor? method)
 	       ;; A constructor that returns CLASS.
 	       (foreach other-unit in *translationUnits*
 		   where (and (eq? (category other-unit) (quote CLASS))
-			      (eql? (canonical-type (slot-base-type method)) 
+			      (eql? (canonical-type (slot-base-type method))
 				    (class-type (cast (the-object other-unit) CLASS))))
 		   do (return TRUE))
 	       (return FALSE))
@@ -796,7 +796,7 @@ points to the native implementation language of this STELLA instance.")
        (setq oTree (bquote (CL:PROGN && oTree))))
       ((:cpp :cpp-standalone :java :idl)))
     (return oTree)))
-    
+
 (defun (translate-walked-tree OBJECT) ((codeTree OBJECT))
   ;; Translate the parse tree 'codeTree' into a parse tree tailored for
   ;;    the output language.
@@ -804,9 +804,9 @@ points to the native implementation language of this STELLA instance.")
     (:common-lisp
      (return (cl-translate-a-tree codeTree)))
     (:idl
-     (return (idl-translate-a-tree codeTree)))    
+     (return (idl-translate-a-tree codeTree)))
     (:java
-     (return (java-translate-a-tree codeTree)))    
+     (return (java-translate-a-tree codeTree)))
     ((:cpp :cpp-standalone)
      (return (cpp-translate-a-tree codeTree)))) )
 
@@ -832,7 +832,7 @@ return NIL instead."
               (*translationWarnings* 0)
               (*translationNotes* 0))
       ;; Walking:
-      (cond 
+      (cond
        (declaration?
         (setq *translationPhase* :DEFINE)
         (walk-top-level-tree tree FALSE)
@@ -862,7 +862,7 @@ return NIL instead."
         (summarize-translation-errors)
         (return NIL))
       (setq *translationPhase* :TRANSLATE)
-      (cond 
+      (cond
        (declaration?
         (translate-all-units)
         ;; This step differs from file translation and
@@ -1029,7 +1029,7 @@ to its own gensym counter and/or to related gensyms.")
                 (STORAGE-SLOT
                  (print-stream stream (slot-owner object)
                                "." (symbol-name (slot-name object))))))
-             
+
              ((METHOD PRINT-METHOD)
               (typecase object
                 (METHOD-SLOT
@@ -1052,7 +1052,7 @@ to its own gensym counter and/or to related gensyms.")
                   (choose (cons? (second object))
                           (first (cast (second object) CONS))
                           (second object))))))
-             
+
              (GLOBAL-VARIABLE
               (typecase object
                 (GLOBAL-VARIABLE
@@ -1120,7 +1120,7 @@ be instrumented to log their calls to a file.")
 
 (defun (log-function-call? BOOLEAN) ((method METHOD-SLOT))
   ;; Return `true' if `method' should be instrumented to log calls to a file.
-  (when (and *log-function-calls?*  
+  (when (and *log-function-calls?*
              (not (method-auxiliary? method))
              (not (method-globally-inline? method)))
     (case (slot-name method)
@@ -1266,7 +1266,7 @@ confirmation with the user."
 (defun push-variable-binding ((variable SYMBOL) (type TYPE-SPEC))
   ;; Push the entry <variable, type> onto *localVariableTypeTable*.
   ;; CAUTION: We explicitly permit the occurrence of duplicate keys in the
-  ;;    table, and rely on the fact that 'lookup-at' will always 
+  ;;    table, and rely on the fact that 'lookup-at' will always
   ;;    return the value of the most recently pushed entry.
   (let ((class
          ;; assumes we are never called with an anchored type:
@@ -1389,7 +1389,7 @@ confirmation with the user."
 ;;; Variable naming/renaming support:
 
 (defun (local-gensym SYMBOL) ((prefix STRING))
-  ;; Return a transient symbol with a name beginning with 'prefix' and 
+  ;; Return a transient symbol with a name beginning with 'prefix' and
   ;;    ending with a gensym'd integer.
   ;; The generated name will be unique within the scope of a function
   ;;    definition so that it can be used as an anonymous local variable.
@@ -1645,7 +1645,7 @@ or 'self' if it is not a bare literal type."
                do (return (first entry)))))
   ;; if it's not in the table, it's not wrappable:
   (return NULL) )                       ; RMM 1/8/97
-  
+
 
 ;;; Tricky: For triples with the same source type, the triple with the
 ;;;    more general target type must precede the one with the more specific target
@@ -1664,7 +1664,7 @@ or 'self' if it is not a bare literal type."
     (@MUTABLE-STRING    @STRING            mutable-string-to-string) ; order dependent. prefer non-mutable
     (@MUTABLE-STRING    @MUTABLE-STRING-WRAPPER    wrap-literal)     ; order dependent
     (@STRING            @STRING-WRAPPER    wrap-literal)   ; order dependent
-    (@STRING            @MUTABLE-STRING    string-to-mutable-string) 
+    (@STRING            @MUTABLE-STRING    string-to-mutable-string)
     (@STRING            @SYMBOL            intern-symbol)         ; order dependent
     (@CHARACTER         @CHARACTER-WRAPPER wrap-literal)
     (@CHARACTER         @STRING		   character-to-string)
@@ -1787,7 +1787,7 @@ locate a coersion method.")
   (when (warn-about-undefined-methods?)
     (typecase tree
       (SYMBOL
-       ;; Either the `null' symbol, or a variable typed UNKNOWN, or a variable 
+       ;; Either the `null' symbol, or a variable typed UNKNOWN, or a variable
        ;; initialized by an UNKNOWN expression, or an undefined variable:
        (return))
       (CONS
@@ -1802,7 +1802,7 @@ locate a coersion method.")
                             (cast (third tree) SYMBOL))))
             (return)))
          (SYS-CALL-FUNCTION
-          (when (eq? (slot-base-type 
+          (when (eq? (slot-base-type
                       (lookup-function-or-stella-function (second tree)))
                      @UNKNOWN)
             ;; Function with explicitly defined UNKNOWN return type:
@@ -2104,8 +2104,8 @@ locate a coersion method.")
 
 ;;; Example: (ptrans (allocate-iterator (make-list)))
 
-;;; Here the C++ translation of 'allocate-iterator' has to return an 
-;;;   ITERATOR, since that is its return type in its definition on 
+;;; Here the C++ translation of 'allocate-iterator' has to return an
+;;;   ITERATOR, since that is its return type in its definition on
 ;;;   COLLECTION which is a superclass of LIST.
 
 (defun (need-identical-method-signatures? BOOLEAN) ()
@@ -2406,11 +2406,11 @@ A NULL value indicates an incremental translation.")
     ;; environmentName is the Module name for Java & incremental and
     ;;    the Module name plue file name for other cases.
     (when (defined? (interned-in symbol))
-      (setq environmentName 
+      (setq environmentName
 	(concatenate (module-name (interned-in symbol)) "-")))
     (unless (or (incremental-translation?)
 		(eq? (translator-output-language) :java))
-      (setq environmentName 
+      (setq environmentName
 	(concatenate (string-upcase *currentFile*) "-" environmentName)))
 
     ;; For Java, we encode the module name into the symbol-variable
@@ -2429,7 +2429,7 @@ A NULL value indicates an incremental translation.")
 (defun (yield-symbol-constant-name SYMBOL) ((symbol GENERALIZED-SYMBOL))
   ;; Convert 'symbol' representing a symbol/surrogate/keyword constant
   ;;    into a native language symbol/surrogate/keyword constant identifier.
-  (return (intern-symbol-in-module 
+  (return (intern-symbol-in-module
            (construct-symbol-constant-name (permanentify symbol))
            *module*
            TRUE)))
@@ -2447,12 +2447,12 @@ A NULL value indicates an incremental translation.")
     (when (incremental-translation?)
       (verbatim
           :common-lisp
-          "(CL:proclaim 
+          "(CL:proclaim
              `(CL:special ,(CL:intern symbolConstantName lispPackage)))"
         :otherwise NULL))
     ;; Generate the symbol variable:
     (setq tree
-      (bquote 
+      (bquote
        (defglobal & symbolConstant
                   & symbolConstantTypeTree
                   NULL
@@ -2460,7 +2460,7 @@ A NULL value indicates an incremental translation.")
     (walk-auxiliary-tree tree)
     ;; Generate the initialization code:
     (setq tree
-      (bquote 
+      (bquote
        (startup-time-progn :symbols
          (setq & symbolConstant
                (safe-cast
@@ -2472,7 +2472,7 @@ A NULL value indicates an incremental translation.")
                            (bquote NULL)
                            (bquote
                             (get-stella-module
-                             & (wrap-literal 
+                             & (wrap-literal
 				(module-full-name (interned-in symbol)))
                              TRUE)))
                  ;; Dereference the xxx-SYM's right here:
@@ -2747,7 +2747,7 @@ A NULL value indicates an incremental translation.")
         (bquote (&& (help-transform-boolean-procedural-expression
                      firstArg testVariable)
                     (setq & testVariable (not & testVariable))))))
-      (VRLET       
+      (VRLET
         (let ((cursor otherArgs))
           ;; find the last statement in the VRLET, and assign it to 'testVariable':
          (while (non-empty? (rest cursor))
@@ -2787,7 +2787,7 @@ A NULL value indicates an incremental translation.")
   ;;    the procedural code in appropriate places, and finishes
   ;;    with the new variable as the last statement.
   (let ((testVariable (local-gensym "TEST-VALUE"))
-        (oTree CONS NULL))    
+        (oTree CONS NULL))
     (setq oTree
           (bquote
            (VRLET ((& testVariable FALSE))
@@ -3002,8 +3002,8 @@ A NULL value indicates an incremental translation.")
 
 ;;; The primitives 'slot-value' and 'slot-value-setter' hide the details
 ;;;    of dynamic vs. instance slots, and of context-sensitive slots from
-;;;    higher level code.  They implement the lower three layers of the 
-;;;    slot value access protocol.  The other two layers are handled by 
+;;;    higher level code.  They implement the lower three layers of the
+;;;    slot value access protocol.  The other two layers are handled by
 ;;;    system-generated access functions.
 
 (defun (yield-dynamic-slot-value-tree CONS)
@@ -3316,7 +3316,7 @@ A NULL value indicates an incremental translation.")
          (not (and (defined? csOptions)
                    (eql? (search-plist csOptions :context-sensitive?)
                          (quote FALSE)))))
-        (copyToChildren 
+        (copyToChildren
          (choose (and (defined? csOptions)
                       (eql? (search-plist csOptions :copy-to-children?)
                             (quote TRUE)))
@@ -3589,7 +3589,7 @@ A NULL value indicates an incremental translation.")
 
 (defun (walk-variable-declarations CONS) ((declarations CONS))
   ;; Called by 'walk-let-tree'.
-  ;; CAUTION: Side-effect: Pushes variable bindings onto 
+  ;; CAUTION: Side-effect: Pushes variable bindings onto
   ;;    *localVariableTypeTable*.
   ;; Return a walked list of declarations, and record variable
   ;;    types on the local stack.  If one or more initialization
@@ -3600,7 +3600,7 @@ A NULL value indicates an incremental translation.")
   (let ((oDeclarations (CONS OF CONS) NIL)
         (variable SYMBOL NULL)
         (vrletEncountered? FALSE))
-    (foreach 
+    (foreach
       decl in declarations
       do
       (typecase decl
@@ -3752,7 +3752,7 @@ to a LOOP/WHILE/FOREACH construct.")
     (:java (return :common-lisp))  ;; Was :unwind-protect
     (otherwise
      (return :unwind-protect)
-     ;;(return :save-and-restore)		
+     ;;(return :save-and-restore)
      ;;(return :special-stack)
      )))
 
@@ -3934,7 +3934,7 @@ to a LOOP/WHILE/FOREACH construct.")
       ...unbind to old values...
       (resignal)))
 |#
-                  
+
 (defun (walk-cast-tree CONS TYPE-SPEC) ((tree CONS))
   ;; Walk cast expression of the form
   ;;    '(cast <expression> <className>)' or
@@ -4090,7 +4090,7 @@ to a LOOP/WHILE/FOREACH construct.")
     (return (list typeSpec))))
 
 (defun (slot-from-expression-tree SLOT) ((tree CONS))
-  ;; The parse tree 'tree' calls some kind of slot, representing a 
+  ;; The parse tree 'tree' calls some kind of slot, representing a
   ;;    storage slot, method, or function.  Figure out what the slot
   ;;    object is and return it.
   ;; If the slot can't be found, return `null'.
@@ -4241,12 +4241,12 @@ to a LOOP/WHILE/FOREACH construct.")
       ;; Case 1: No return values:
       (when (eq? (length valueTrees) 0)
         (return (walk-a-cons-tree (bquote (progn & unbindTree & tree)))))
-      
+
       ;; Since return-value expressions might reference special variables,
       ;; we can't unbind them before all return expressions got evaluated,
       ;; hence, we have to save the values, unbind the specials, and then
       ;; return the previously saved values.
-      
+
       ;; Case 2: Multiple return values from a single value tree:
       (when (and (eq? (length valueTrees) 1)
                  (non-empty?
@@ -4261,7 +4261,7 @@ to a LOOP/WHILE/FOREACH construct.")
                            & (first valueTrees)
                            && (tree-to-trees unbindTree)
                            & tree)))))
-      
+
       ;; Case 3: One or more return values from individual value trees:
       (foreach it on valueTrees
           where (or (cons? (value it))
@@ -4633,7 +4633,7 @@ to a LOOP/WHILE/FOREACH construct.")
 
 (defun (yield-hardcoded-case-symbol-id-or-ids OBJECT) ((caseTest OBJECT))
   ;; Helping function for 'walk-symbol-case-statement'.
-  ;; Intern 'caseTest' in the permanent symbol table and return 
+  ;; Intern 'caseTest' in the permanent symbol table and return
   ;;    its Stella symbol id.
   ;; CAUTION: 'Doesn't work for Common Lisp symbols other than SETF and SETQ.
   (when (eq? caseTest (quote OTHERWISE))
@@ -4671,7 +4671,7 @@ to a LOOP/WHILE/FOREACH construct.")
   (setf (second tree)
     (bquote (symbol-id (cast & (second tree) GENERALIZED-SYMBOL))))
   (foreach cond in (cast (rest (rest tree)) (CONS OF CONS))
-           do (setf (first cond) 
+           do (setf (first cond)
 		(yield-hardcoded-case-symbol-id-or-ids (first cond))))
   (return (walk-case-tree tree)) )
 
@@ -4736,7 +4736,7 @@ during bootstrap when only some class objects are defined.")
   (when (and (symbol? caseTest)
 	     (not (use-hardcoded-symbols?)))
     ;; Softcoded-Symbols turn into variables that point to them:
-    (setq caseTest (bquote (TYPED-SYS 
+    (setq caseTest (bquote (TYPED-SYS
 			    & (register-symbol caseTest)
 			    @SYMBOL))))
   (case equalityTest
@@ -4814,7 +4814,7 @@ during bootstrap when only some class objects are defined.")
     ;; transform CASE tests into COND tests:
     (foreach cond in (cast conditions (CONS OF CONS))
         do (setf (first cond)
-             (yield-cond-test-or-tests 
+             (yield-cond-test-or-tests
               (first cond) testVariable equalityTest)))
     ;; If neccessary, add clause to detect unhandled case:
     (setq conditions (attach-unhandled-case-error-clause conditions testVariable))
@@ -4823,10 +4823,10 @@ during bootstrap when only some class objects are defined.")
       ;; Avoid extra 'let' if 'testExpression' was a variable:
       (choose (eql? testExpression testVariable)
               (bquote (cond && conditions))
-              (bquote 
+              (bquote
                (let ((& testVariable & testExpression))
                  (cond && conditions))))) )))
-  
+
 (defun (walk-case-tree CONS TYPE-SPEC) ((tree CONS))
   ;; Walk a CASE tree.
   ;; TO DO: CHECK WHETHER ALL CASE CONSTANTS HAVE A UNIFORM TYPE.
@@ -5135,7 +5135,7 @@ during bootstrap when only some class objects are defined.")
 (defun (walk-with-process-lock-tree CONS TYPE-SPEC) ((tree CONS))
   ;; Walk a `with-process-lock-tree' form.
   (setf (second tree)
-    (walk-expression-tree 
+    (walk-expression-tree
      (second tree) @PROCESS-LOCK-OBJECT (first tree) TRUE))
   (setf (rest (rest tree)) (walk-list-of-statements (rest (rest tree))))
   (return (sys-tree tree @VOID)))
@@ -5245,7 +5245,7 @@ during bootstrap when only some class objects are defined.")
                 (subtype-of? (type-to-wrapped-type (cast type2 TYPE)) type1))
       (walk-warn "This equality test will always fail due to disjoint "
                  "argument types:" EOL "    " tree))
-    (case (first tree) 
+    (case (first tree)
       ((EQ? =)
        (setf (first tree) (quote EQ?))
        ;; Record the expression types for the sake of the CL translator:
@@ -5373,7 +5373,7 @@ during bootstrap when only some class objects are defined.")
   ;;
 
 (defun (walk-quoted-tree OBJECT TYPE-SPEC) ((tree CONS))
-  ;; Construct a parse tree representing a quoted version of 'tree' 
+  ;; Construct a parse tree representing a quoted version of 'tree'
   ;;    and return it.
   (when (bad-argument-count? tree 1)
     (return (walk-dont-call-me-tree tree @UNKNOWN)))
@@ -5430,7 +5430,7 @@ during bootstrap when only some class objects are defined.")
          (setf (rest (rest args)) NIL))         ; clip off &body argument
         (4
          (setq expansion
-               (funcall expanderCode 
+               (funcall expanderCode
                         (first args) (second args) (third args)
                         (nth-rest args 3)))
          (setf (nth-rest args 3) NIL))          ; clip off &body argument
@@ -5529,9 +5529,9 @@ during bootstrap when only some class objects are defined.")
   ;; Called by `walk-undefined-slot-tree'.  Returns TRUE if TYPE-SPEC is
   ;;    implemented via a native type in the target language.
   (case (translator-output-language)
-    (:common-lisp 
+    (:common-lisp
      (return (defined? (class-cl-native-type (type-spec-to-class theType)))))
-    (:cpp 
+    (:cpp
      (return (defined? (class-cpp-native-type (type-spec-to-class theType)))))
     (:java
      (return (defined? (class-java-native-type (type-spec-to-class theType)))))
@@ -5543,7 +5543,7 @@ during bootstrap when only some class objects are defined.")
   ;; Called by 'walk-call-slot-tree' to finish off processing of a call
   ;;    to an as yet undefined method.
   ;; Record the undefined method and walk all but the first argument.
-  ;; Return a method call -- user loses if they intended a function or 
+  ;; Return a method call -- user loses if they intended a function or
   ;;    storage slot call.
   ;; TO DO: ATTACH THE UNDEFINED METHOD TO "firstArgType" SOMEHOW.
   (let ((cursor (rest (rest tree)))
@@ -5559,7 +5559,7 @@ during bootstrap when only some class objects are defined.")
       (if (or (eq? operatorName (quote NULL?))
               (eq? operatorName (quote DEFINED?)))
         (unless (walk-type-spec-is-native-type? type)
-          (inform "Using default native test for " operatorName 
+          (inform "Using default native test for " operatorName
                   " in the expression:" EOL "  " tree))
         (walk-error "Reference to undefined method or function named "
                     operatorName EOL "   in the expression:" EOL "   " tree)))
@@ -5824,7 +5824,7 @@ during bootstrap when only some class objects are defined.")
     (walk-error "Cannot invoke " self " directly, use `foreach' instead")
     (return (walk-dont-call-me-tree tree @ARGUMENT-LIST-ITERATOR)))
   (when (eql? (slot-owner self) @CONS)
-    
+
 ;;; TEMPORARY KLUDGE: REMOVE ONCE POWERLOOM COMMANDS HAVE BEEN FIXED (ALSO
 ;;; FIX RELATED CODE IN `walk-call-slot-tree'):
     (walk-inform "Applying CONS-methods to &rest-arguments is deprecated." EOL
@@ -5832,7 +5832,7 @@ during bootstrap when only some class objects are defined.")
                  " Use `foreach' or explicitly coerce with `coerce-&rest-to-cons'")
     (setq firstArgType
       (yield-listified-variable-arguments-type *methodBeingWalked*)))
-  
+
   (cond ((pass-variable-arguments-as-list? *methodBeingWalked*)
          (case (slot-name self)
            (LENGTH
@@ -5896,7 +5896,7 @@ during bootstrap when only some class objects are defined.")
     (let ((pTypeSpecs (method-parameter-type-specifiers self))
           (nofParameters (length pTypeSpecs))
           (cursor (rest (rest tree))))
-      (foreach 
+      (foreach
        targetTS in (rest pTypeSpecs)
        as pIndex in (interval 2 nofParameters)
        do
@@ -6087,7 +6087,7 @@ during bootstrap when only some class objects are defined.")
 ;;;    were declared as :globally-inline?, local inlining requests
 ;;;    via the :inline keyword can currently not be honored.
 
-;;; TO DO: 
+;;; TO DO:
 ;;; - Improve the check for `verbatim' statements.
 
 (defun (inline-method-call? BOOLEAN) ((method METHOD-SLOT))
@@ -6137,7 +6137,7 @@ during bootstrap when only some class objects are defined.")
              always (help-most-specific-method? (type-class sub) method)))))
 
 (defslot METHOD-SLOT cached-inlinable-method-body :type OBJECT)
-                     
+
 (defun (inlinable-method-body OBJECT) ((method METHOD-SLOT))
   ;; Retrieve the body of `method', convert it into a form that
   ;;    is equivalent to a call to `method', cache the result
@@ -6800,7 +6800,7 @@ accessors and catch-all methods are needed.")
             (setq method (define-method-from-parse-tree methodTree)))
         (setq method (the-object (help-walk-auxiliary-tree methodTree TRUE))))
       (register-auxiliary-method method slot))
-        
+
     ;; generate system-defined writer if necessary:
     (when (system-defined-slot-writer? slot)
       (setq methodTree (yield-slot-writer-tree slot class))
@@ -6863,7 +6863,7 @@ accessors and catch-all methods are needed.")
   ;;    for qualifying slots and pushes them onto '*translationUnits*'.
   ;; Accessor method objects do not get attached to a class like regular
   ;;    methods, instead, they get collected in `class-auxiliary-methods'.
-  (foreach 
+  (foreach
       slot in (local-slots class)
       do (typecase slot
            (STORAGE-SLOT
@@ -6893,7 +6893,7 @@ accessors and catch-all methods are needed.")
   ;; Helping function for the function 'walk-class-unit'.
   ;; If translating to COMMON-LISP, push a list of translation units
   ;;     that define inline methods onto '*translationUnits*'.
-  ;; If translating to C++ do nothing, because in-line C++ methods are 
+  ;; If translating to C++ do nothing, because in-line C++ methods are
   ;;     defined within the native class definition.
   ;; QUESTION: IF A METHOD IS BOTH IN-LINED AND EXTERNAL, COULD IT APPEAR
   ;;    TWICE IN THE C++ OUTPUT???
@@ -7053,7 +7053,7 @@ accessors and catch-all methods are needed.")
 		    (bquote
 		     (if (null? self)
 			 (return "!NULL!")
-			 (return (verbatim 
+			 (return (verbatim
 				     :java "#$(STELLAROOT).javalib.Native.stringify_via_print(self)")))))
 		   :auxiliary? TRUE))
 	(pop-variable-binding)))))
@@ -7062,7 +7062,7 @@ accessors and catch-all methods are needed.")
   ;; Generate parse tree code that defines a native (C++ or CLOS) class for
   ;;    the class object stored in 'unit'.  Additionally, generate translation
   ;;    units for class constructors and destructors, slot accessors, AND
-  ;;    for startup time code that (re)defines the Stella class, and attaches 
+  ;;    for startup time code that (re)defines the Stella class, and attaches
   ;;    pointers to constructor code and read and write accessors to it.
   (let ((class CLASS (the-object unit))
         (startupTimeCode CONS NULL))
@@ -7380,7 +7380,7 @@ holding its expander function."
 ;;;;;; 'walk-startup-time-progn-tree'
   ;;
 
-;; Startup-time code is accumulated on a per-file basis in a startup-time 
+;; Startup-time code is accumulated on a per-file basis in a startup-time
 ;; function.  To deal with the intricate dependencies of startup-time code
 ;; during boot time, 'startup-time-progn's can be "phased" by giving them
 ;; an optional phase keyword.  By setting '*startup-time-phase*' to a
@@ -7479,7 +7479,7 @@ functions that would cause too much stress for some wimpy compilers).")
              (setq startupPhaseTrees
                (bquote (VOID-SYS ;; avoid rewalking of startup code
                         (when (SYS-CALL-FUNCTION
-                               current-startup-time-phase? 
+                               current-startup-time-phase?
                                & (wrap-literal
                                   (encode-startup-time-phase phase)))
                           && startupPhaseTrees))))
@@ -7549,7 +7549,7 @@ functions that would cause too much stress for some wimpy compilers).")
         (when (< phaseUnits *max-number-of-startup-units*)
           (setq cursor (rest cursor))
           (continue)))
-      
+
       (when (< phaseUnits minUnitsPerFunction)
         ;; We reached a new phase before we found enough same-phase units,
         ;;    start collecting the next phase:
@@ -7596,7 +7596,7 @@ functions that would cause too much stress for some wimpy compilers).")
         (when (<= remainingUnits *max-number-of-startup-units*)
           ;; We have extracted enough units to get under the threshold:
           (break))
-        
+
         ;; Otherwise, start collecting the next batch:
         (when (eql? unitPhase phase)
           ;; If we didn't have a phase transition, the cursor
@@ -7605,7 +7605,7 @@ functions that would cause too much stress for some wimpy compilers).")
         (setq phaseStart cursor)
         (setq phaseUnits 0)
         (setq phase (code-register (first cursor)))))
-    
+
     ;; Finally, remove the place holders of the extracted units:
     (remove startupUnits NULL)))
 
@@ -7671,7 +7671,7 @@ functions that would cause too much stress for some wimpy compilers).")
                & (method-startup-classname method))))))
       (walk-auxiliary-tree tree)
       ;; (2) Combine all STARTUP-TIME-PROGNs and walk the actual startup
-      ;;     function (treating it as an auxiliary function avoids the 
+      ;;     function (treating it as an auxiliary function avoids the
       ;;     generation of any more startup-time code and stringification):
       (if (system-startup-file? *currentFile*)
         (setq tree
@@ -7709,7 +7709,7 @@ functions that would cause too much stress for some wimpy compilers).")
   (let ((placeHolderUnit TRANSLATION-UNIT NULL))
     (foreach it on *translationUnits*
              where (eq? (category (value it)) (quote STARTUP-TIME-PROGN))
-             do (let ((unit (value it))) 
+             do (let ((unit (value it)))
                   (if (null? placeHolderUnit)
                       (setq placeHolderUnit unit)
                     (clear-translation-unit unit))
@@ -7770,7 +7770,7 @@ functions that would cause too much stress for some wimpy compilers).")
   (mv-bind (expression its-type)
            (walk-expression-tree
             (second tree) @STELLA-ROOT-EXCEPTION (quote signal-exception) FALSE)
-           (return 
+           (return
             (bquote
              (SYS-SIGNAL & expression & its-type))
             @VOID)))
@@ -7789,7 +7789,7 @@ functions that would cause too much stress for some wimpy compilers).")
     (when (or (null? protectedTree)
               (null? handlerTrees))
       (return (walk-dont-call-me-tree tree @VOID)))
-    (return 
+    (return
       (bquote (SYS-HANDLER-CASE
 	       & (walk-a-tree protectedTree)
 	       && handlerTrees))
@@ -7924,7 +7924,7 @@ functions that would cause too much stress for some wimpy compilers).")
   ;; If `language' is `null', use the current output language.
   (when (null? language)
     (setq language (translator-output-language)))
-  (return (search-plist (rest tree) language)))                                
+  (return (search-plist (rest tree) language)))
 
 (defun (verbatim-tree? BOOLEAN) ((tree OBJECT))
   ;; Return `true' if `tree' is a VERBATIM expression.
@@ -7958,8 +7958,8 @@ functions that would cause too much stress for some wimpy compilers).")
   ;;   in `unit'
   (let ((module MODULE (the-object unit)))
     (walk-auxiliary-tree
-      (bquote 
-       (startup-time-progn 
+      (bquote
+       (startup-time-progn
            :modules
          & (yield-define-module module))))))
 
@@ -8108,11 +8108,11 @@ functions that would cause too much stress for some wimpy compilers).")
                   (compute-return-type-spec slot arrayType)
                   (quote NEW)
                   FALSE)))))
-  
+
 (defun (yield-new-arguments-tree CONS CONS)
     ((keywordsAndValues CONS) (classType TYPE-SPEC) (selfVariable SYMBOL))
   ;; Helping function for 'walk-new-tree'.
-  ;; Return two cons lists of required arguments and other slot assignments 
+  ;; Return two cons lists of required arguments and other slot assignments
   ;;    extracted from 'keywordsAndValues'.
   (when (odd? (length keywordsAndValues))
     (walk-error "Odd number of arguments in 'new' expression: " keywordsAndValues)
@@ -8182,7 +8182,7 @@ functions that would cause too much stress for some wimpy compilers).")
         (keywordArguments (rest (rest tree)))
         (selfVariable (local-gensym "SELF"))
         (classType TYPE-SPEC NULL)
-        (newTree CONS NULL))        
+        (newTree CONS NULL))
     (when (and (not (symbol? baseClassName))
                (not (keyword? baseClassName)))
       (walk-error "Illegal argument to " operator
@@ -8250,7 +8250,7 @@ functions that would cause too much stress for some wimpy compilers).")
                  (return (walk-dont-call-me-tree tree type))))
         (otherwise
          ;; be more tolerant here, for example, to allow partial testing in Lisp:
-         (walk-warn "MAKE arguments not supported for " 
+         (walk-warn "MAKE arguments not supported for "
                     (translator-output-language-name) "; skipping them")
          (setq arguments NIL))))
     (setf (rest (rest tree)) (walk-list-of-trees arguments))
@@ -8399,7 +8399,7 @@ functions that would cause too much stress for some wimpy compilers).")
 ;;; Automatically generated Lisp macros translate the function or method
 ;;; call at macro expansion time (which is different than what 'eval' does).
 ;;; This has the advantage to be more efficient when the macro is compiled
-;;; into a Lisp application.  
+;;; into a Lisp application.
 ;;; MINOR PROBLEM: The translation can generate hard-coded symbol
 ;;; references at compile time which might cause problems at execution
 ;;; time (even using soft-coded references would be problematic
@@ -8657,7 +8657,7 @@ functions that would cause too much stress for some wimpy compilers).")
 
 (defun (create-c-callable-wrapper-unit METHOD-SLOT) ((method METHOD-SLOT))
   ;; Create a translation unit to define a C-callable wrapper for 'method'
-  ;; and return the resulting METHOD-SLOT object. 
+  ;; and return the resulting METHOD-SLOT object.
   (let ((wrapperTree (yield-c-callable-wrapper-tree method))
 	(wrapperMethod METHOD-SLOT NULL))
     (setq wrapperMethod
@@ -8774,7 +8774,7 @@ object will be garbage collected, it just can be again, once all references to i
 ;;;   more complicated evaluated command dispatch, in particular, since
 ;;;   the first argument would need to be checked first unevaluated and
 ;;;   then evaluated - the same functionality would need to be added to
-;;;   the walker).  Polymorphic commands can be implemented via generic 
+;;;   the walker).  Polymorphic commands can be implemented via generic
 ;;;   OBJECT commands that use a 'typecase' or internal methods.
 ;;; - Return values beyond the first can not be used during evaluation.
 
@@ -8889,7 +8889,7 @@ just like a command, regardless of whether it was marked as such."
 (defun (yield-evaluator-wrapper-name SYMBOL) ((methodName SYMBOL))
   ;; Return the name of the evaluator wrapper for method 'methodName'.
   (let ((base-name (symbol-name methodName))
-        (suffix (choose (all-upper-case-string? base-name) 
+        (suffix (choose (all-upper-case-string? base-name)
                         "-EVALUATOR-WRAPPER" "-Evaluator-Wrapper")))
     (return (intern-derived-symbol methodName (concatenate base-name suffix)))))
 
@@ -8983,7 +8983,7 @@ just like a command, regardless of whether it was marked as such."
 
 (defun (create-evaluator-wrapper-unit METHOD-SLOT) ((method METHOD-SLOT))
   ;; Create a translation unit to define an evaluator wrapper for 'method'.
-  ;;  and return the resulting METHOD-SLOT object. 
+  ;;  and return the resulting METHOD-SLOT object.
   (let ((variableArguments? (method-variable-arguments? method))
         (evaluateArguments? (method-evaluate-arguments? method))
         (wrapperTree (yield-evaluator-wrapper-tree method))
@@ -9044,13 +9044,13 @@ just like a command, regardless of whether it was marked as such."
 (defun (evaluate OBJECT) ((expression OBJECT))
   :documentation "Evaluate the expression `expression' and return the result.
 Currently, only the evaluation of (possibly nested) commands and global
-variables is supported.  The second return value indicates the actual type 
+variables is supported.  The second return value indicates the actual type
 of the result (which might have been wrapped), and the third return value
 indicates whether an error occurred during the evaluation.  Expressions
 are simple to program in Common Lisp, since they are built into the language,
-and relatively awkward in Java and C++.  Users of either of those 
+and relatively awkward in Java and C++.  Users of either of those
 languages are more likely to want to call `evaluate-string'."
-  :command? TRUE :public? TRUE 
+  :command? TRUE :public? TRUE
   (let ((oTree OBJECT NULL))
     (when (defined? expression)
       (typecase expression
@@ -9079,11 +9079,11 @@ evaluation strategies."
         (CONS
          (when (and (symbol? (value tree))
 		    (defined? (lookup-command (value tree))))
-	   (exception-case 
+	   (exception-case
 	       (setq oTree (evaluate-cons-tree tree))
 	     (STELLA-EXCEPTION (e)
 	       (walk-error (exception-message e))))))
-        (otherwise 
+        (otherwise
 	 NULL)))
     (return oTree)))
 
@@ -9256,7 +9256,7 @@ evaluation strategies."
                    do (setq consTree (bquote (cons & arg & consTree))))
                (return consTree)))
             (CONCATENATE
-             ;; map `concatenate' onto `append', since it is a function: 
+             ;; map `concatenate' onto `append', since it is a function:
              (return (bquote (append & (first args) & (second args)))))
             (WRAP-LITERAL
              ;; already wrapped, simply extract the argument:
@@ -9265,7 +9265,7 @@ evaluation strategies."
              (return (cons (first tree) args))))))))
     (otherwise
      (return tree))))
-  
+
 (defun (evaluate-bquote-tree OBJECT TYPE-SPEC) ((tree CONS))
   ;; Normalize and evaluate the bquote `tree' `(bquote ...)'.
   (let ((argTree OBJECT NULL))
@@ -9374,7 +9374,7 @@ STELLA(74): (evaluate (bquote (or (and* 2 (not q) r) (not (and p q)))))
 {LOGIC-OR NULL {LOGIC-NOT {LOGIC-AND P Q}}}
 @CONS
 0
-STELLA(75): 
+STELLA(75):
 |#
 
   ;;
@@ -9383,7 +9383,7 @@ STELLA(75):
 
 ;;; Implements a STELLA read/eval/print loop that exploits the
 ;;; evaluator of the surrounding Lisp environment.
-  
+
 ;;; TO DO:
 ;;; - handle implicit definition of variables via `setq' (use dynamic
 ;;;   runtime typing to infer types that can be used in the translation)

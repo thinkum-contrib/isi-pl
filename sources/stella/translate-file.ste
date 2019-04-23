@@ -329,7 +329,7 @@ to a local directory containing sources, natives, or binaries.")
 (defglobal *OS* KEYWORD (operating-system)
   :documentation "The operating system we are running on.  Currently,
 either :UNIX, :WINDOWS, or :MAC.  Note that on the Mac OS X, the
-OS can be either :UNIX or :MAC, depending on which file naming 
+OS can be either :UNIX or :MAC, depending on which file naming
 conventions are being observed by the software.")
 
 (defun (operating-system KEYWORD) ()
@@ -358,7 +358,7 @@ conventions are being observed by the software.")
   ;; Return the physical directory-separator character conditional on
   ;;    the operating system we are running on.
   (let ((separator CHARACTER #\?))
-    (verbatim 
+    (verbatim
         :common-lisp "(CL:LET ((NAME (CL:NAMESTRING (CL:MAKE-PATHNAME :DIRECTORY '(:ABSOLUTE \"foo\")))))
                         (CL:SETQ SEPARATOR (CL:CHAR NAME (CL:1- (CL:LENGTH NAME)))))"
         :java "separator = java.io.File.separatorChar;"
@@ -710,30 +710,30 @@ running in Lisp, which allows us to depend on the native
     (error "Shouldn't call COMPUTE-COMMON-LISP-FILE-EXTENSION unless running in Lisp"))
   (let ((suffix STRING NULL))
     (case type
-      (:lisp-binary 
-       (setq suffix 
+      (:lisp-binary
+       (setq suffix
 	     (verbatim :common-lisp
 		       "(cl:pathname-type (cl:compile-file-pathname \"foo.lisp\"))"
 		       :otherwise NULL))
-       
+
        (cond ((use-cl-structs?)
 	      (setq suffix (concatenate "s" suffix)))
 	     ((use-vector-structs?)
 	      (setq suffix (concatenate "vs" suffix)))
-	     (otherwise 
+	     (otherwise
 	      NULL)))
       (:lisp
        (cond ((use-cl-structs?)
 	      (setq suffix ".slisp"))
 	     ((use-vector-structs?)
 	      (setq suffix ".vslisp"))
-	     (otherwise 
+	     (otherwise
 	      (setq suffix ".lisp")))
 	 ;; This is used to map ".lisp" into ".lsp" for lisp systems where it is
 	 ;; appropriate.
 	 (verbatim
 	   :common-lisp
-	   "(cl:let* ((lispType 
+	   "(cl:let* ((lispType
                   (CL:pathname-type (CL:concatenate 'CL:string \"dummy\" suffix)))
                  (dummyPath
                   (CL:make-pathname :name \"f\" :type lispType)))
@@ -745,7 +745,7 @@ running in Lisp, which allows us to depend on the native
   ;; Return an appropriate Common Lisp extension.
   ;; The only legal values of "type" are :LISP and :LISP-BINARY.
   (case type
-    (:lisp 
+    (:lisp
      (case *OS*
        (:windows
 	(return ".lsp"))
@@ -768,7 +768,7 @@ running in Lisp, which allows us to depend on the native
              do (setq extension (second entry)))
     (case type
       (:directory (return (directory-separator-string)))
-      ((:lisp :lisp-binary) 
+      ((:lisp :lisp-binary)
        (if (running-as-lisp?)
 	   (return (compute-common-lisp-file-extension type))
 	 (return (default-common-lisp-file-extension type))))
@@ -922,12 +922,12 @@ running in Lisp, which allows us to depend on the native
                   do (if (= n path-length)  ;; Last item, namely the file name
                        (setq file (concatenate file (help-implode-pathname name)))
                        (setq file
-                             (concatenate file 
+                             (concatenate file
                                           (wrapper-value name)
                                           (directory-separator-string))))) ))
       (otherwise
-       (setq file 
-             (help-implode-pathname 
+       (setq file
+             (help-implode-pathname
               (wrapper-value (cast filePath STRING-WRAPPER))))))
     (return file) ))
 
@@ -950,7 +950,7 @@ running in Lisp, which allows us to depend on the native
         (setq bareFileName (subsequence bareFileName 0 (1- maximumLength)))
         (warn "Truncating name of file." EOL
               "   Original: " originalFileName "    Truncated: " bareFileName EOL)))
-    (return bareFileName) )) 
+    (return bareFileName) ))
 
 
   ;;
@@ -958,7 +958,7 @@ running in Lisp, which allows us to depend on the native
   ;;
 
 ;; These functions were defined BEFORE the SYSTEM class was invented.
-;; They should be generalized. 
+;; They should be generalized.
 
 (defun (language-to-file-type KEYWORD) ((language KEYWORD))
   ;; Handle the mapping from language keywords to file type keywords.
@@ -1000,7 +1000,7 @@ running in Lisp, which allows us to depend on the native
   (when (eq? language :java)
     (return TRUE))
   (let ((sourceFile  (make-file-name file :stella TRUE))
-	(translatedFile (make-file-name file 
+	(translatedFile (make-file-name file
 					(language-to-file-type language)
 					TRUE)))
     (return
@@ -1155,7 +1155,7 @@ on the system definition).
       (return FALSE) )))
 
 (defun (help-translate-system BOOLEAN) ((files (CONS OF STRING-WRAPPER))
-                                        (twoPass? BOOLEAN) 
+                                        (twoPass? BOOLEAN)
                                         (forceTranslation? BOOLEAN))
   ;; Translate a system of 'files'.
   ;; If 'twoPass?' is true, all files will be scanned twice, once to define
@@ -1169,7 +1169,7 @@ on the system definition).
       (clear-symbol-registry)
       (when twoPass?
 	(foreach file in files
-            do (when (or forceTranslation? 
+            do (when (or forceTranslation?
                          (stella-need-to-translate? file outputLanguage)
                          (not (loaded? *currentSystemDefinition*)))
                  (setq fileName (make-file-name file :stella TRUE))
@@ -1215,9 +1215,9 @@ on the system definition).
   ;;    translate to ".lsp" for some Lisps).
   (let ((native-files (CONS OF STRING-WRAPPER) NULL))
     (case output-language
-      (:common-lisp 
+      (:common-lisp
        (setq native-files (lisp-only-files *currentSystemDefinition*)))
-      (:java 
+      (:java
        (setq native-files (java-only-files *currentSystemDefinition*)))
       (:cpp
        (setq native-files (cpp-only-files *currentSystemDefinition*))))
@@ -1240,7 +1240,7 @@ on the system definition).
       (transfer-files data-files output-language))))
 
 (defun transfer-files ((files (CONS OF STRING-WRAPPER)) (output-language KEYWORD))
-  ;; Transfer the files in the files list directly to 
+  ;; Transfer the files in the files list directly to
   ;; the appropriate place in the target source.
   (when (eql? (root-source-directory) (root-native-directory)) ; No need to copy
     (return))
@@ -1251,7 +1251,7 @@ on the system definition).
                  (concatenate *currentSystemDefinitionSubdirectory*
                               (directory-separator-string)))))
     (when (eq? output-language :java)
-      (setq flotsamFileName (java-yield-flotsam-class-name 
+      (setq flotsamFileName (java-yield-flotsam-class-name
 			     (get-cardinal-module *currentSystemDefinition*))))
     (within-module (get-cardinal-module *currentSystemDefinition*)
       (foreach f in files
@@ -1264,7 +1264,7 @@ on the system definition).
                (case type
                  (:JAVA
                   (when (eql? (file-base-name fileName) flotsamFileName)
-                    (warn "Native Java filename " flotsamFileName EOL 
+                    (warn "Native Java filename " flotsamFileName EOL
                           " conflicts with the Java catchall class' filename")))
                  (otherwise NULL))
                (setq fromFileName
