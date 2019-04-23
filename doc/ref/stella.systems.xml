@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE preface [
+<!DOCTYPE chapter [
 <!ENTITY document.ent SYSTEM "document.ent">
 
 %document.ent;
@@ -196,8 +196,11 @@
 
   </section> <!-- Source traversal and synthesis -->
 
+
   <!-- fourth-to-last section - reference for STELLA defs -->
+
   <xi:include href="stella.systems.ref.xml"/>
+
 
   <!-- next three sections (TD) - reference for each of three STELLA
        implementation defs - Common Lisp, C++ (Non-standalone) and Java (Non-standalone)
