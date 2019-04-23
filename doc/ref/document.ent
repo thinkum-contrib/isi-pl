@@ -1,0 +1,4 @@
+
+<!ENTITY parent.document.ent SYSTEM "../document.ent">
+
+%parent.document.ent;
