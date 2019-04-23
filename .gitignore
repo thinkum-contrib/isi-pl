@@ -8,3 +8,7 @@
 *.fx64fsl
 ## SBCL
 *.fasl
+## STELLA add'l
+## cf. default-common-lisp-file-extension
+*.cfsl
+*.fas
