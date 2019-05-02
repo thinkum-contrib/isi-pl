@@ -148,7 +148,7 @@ hash tables grow large).")
 ;; speed, we need speed=3; also turn down verbosity levels so we can
 ;; actually see what's going on during compilation:
 #+(or cmu sbcl)
-(progn (defparameter *stella-compiler-optimization*
+(progn (defvar *stella-compiler-optimization*
          '(optimize (speed 3) (safety 1) (space 1) (debug 1)))
        (setq *compile-verbose* nil
              *compile-print* nil)
@@ -157,8 +157,13 @@ hash tables grow large).")
 
 ;; Work around a compiler bug that surfaces with safety=1 in ACL 8.1:
 #+allegro-v8.1
-(defparameter *stella-compiler-optimization*
+(defvar *stella-compiler-optimization*
   '(optimize (speed 3) (safety 2) (space 0) (debug 1)))
+
+#-(or cmu sbcl allegro-v8.1)
+;; NB: this default used in the the original pl:native;lisp;stella;load-stella.lisp
+(defvar *stella-compiler-optimization*
+    '(optimize (speed 3) (safety 1) (space 0) (debug 1)))
 
 
 ;; contrib. cf. STELLA::*MEMOIZATION-ENABLED*, memoize.lisp, memoize.ste
@@ -368,7 +373,10 @@ hash tables grow large).")
   ;; NB: This emulates some behaviors of ASDF UIOP/UTILITY:CALL-WITH-MUFFLED-CONDITIONS
   ;;     though not towards specializing on a condition type designator, T
   ;;     and not with accessing any format-control objects of the
-  ;;     respective conditions
+  ;;     respective conditions.
+  ;;
+  ;; Unfortunately, it does not seem to be of use for working around a
+  ;;     certain bug in SBCL 1.4.16.655, SBCL 1.4.16.debian (??) etc
 
   (let ((cdn (make-symbol "%cdn"))
         (typ (make-symbol "%typ"))
