@@ -331,9 +331,11 @@ hash tables grow large).")
   (:method ((op operation) (component source-file))
     (values nil)))
 
+
 (defgeneric muffle-conditions-list (op component)
-  ;; return a list of ASDF condition designators for conditions to
+  ;; return a list of symbolic condition designators for conditions to
   ;; muffle in an environment of OP on COMPONENT
+  ;;
   (:method ((op t) (component asdf:cl-source-file))
     ;; FIXME may have to set uiop/lisp-build:*uninteresting-conditions*
     ;; lexically, to prevent these from being shadowed? [DNW]
@@ -344,6 +346,9 @@ hash tables grow large).")
         (dolist (spec uiop/lisp-build:*usual-uninteresting-conditions* s)
           (when (symbolp spec)
             (setq s (cons spec s))))))))
+  ;; TO DO ^ also specialize onto LOAD-OP, COMPILE-OP
+  ;; cf. ASDF *uninteresting-loader-conditions*, *uninteresting-compiler-conditions*
+
   (:method ((op t) (component asdf:system))
     ;; NB This might not be called when expected, if ASDF is not
     ;; producing recursive PERFORM calls
@@ -351,19 +356,34 @@ hash tables grow large).")
                   (asdf/component:module-default-component-class component))))
       (muffle-conditions-list op proto))))
 
+;; NB also
+;; UIOP/LISP-BUILD:*UNINTERESTING-CONDITIONS*
 
-(defmacro muffle-for ((op c &rest more) &body body )
+(defmacro with-muffling (s &body forms
+                         ;; &environment env
+                              )
+  ;; juxtaposed to the behaviors of e.g
+  ;; UIOP/UTILITY:MATCH-ANY-CONDITION-P
+
+  ;; NB: This emulates some behaviors of ASDF UIOP/UTILITY:CALL-WITH-MUFFLED-CONDITIONS
+  ;;     though not towards specializing on a condition type designator, T
+  ;;     and not with accessing any format-control objects of the
+  ;;     respective conditions
+
   (let ((cdn (make-symbol "%cdn"))
-        (types (make-symbol "%types"))
-        (s (make-symbol "%s")))
-    `(let ((,types (append (muffle-conditions-list ,op ,c)
-                           (quote ,more))))
-       (handler-bind ((t #'(lambda (,cdn)
-                             (dolist (,s ,types)
-                               (when (typep ,cdn ,s)
-                                 (muffle-warning ,cdn))))))
-         ,@body))))
+        (typ (make-symbol "%typ"))
+        (types (make-symbol "%types")))
+    `(let ((,types ,s))
+       (handler-bind ((warning (lambda (,cdn)
+                                 (dolist (,typ ,types)
+                                   (when (typep ,cdn ,typ)
+                                     ;; (format t "~%Muffle ~S" ,cdn)
+                                     (muffle-warning ,cdn))))))
+         ,@forms))))
 
+;; (with-muffling '(simple-warning) (warn "??") '(1 2 3))
+;; ^ THIS WORKS.
+;;   WHY DOES IT NOT OCCUR DURING PERFORM ?
 
 ;; ---- Generic Class Definitions, Method Specializations, API
 
@@ -392,62 +412,49 @@ hash tables grow large).")
        (when ,procls
          (proclaim ,procls)))))
 
-;; #-(and)
-(defmacro operate-main (o c)
+(defmacro operate-main (om-o om-c)
+  (let ((%om-o (make-symbol "%om-o"))
+        (%om-c (make-symbol "%om-c")))
   `(with-compilation-unit ()
-    (proclaim-for ,o ,c)
-    (let ((uiop/lisp-build:*uninteresting-conditions*
-           ;; FIXME Regardless of where it's being set locally,
-           ;; it seems this muffled conditions list
-           ;; - in some places - was being shadowed with NIL
-           ;;
-           ;; So, tried declaring the lexical binding as special, here
-           ;; - also, as dynamic-extent (DNW)
-           ;;
-           ;; Next thing: Tried declaring a lexicaly scoped function as
-           ;; to shadow UIOP/UTILITY:MATCH-ANY-CONDITION-P (DNW)
-           ;;
-           ;; Lastly, tried overriding the global special binding
-           ;; onto uiop/lisp-build:*uninteresting-conditions* (...)
-           ;; [FIXME] Why is this the only working approach?
-           ;;
-           (muffle-conditions-list o c)))
-      (flet (#-(and)
-               (uiop/utility:match-any-condition-p (c list)
-                 ;; NB Shadowing this onto ASDF ... DNW
-                 (declare (ignore list))
-                 (dolist (spec uiop/lisp-build:*uninteresting-conditions*)
-                   (when (uiop/utility:match-condition-p spec c)
-                     (return spec)))))
-        (declare (special uiop/lisp-build:*uninteresting-conditions*) ;; DNW
-                 (dynamic-extent uiop/lisp-build:*uninteresting-conditions*))
-        (when (next-method-p) (call-next-method))))))
+     (let ((,%om-o ,om-o)
+           (,%om-c ,om-c))
+       (proclaim-for ,%om-o ,%om-c)
+       (with-muffling (muffle-conditions-list ,om-o ,om-c)
+         (when (next-method-p) (call-next-method)))))))
+
 
 ;; (trace UIOP/UTILITY:MATCH-ANY-CONDITION-P)
 ;; ^ It's being called in ASDF.
 ;; Is that call possibly overriding all containing handler-bind specs?
 
-(defun set-global-unconditions (o c) ;; see previous NB
-  (uiop/utility:style-warn
-   "~<In (~A ~A)~>~< : set *uninteresting-conditions* globally~>"
-   o c)
-  (setq uiop/lisp-build:*uninteresting-conditions*
-        (muffle-conditions-list o c)))
+(defmacro set-global-unconditions (o c) ;; see previous NB
+  ;; NB: Earlier prototype for warnings-muffling during ASDF compile/load
+  ;;     onto STLELLA Lisp systems - unused, at present
+  (let ((%o (make-symbol "%o"))
+        (%c (make-symbol "%c")))
+    `(let ((,%o ,o)
+           (,%c ,c))
+       (uiop/utility:style-warn
+        "~<In (~A ~A)~>~< : set *uninteresting-conditions* globally~>"
+        ,%o ,%c)
+       (setq uiop/lisp-build:*uninteresting-conditions*
+             (muffle-conditions-list ,%o ,%c))
 
-#-(and)
-(defmacro operate-main (o c) ;; DNW/sometimes
-  `(with-compilation-unit ()
-    (proclaim-for ,o ,c)
-    (muffle-for (,o ,c)
-      (when (next-method-p) (call-next-method)))))
+       ;; FIXME - prototype for a workaround of a certain serious error
+       ;; (DNW) (SBCL on FreeBSD 11.2 amd64)
+       ;; #+sbcl uiop/lisp-build:*uninteresting-loader-conditions*
+       ;; #+sbcl nil
+       )))
 
+
+#-(AND)
 (eval-when () ;; TMP
-  (muffle-conditions-list (make-instance 'compile-op)
+  (muffle-conditions-list (make-operation 'compile-op)
                           (car
                            (module-components
                             (find-system "stella-init"))))
 
-  (muffle-conditions-list (make-instance 'load-op)
+  (muffle-conditions-list (make-operation 'load-op)
                           (car
                            (module-components
                             (find-system "stella-init"))))
@@ -465,20 +472,19 @@ hash tables grow large).")
                                                ;; FIXME May be redundant now:
                                                (muffle-conditions-list o c))))
 
+;; asdf:perform != asdf:operate
 
-(defmethod asdf:operate :around ((o asdf:compile-op) (c stella-lisp-source-component)
-                                 &key &allow-other-keys)
+(defmethod asdf:perform #+NIL :around ((o asdf:compile-op) (c stella-lisp-source-component))
   ;; FIXME When is this method being called, within a build managed with ASDF?
   ;; NB Concerning something of an old recursive-peform patch for ASDF : extant?
   (operate-main o c))
 
-(defmethod asdf:operate :around ((o asdf:load-op) (c stella-lisp-source-component)
-                                 &key &allow-other-keys)
+(defmethod asdf:perform #+NIL :around ((o asdf:load-op) (c stella-lisp-source-component))
   (operate-main o c))
 
-(defmethod asdf:operate :around ((o asdf:load-source-op) (c stella-lisp-source-component)
-                                 &key &allow-other-keys)
+(defmethod asdf:perform #+NIL :around ((o asdf:load-source-op) (c stella-lisp-source-component))
   (operate-main o c))
+
 
 ;; ---- Pathname Functions
 
@@ -756,14 +762,18 @@ definition, relative to the system definition's component pathname")
 
 
 (defmacro system-eval-main (op c)
+  (declare (ignore op c))
   `(progn
      ;; NB this applies impl-check to all system definitions using STELLA-ASDF-SYSTEM
      (impl-check)
      (ensure-feature :pl-asdf)
      (ensure-system-pathname-translations)
-     (set-global-unconditions ,op ,c)
+     #-(and) (set-global-unconditions ,op ,c)
      (when (next-method-p) (call-next-method))))
 
+
+;; NB: These might not be called until after the files in the system hve
+;; been operated [FIXME]
 
 (defmethod asdf:operate :around ((o asdf:compile-op) (c stella-asdf-system)
                                  &key &allow-other-keys)
