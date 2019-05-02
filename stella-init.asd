@@ -387,6 +387,7 @@ hash tables grow large).")
                                      (muffle-warning ,cdn))))))
          ,@forms))))
 
+
 ;; ---- Generic Class Definitions, Method Specializations, API
 
 
@@ -424,11 +425,7 @@ hash tables grow large).")
        (with-muffling (muffle-conditions-list ,om-o ,om-c)
          (when (next-method-p) (call-next-method)))))))
 
-
-;; (trace UIOP/UTILITY:MATCH-ANY-CONDITION-P)
-;; ^ It's being called in ASDF.
-;; Is that call possibly overriding all containing handler-bind specs?
-
+#-(AND)
 (defmacro set-global-unconditions (o c) ;; see previous NB
   ;; NB: Earlier prototype for warnings-muffling during ASDF compile/load
   ;;     onto STLELLA Lisp systems - unused, at present
@@ -442,39 +439,10 @@ hash tables grow large).")
        (setq uiop/lisp-build:*uninteresting-conditions*
              (muffle-conditions-list ,%o ,%c))
 
-       ;; FIXME - prototype for a workaround of a certain serious error
-       ;; (DNW) (SBCL on FreeBSD 11.2 amd64)
-       ;; #+sbcl uiop/lisp-build:*uninteresting-loader-conditions*
-       ;; #+sbcl nil
        )))
 
 
-#-(AND)
-(eval-when () ;; TMP
-  (muffle-conditions-list (make-operation 'compile-op)
-                          (car
-                           (module-components
-                            (find-system "stella-init"))))
-
-  (muffle-conditions-list (make-operation 'load-op)
-                          (car
-                           (module-components
-                            (find-system "stella-init"))))
-
-  ;; Where was the conditions specifier list turning up null,
-  ;; when lexically bound and declared special, with a non-null value?
-  )
-
-
-#+NIL
-(defmethod asdf:operate ((o asdf:compile-op) (c stella-lisp-source-component)
-                          &key &allow-other-keys)
-  (flet ((method-main () (operate-main o c)))
-    (uiop/utility:call-with-muffled-conditions #'method-main
-                                               ;; FIXME May be redundant now:
-                                               (muffle-conditions-list o c))))
-
-;; asdf:perform != asdf:operate
+;; NB: asdf:perform != asdf:operate
 
 (defmethod asdf:perform #+NIL :around ((o asdf:compile-op) (c stella-lisp-source-component))
   ;; FIXME When is this method being called, within a build managed with ASDF?
@@ -774,20 +742,19 @@ definition, relative to the system definition's component pathname")
      (when (next-method-p) (call-next-method))))
 
 
-;; NB: These might not be called until after the files in the system hve
-;; been operated [FIXME]
+;; NB: These might not be called until after the completion of the
+;; corresponding ASDF oprn. on all of the component files of the system defn.
+;; [FIXME]
 
-(defmethod asdf:operate :around ((o asdf:compile-op) (c stella-asdf-system)
-                                 &key &allow-other-keys)
+(defmethod asdf:perform :around ((o asdf:compile-op) (c stella-asdf-system))
   (system-eval-main o c))
 
 
-(defmethod asdf:operate :around ((o asdf:load-op) (c stella-asdf-system)
-                                 &key &allow-other-keys)
+(defmethod asdf:perform :around ((o asdf:load-op) (c stella-asdf-system))
+  ;; (format t "~%PERFORM :AROUND (LOAD-OP STELLA-ASDF-SYSTEM)")
   (system-eval-main o c))
 
-(defmethod asdf:operate :around ((o asdf:load-source-op) (c stella-asdf-system)
-                                 &key &allow-other-keys)
+(defmethod asdf:perform :around ((o asdf:load-source-op) (c stella-asdf-system))
   (system-eval-main o c))
 
 
@@ -939,7 +906,7 @@ definition, relative to the system definition's component pathname")
    (:file "collections")
    (:file "iterators")
    (:file "symbols")
-   ;;  (:file "boot-symbols")
+   ;;  (:file "boot-symbols") ;; may be obsolete
    (:file "literals")
    (:file "classes")
    (:file "methods")
