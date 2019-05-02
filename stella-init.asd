@@ -364,9 +364,7 @@ hash tables grow large).")
 ;; NB also
 ;; UIOP/LISP-BUILD:*UNINTERESTING-CONDITIONS*
 
-(defmacro with-muffling (s &body forms
-                         ;; &environment env
-                              )
+(defmacro with-muffling (s &body forms)
   ;; juxtaposed to the behaviors of e.g
   ;; UIOP/UTILITY:MATCH-ANY-CONDITION-P
 
@@ -388,10 +386,6 @@ hash tables grow large).")
                                      ;; (format t "~%Muffle ~S" ,cdn)
                                      (muffle-warning ,cdn))))))
          ,@forms))))
-
-;; (with-muffling '(simple-warning) (warn "??") '(1 2 3))
-;; ^ THIS WORKS.
-;;   WHY DOES IT NOT OCCUR DURING PERFORM ?
 
 ;; ---- Generic Class Definitions, Method Specializations, API
 
