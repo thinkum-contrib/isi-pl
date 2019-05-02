@@ -281,21 +281,6 @@ hash tables grow large).")
 ;; (probe-file "PL:sources;")
 ;; (probe-file "PL:stella-init.asd")
 
-#-(and) ;; prototype code [TMP]
-(eval-when ()
-  (let* ((pfx (component-pathname (find-system "stella-init")))
-         (cpath (merge-pathnames
-                 (make-pathname :directory '(:relative
-                                             "sources"
-                                             "systems")
-                                :name "stella-system"
-                                :type "ste")
-                 pfx)))
-
-    (enough-namestring cpath pfx))
-  ;; => "sources/systems/stella-system.ste"
-  )
-
 
 (defun ensure-system-pathname-translations ()
   (ensure-pathname-translations
@@ -315,8 +300,8 @@ hash tables grow large).")
   ;; STELLA-ASDF-SYSTEM
   (let ((len (integer-length most-positive-fixnum)))
   (unless (>= len 24) ;; use `eval' to avoid unreachable code warns
-    (error "The maximum fixnum size of this lisp implementation ~
-(~D)~%is too small.  It must be at least 24 bits."
+    (error "~<The maximum fixnum size of this lisp implementation ~
+(~D)~>~< is too small.  It must be at least 24 bits.~>"
            len))))
 
 
@@ -444,15 +429,13 @@ hash tables grow large).")
 
 ;; NB: asdf:perform != asdf:operate
 
-(defmethod asdf:perform #+NIL :around ((o asdf:compile-op) (c stella-lisp-source-component))
-  ;; FIXME When is this method being called, within a build managed with ASDF?
-  ;; NB Concerning something of an old recursive-peform patch for ASDF : extant?
+(defmethod asdf:perform ((o asdf:compile-op) (c stella-lisp-source-component))
   (operate-main o c))
 
-(defmethod asdf:perform #+NIL :around ((o asdf:load-op) (c stella-lisp-source-component))
+(defmethod asdf:perform ((o asdf:load-op) (c stella-lisp-source-component))
   (operate-main o c))
 
-(defmethod asdf:perform #+NIL :around ((o asdf:load-source-op) (c stella-lisp-source-component))
+(defmethod asdf:perform ((o asdf:load-source-op) (c stella-lisp-source-component))
   (operate-main o c))
 
 
