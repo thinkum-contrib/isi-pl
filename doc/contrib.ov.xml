@@ -12,13 +12,16 @@
   >
   <title>Overview</title>
 
+  <remark>This file represents an XML encoding and subsequent extension
+  of documentation originally in the contrib <filename>README</filename></remark>
+
   <simplesect xml:id="contrib.ov.intro">
     <title>Introduction</title>
 
     <para>
       &pl.h; is a free/open source software (<acronym>FOSS</acronym>)
-      system developed originally at the &isi.h; (&isi.abv;) of the
-      &usc.h; (&usc.abv;).
+      system developed originally at the  &usc.h; (&usc.abv;) &isi.h;
+      (&isi.abv;).
     </para>
 
     <para>
@@ -26,8 +29,9 @@
       independent of the original &pl.h;. As an independent
       initiative, this is motivated principally for a purpose of
       facilitating the ongoing development of &pl.h;, furthermore for
-      ensuring the continued availability of &pl.h; for free/open
-      source software (<acronym>FOSS</acronym>) development.
+      ensuring the continued availability of &pl.h; for extension in
+      development of free/open source software (<acronym>FOSS</acronym>)
+      applications and for purpose of normative reference.
     </para>
   </simplesect>
 
@@ -51,8 +55,10 @@
         </member>
         <member>
           &pl.h; System Support Components, such as for the &pl.h;
-          server, <acronym>RDBMS</acronym> services for &pl.h;, and
-          <productname>Ontosaurus</productname>
+          server (<symbol>soap</symbol> system),
+          <acronym>RDBMS</acronym> services for &pl.h;
+          (<symbol>srbc</symbol> system), and
+          <productname>Ontosaurus</productname> (?? system)
         </member>
         <member>
           Text of Example Knowledgebases
@@ -70,9 +76,11 @@
     <para>
       <simplelist>
         <member>&pl.h;</member>
-        <member>&okbc.h;</member>
-        <member>&loom.h;</member>
+        <member>&loom.h;</member
+        <member>&okbc.h; (SRI AIC)</member>
+        <member>GFP (SRI AIC)</member>
         <member><productname>KL-ONE</productname></member>
+        <member><productname>ACTOR</productname> (Hewitt et al.)</member>
       </simplelist>
     </para>
   </simplesect> <!-- xw -->
@@ -109,9 +117,19 @@
 
   </simplesect> <!-- lic -->
 
+  <simplesect xml:id="contrib.ov.doc">
+    <title>Documentation</title>
+
+    <remark>Apoximately: PL/STELLA "Guide"; PL Release Notes; academic
+    articles published as corresponding to the PL and LOOM initatives at
+    USC ISI. Lastly, the source code itself.</remark>
+
+  </simplesect> <!-- doc -->
+
+<!--
   <simplesect xml:id="contrib.ov.contrib">
     <title>Summary of Contributions</title>
-    
+
     <simplelist>
       <member>
         Ensure portability for CCL (CC> 1.11 and 1.12-dev, Linux ARM)
@@ -128,6 +146,8 @@
       </member>
     </simplelist>
   </simplesect>
+-->
+
 </preface>
 
 <!-- Local Variables: -->

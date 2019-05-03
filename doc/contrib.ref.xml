@@ -18,31 +18,119 @@
     <title>Overview</title>
 
     <remark>NB: Not to replace the PL Guide/Manual</remark>
+
+    <remark>STELLA, a KIF-like functional language</remark>
+
+    <remark>STELLA implementations - Comon Lisp (with some
+    vendor-specific adaptations); C++; Java(r)</remark>
+
+    <remark>PLI/PowerLoom knowledge representation (KR) notation</remark>
+
+    <remark>Extensional components - sdbc, soap, ontosaurus, PL GUI</remark>
+
   </preface>
+
 
   <chapter>
     <info>
-      <title>
-        Representation of &stella; Source Components
-      </title>
+      <title>&stella; Source</title>
     </info>
+
+    <remark>STELLA language</remark>
 
     <remark>STELLA system definitions</remark>
 
-    <remark>Note commentary in pl:sources/stella/primal.ste</remark>
+    <remark>NB (archived) STELLA bootstrap code</remark>
+
+    <section>
+      <title>The &stella; Language</title>
+
+      <remark>Note commentary in pl:sources/stella/primal.ste - STELLA
+      constants representing type-specific null value forms; note STELLA
+      1D..5D-ARRAY types (not documented in PL Guide - consult, one
+      could imagine, the PL release notes); ...</remark>
+
+      <remark>Note that although STELLA may not provide a rigidly
+      formalized manner of interface definition language -- vis a vis
+      ASN.1, or the CPP-like notations of CORBA IDL -- the PL
+      implementation of the STELLA language does, however, provide a
+      normal representation for STELLA value types and STELLA high-order
+      forms, in each supported STELLA implementation</remark>
+
+      <remark>TD: DocBook XML (5.1) synthesis for (A) effective doc-strings
+      defined for STELLA symbols, and (B) normal "Interface contract"
+      syntax (STELLA .. to something like UML) ... towards formalization
+      and extension of reference texts produced in this project</remark>
+
+
+      <remark>NB STELLA functions - strongly-typed function syntax,
+      behaviors, translation to implementation source forms
+      (post-bootstrap), definition parameters (e.g optional
+      :command? and :public? predicate flags); Prim. Types in STELLA;
+      Classes and Methods in STELLA; ...; Case Example:
+      pl:sources;stella;startup-system.ste</remark>
+
+      <remark>... visibility of STELLA symbols, within STELLA modules
+      ...; usage of the ':public?' parameter for STELLA 'defun'; ...</remark>
+
+      <remark>... STELLA 'verbatim' macro; (essentially hard-coded)
+      language specifiers for STELLA 'VERBATIM' and 'TRANSLATE-FILE
+      forms, and the ':otherwise' specifier for STELLA 'verbatim'; note
+      in broad analogy, opaque "Boxed" and 'ValueType' types in CORBA
+      IDL formalisms + CORBA applications onto these opaque types, as in
+      a context: Interface specification for systems production in
+      distributed computing services) NOTE extensive use of STELLA
+      VERBATIM in the PL Ontosaurus system, esp. shell.ste; note also,
+      towards extensions and JSON support, (??) HTML synthesis in
+      Ontosaurus</remark>
+
+      <remark>Synthesis of STELLA implementation source files;
+      STELLA::WALK-A-TREE [STELLA Macro]</remark>
+
+    </section>
+
   </chapter>
 
   <chapter>
     <info>
       <title>
+        <!--
         Structural Qualities in &stella; Knowledge
         Representation
+        -->
+        Knowledge Representation in &stella;
       </title>
     </info>
 
-    <remark>abox, tbox (concepts) NB KL-ONE and subsq.</remark>
+    <remark>NB abox, tbox (concepts), ACTOR, KL-ONE and subsq. GFP, OKBC
+    initiatives at SRI; CLOS as a fairly GFP-like construct (GFP slots
+    and CLOS slots, GFP facets and properties of a metaobject
+    representation of CLOS slots...) in Common Lisp as a Scheme-like
+    programming language.</remark>
 
-    <remark>concepts and examples for knowledge representation in PL STELLA</remark>
+    <remark>Note PL 'context' and 'world' metaobjects as effective
+    closures (not in all ways database-like closures, but note the PL
+    SDBC system, principally as a multi-platform extension onto
+    formalisms developed in Microsoft ODBC)  (TBD: Introducing
+    a concept of model-oriented metaobject to the STELLA and PL KR
+    languages, for purposes of modeling and description of STELLA and PL
+    KR forms)</remark>
+
+    <remark>(more broadly, note an 'interface signatures' view of PL
+    KB assertions? Consider an analogy to formalisms of RDF vocabulary
+    descriptions, or Common Logic CLIF notation)</remark>
+
+    <remark>... generic examples for knowledge representation in PL
+    STELLA. See also: ISO Common Logic; discourses in ANS</remark>
+
+    <remark>Note PL:sources/utilities/startup-system.ste concerning
+    specification for units of measurement in PL systems, and how these
+    specifications are defined in that part of PL -- mainly focusing on
+    unit-defs.ste, and units.ste, but also considering the effective
+    operations of the RCC5 and RCC8 implementations in PL. For one
+    manner of a system definition for this area of the source code,
+    refer to PL:systems/utilities-system.ste; Note also, LOOM project
+    changelog at approx v4.0.0</remark>
 
     <section>
       <title>&stella; Modules</title>
