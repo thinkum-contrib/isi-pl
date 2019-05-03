@@ -12,7 +12,7 @@
   >
   <info>
     <title>
-      <productname>STELLA</productname> Systems - Reference
+      &stella; Systems &mdash; Reference
     </title>
 
     <abstract xml:id="stella.systems.ref.ov">
@@ -57,7 +57,7 @@
 -->
 
 
-  <!-- individual reference pages -->
+  <!-- individual refentry pages -->
 
   <xi:include href="ref.stella.param.current-stella-features.xml"/>
 

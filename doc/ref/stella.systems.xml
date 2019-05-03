@@ -11,14 +11,14 @@
          xmlns:xi="http://www.w3.org/2001/XInclude"
   >
   <info>
-    <title><productname>STELLA</productname> Systems</title>
+    <title>&stella; Systems</title>
 
     <abstract xml:id="stella.systems.ov">
       <title>Overview</title>
 
       <para>
         <remark>NB: Not to replace the PL Guide/Manual</remark>
-      </para>
+;      </para>
     </abstract>
 
   </info>
@@ -34,8 +34,8 @@
    - STELLA {Generic Langauge}
      - Lisp-like syntax
      - NB Strong Typing in STELLA
-   - STELLA as an advanced macro-like language; STELLA Implememtations
-     - Lisp; C++; Java
+   - STELLA as an advanced, "Object-Oriented" or "Frame-like" macro-like language; STELLA Implementations
+     - Lisp; C++; Java (and IDL ... cf. IBM ??)
      - xref to implementation-specific manuals (TD/WIP)
 
  - STELLA Symbols (as classifiers); STELLA Modules (as classifier namespaces)
@@ -50,18 +50,26 @@
 
  - STELLA Exceptions
 
- - STELLA Streams
-   - NB
-     - streams.ste; walk-error; ... cf. STELLA exceptions
-     - streams.ste; STELLA and file I/O - (NEW FILE-OUTPUT-STREAM ...) examples, and OPEN-OUTPUT-FILE
-     - streams.ste; format-string-message-arguments (?? STELLA utils ??)
+ - STELLA I/O (Streams, Files, ...) [stella.io.xml]
 -->
 
-<!-- NB This chapter should describe, in furthermore:
- - STELLA implementation source synthesis
-   - "Walk" forms for STELLA source streams
-   - "Translate" forms, onto indiv. STELLA implementation languages
- 
+<!-- subsq. "TBD" @ ref docu, probably "This Chapter"
+
+- STELLA eval & implementation synthesis
+  - top-level forms - DEFCLASS DEFMETHOD DEFUN DEFMACRO STARTUP-TIME-PROGN
+                      DEFGLOBAL DEFSPECIAL DEFCONSTANT
+  - inline forms (many) - cf. stella::help-walk-a-tree (walk.ste)
+    - NB STELLA NEW, LOCAL-NEW, and ALLOCATE oprns referenced here
+     (STELLA source-to-intermediate oprns, no single impl. binding per se)
+      - NB STELLA ALLOCATE - some use in the STELLA system
+      - NB STELLA LOCAL-NEW - very limited use in the STELLA system
+    - NB STELLA NEW oprn may not have a functional binding, in STELLA :lisp impls
+      - eval w/ STELLA `walk-new-tree'
+        - intermediate form w/ SYS-NEW and processing as per <lang>-translate.ste
+        - eval (:lisp) onto STELLA `yield-constructor-name'
+  - STELLA source-eval and translation
+     - Intermediate STELLA forms - e.g SYS-NEW, SYS-FOREACH (cf. STELLA help-walk-a-tree)
+       .. having poss. no exact functional binding in impl (e.g :lisp)
 -->
 
 <!--
@@ -113,11 +121,11 @@
 
   <section>
     <title>
-      Pathnames in STELLA Systems
+      Pathnames in &stella; Systems
     </title>
 
     <remark>
-      TBD: Support for "LPN-like" pathname syntax in STELLA
+      TBD: Support for "LPN-like" pathname syntax in &stella;
       implementation systems (Lisp, C++, Java)
     </remark>
 
@@ -148,7 +156,7 @@
     <remark>
       Furthermore, note the function,
       <function>system-definitions-directory</function>. This function
-      returns a single STELLA <type>FILE-NAME</type>. By default, the
+      returns a single &stella; <type>FILE-NAME</type>. By default, the
       return value is computed as a translation of the pathname,
       <quote>PL:sources;systems;</quote>.
     </remark>
@@ -156,17 +164,17 @@
   </section> <!-- Pathnames in STELLA -->
 
   <section>
-    <title>Source Traversal and Synthesis of Implementation Sources in STELLA Systems</title>
+    <title>Source Traversal and Synthesis of Implementation Sources in &stella; Systems</title>
 
     <section>
-      <title>Top-Level Forms in STELLA</title>
+      <title>Top-Level Forms in &stella;</title>
 
       <para>
-        In a review of the STELLA source for the function,
+        In a review of the &stella; source for the function,
         <function>walk-top-level-tree</function>
         (<filename>walk.ste</filename>) one may interpret that at least the
         following generalized <emphasis>definition types</emphasis> are
-        available, in STELLA source definitions.
+        available, in &stella; source definitions.
       </para>
 
       <simplelist>
@@ -192,8 +200,6 @@
 
     </section> <!-- Top-level forms -->
 
-
-
   </section> <!-- Source traversal and synthesis -->
 
 
@@ -201,9 +207,9 @@
 
   <xi:include href="stella.systems.ref.xml"/>
 
-
   <!-- next three sections (TD) - reference for each of three STELLA
        implementation defs - Common Lisp, C++ (Non-standalone) and Java (Non-standalone)
   -->
+
 
 </chapter>
