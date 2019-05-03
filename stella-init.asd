@@ -626,6 +626,9 @@ hash tables grow large).")
     ;;  - ...
     ;;
     ;; NB: Generic class, disjunct to STELLA-SOURCE-FILE (*.ste)
+    ;;
+    ;; TD: Document this API, in class and method signatures, w/
+    ;; synopses (pl-asdf reference manual)
     )
   )
 
@@ -697,13 +700,35 @@ hash tables grow large).")
   ;; NB: Shared generalizations onto STELLA-SYSTEM/STELLA-SYSTEM-TEMPLATE
   ((component-source-prefix
       :initarg :component-source-prefix
-      :initform nil
-      :type (or simple-string simple-base-string pathname null)
+      :type (or simple-string simple-base-string pathname)
       :reader %system-component-source-prefix
       :writer (setf system-component-source-prefix)
+      ;; FIXME Consider integrating this with a STELLA-ASDF-MODULE
+      ;; class, and subsequently, inheriting the same in
+      ;; STELLA-ASDF-SYSTEM. Pathname resolution onto the
+      ;; COMPONENT-SOURCE-PREFIX value may then proceed recursively,
+      ;; beginning at the "Topmost" system definition's prefix, resolved
+      ;; (as presently) onto the system definition's own effective
+      ;; COMPONENT-PATHNAME. This could serve to support an arbitrary
+      ;; nesting of module/prefix specifications, juxtaposed to the
+      ;; essentially flat filesystem namespace, in this present
+      ;; implementation of STELLA-ASDF-SYSTEM.
       :documentation
       "Prefix path for resolving source file components in this system
-definition, relative to the system definition's component pathname")
+definition.
+
+If specifying a relative pathname, this pathname should be resolved as
+relative to the system definition's component pathname. If unbound, this
+slot's value may be interpreted as effectively NIL, as in the method
+SYSTEM-COMPONENT-SOURCE-PREFIX (STELLA-ASDF-SYSTEM) - in which case, the
+system definition's component pathname should be used, without prefix
+mapping, when resolving relative pathnames of system component source
+files.
+
+This value may be specified using a subset of logical pathname syntax,
+such as in \"PL:sources;\". Any element in this pathname may be
+interpreted as representing a filesystem directory, whether or not
+suffixed with a semicolon character, \";\".")
    ))
 
 
@@ -720,21 +745,22 @@ definition, relative to the system definition's component pathname")
                                      slots &rest initargs
                                      &key &allow-other-keys)
   (declare (ignore initargs))
-  ;; NB Cheap/Convenient default setter - slot initform in shared-initialize
-  ;;    for COMPONENT-SOURCE-PREFIX
+  ;; NB Default slot-value initialization - slot initform in
+  ;; shared-initialize for COMPONENT-SOURCE-PREFIX
 
   (when
       (and (or (eq slots 't)
                (and (consp slots)
-                    (find 'component-source-prefix slots :test #'eq)))
+                    (find 'component-source-prefix (the cons slots)
+                          :test #'eq)))
            (not (slot-boundp instance 'component-source-prefix)))
     (setf (system-component-source-prefix instance)
-          ;; FIXME May break if system definition relative-pathname not set previously
+          ;; FIXME May break if system definition's relative-pathname was not set previously
           ;;
           ;; FIXME May break some calling functions if COMPONENT-PATHNAME returns NIL
           #-SWANK
           (component-pathname instance)
-          ;; ... so, support interactive defsystem eval w/ SLIME/SWANK
+          ;; NB Towards supporting interactive defsystem eval e.g w/ Emacs
           #+SWANK
           (let ((basep (component-pathname instance)))
             (cond
