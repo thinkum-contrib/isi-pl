@@ -884,7 +884,8 @@ suffixed with a semicolon character, \";\".")
                       &rest args)
   ;; NB Trivial macro for forward reference onto undefined functions.
   ;;    Used within :PERFORM methods, as defined in the following src
-  (let ((s (make-symbol "%s"))
+  (let ((%name (make-symbol "%name"))
+        (s (make-symbol "%s"))
         (%pkg (make-symbol "%pkg"))
         (vis (make-symbol "%vis"))
         (fdef (make-symbol "%fdef")))
@@ -892,15 +893,18 @@ suffixed with a semicolon character, \";\".")
                           (or (find-package (quote ,pkg))
                               (error 'package-not-found
                                      :name (quote ,pkg)))
-                          *package*))))
+                          *package*)))
+           (,%name (etypecase (quote ,name)
+                     (symbol (symbol-name (quote ,name)))
+                     (string ,name))))
        (multiple-value-bind (,s ,vis)
-           (find-symbol (symbol-name (quote ,name)) ,%pkg)
+           (find-symbol ,%name ,%pkg)
          (let ((,fdef (when (and ,vis (fboundp ,s))
                         (fdefinition ,s))))
            (cond
              (,fdef (funcall (the function ,fdef) ,@args))
              (,vis (error 'unbound-function :name ,s))
-             (t (error 'symbol-not-found :name (quote ,name)
+             (t (error 'symbol-not-found :name ,%name
                        :namespace ,%pkg))))))))
 
 
@@ -911,6 +915,11 @@ suffixed with a semicolon character, \";\".")
 ;; (safe-fcall (#:identity #:nop))
 
 ;; (safe-fcall (#:*standard-output* #:cl))
+
+;; (safe-fcall (#:identity "CL-USER") '#:s1243)
+
+;; (safe-fcall ("IDENTITY" "CL-USER") '#:s1243)
+
 
 
 ;; Remark - Provenance
