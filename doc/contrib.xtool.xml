@@ -176,7 +176,8 @@ Type `bye', `exit', `halt', `quit', or `stop', to exit.
         </remark>
 
         <remark>
-          Note Runtime "Convenience Parameters" for STELLA bootstrap,
+          Note Runtime "Convenience Parameters" for STELLA bootstrap
+          (FIXME: Not to say "Bootstrap," here),
           and effects during compile and load
           phases, if not also during  source synthesis &mdash; e.g
           <varname>CL-USER::*LOAD-CL-STRUCT-STELLA?*</varname> (and the
@@ -189,12 +190,14 @@ Type `bye', `exit', `halt', `quit', or `stop', to exit.
         <remark>
           NB: Threads; Sockets (PL impl. in Common Lisp; relevance for
           "Portable code," as avl via the PL Common Lisp impl, avl to PL
-          applications); Existing implementation support in PL
+          applications); Existing implementation support in PL (NB:
+          Singular impl. support for ACL in PL SOAP, PL SDBC systems -
+          implementation in Common Lisp)
         </remark>
 
         <remark>
           NB: Segfaults when loading load-stella.lisp with CCL (armcl
-          xf 1.11-r16635 and 1.12-dev, Linux). Refer to
+          xf 1.11-r16635 and 1.12-dev, Linux ARM). Refer to
           <xref linkend="contrib.qa.iss.segccl"/> and local source code
         </remark>
 

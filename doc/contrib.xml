@@ -76,7 +76,10 @@
       USC ISI - LOOM(r) and &pl; release notes, LOOM(r) and &pl;
       published articles)</remark></para>
 
-      <para><remark>Note that PL develops a manner of a KIF-like syntax,
+      <para><remark>Outline - towards a practical survey of knowledge
+      representation (in computing)
+
+      Note that PL develops a manner of a KIF-like syntax,
       in PLI and - more generally - STELLA eource forms.  (TBD: Origins,
       proposed standards for KIF as approximately a category of knowledge
       representation notations sharing a common syntax and semantics. Note the
@@ -88,14 +91,20 @@
       any approaches for knowledge sharing across distributed systems. Note,
       then, PL SOAP (and thus, SDBC) systems.
 
-      [DTAI] https://dtai.cs.kuleuven.be/software/idp
+      Referring to:
+
+      [DTAI] https://dtai.cs.kuleuven.be/software/idp (NB Ans - formalisms, and articles)
+      (NB MathML as a KRS notation)
 
       [KL-ONE] cf. articles, note the "Original KL-ONE initiative"
       pedagogically, and subsq. developments published at the CMU AI
       Repository
       http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/areas/kr/systems/kl_one/0.html
 
-      [Hewitt]
+      [Hewitt] cf. "The ACTOR Paper" generally, as depicting a KRS
+      notation - the paper being commonly cited, as to represent
+      conceptualizations in parallel distributed systems, Note also,
+      formal process algebras.
 
       [TBD] DAML, DAML+OIL
       [W3C] RDF, OWL
@@ -106,21 +115,34 @@
 
       [OMG] MOF, XMI, UML, UML-DI, ODM
 
-      [FIPA] TBD
-      </remark></para>
-
-      <para><remark>Note RDF in extension - highlighting LoC and GVP
-      initiatives, if not also RDF in Netscape/Firefox XUL, RDF in DOAP
-      vocab, etc. @ software/syatems</remark></para>,
+      [FIPA] TBD</remark></para>
 
       <para>
         Editor's Note: This documentation has been contributed for &pl;
         in an effort to aid in further development of software systems,
         such that may be derived from &pl; or may make reference to
-        &pl;. This is not to replace &mdash; though it is hoped that it
-        may serve to augment &mdash; the original &pl; manual and &pl;
-        source code.
+        &pl;. This work is not intended to replace &mdash; though it is
+        hoped that it may serve to augment &mdash; the original &pl;
+        manual and &pl; source code.
       </para>
+
+      <para><remark>NB General outline - introduction; survey of KRS
+      systems; technical reference for STELLA and PL; development
+      documentation for "The Fork" in which this document is developed
+      (to include: Extensions for STELLA and PL - Extensiona developed
+      at USC ISI, vis. PL Ontosaurus, PL GUI, PL SOAP, and PL SDBC
+      systems in STELLA; Extensions being devloped in "The Fork" - JSON web
+      services for PL, cf. Genivia gSOAP, OAUTH2, ...; Multi-platform support
+      for ODBC with the PL implementation in Common Lisp, cf. FOSS; MOF
+      Meta-Model/and UML Profile extensions for PL STELLA and PL KR languages
+      w/ support for programmed reasoning into MOF, UML, and OCL in PL;
+      publicly available RDF representations in PL; PL-UNICODE, affecting
+      STELLA in C++ and Common Lisp implementations, database schema in PL
+      SDBC, XML in PL SOAP - note STELLA 'string' type, and
+      implementation streams comventions; Model Quality Metadata 
+      extensions - PREMIS, CIDOC CRM, and subsq; KB serialization in
+      RDF; KB synchronization for distributed "Knowledge
+      Networks")</remark></para>
 
       <para><remark>NB Availability - source code, and public fork -
       address, to detail, in preface</remark></para>
