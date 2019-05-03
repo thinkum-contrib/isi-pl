@@ -880,7 +880,7 @@ suffixed with a semicolon character, \";\".")
              (cell-error-name c)))))
 
 
-(defmacro safe-fcall ((name &optional (pkg (make-symbol "unbound") pkg-p))
+(defmacro safe-fcall ((name &optional (pkg *package* pkg-p))
                       &rest args)
   ;; NB Trivial macro for forward reference onto undefined functions.
   ;;    Used within :PERFORM methods, as defined in the following src
@@ -900,9 +900,6 @@ suffixed with a semicolon character, \";\".")
            (cond
              (,fdef (funcall (the function ,fdef) ,@args))
              (,vis (error 'unbound-function :name ,s))
-             ;; FIXME Define & document a NAMESPACE-CONDITION (accessor: ...-NAME)
-             ;; FIXME Use a subtype of program-error, namespace-condition, cell-error
-             ;; namely a type SYMBOL-NOT-FOUND
              (t (error 'symbol-not-found :name (quote ,name)
                        :namespace ,%pkg))))))))
 
