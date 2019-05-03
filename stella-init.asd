@@ -362,8 +362,6 @@ hash tables grow large).")
   ;; juxtaposed to the behaviors of e.g
   ;; UIOP/UTILITY:MATCH-ANY-CONDITION-P
 
-  ;; FIXME: Apparently useless when SBCL is compiling
-
   ;; NB: This emulates some behaviors of ASDF UIOP/UTILITY:CALL-WITH-MUFFLED-CONDITIONS
   ;;     though not towards specializing on a condition type designator, T
   ;;     and not with accessing any format-control objects of the
@@ -371,10 +369,8 @@ hash tables grow large).")
   ;;
   ;; Unfortunately, it does not seem to be of use for working around a
   ;;     certain bug in SBCL 1.4.16.655, SBCL 1.4.16.debian (??) etc
-
-  ;; NB: The nasty bug of {TBD - SBCL} ... still showing up in SBCL 1.5.28
-  ;;     when compiling this "Heavily involved" system
-  ;;    ... but poss. only when compiling w/i slime/swank i.e  'slime-load-system'
+  ;;
+  ;; NB Some of a bug showing up during system eval w/ Emacs (SLIME/SWANK)
 
   (let ((cdn (make-symbol "%cdn"))
         (typ (make-symbol "%typ"))
@@ -428,12 +424,9 @@ hash tables grow large).")
                       ;;; muffled) when loading cl-primal.fasl ... in
                       ;;; which, it's more or less from same origin as
                       ;;; the  SB-FORMAT::FMT-CONTROL (is not a string)
-                      ;;; error in later SBCL
+                      ;;; error in later SBCL. Not an apparent issue w/
+                      ;;; SBCL 1.3.12
                       ;;;
-                      ;;; SO, what to focus on? The shadowed FTYPE decls
-                      ;;; being produced in STELLA -- shadowed
-                      ;;; subsequent of DEFGENERIC in SBCL -- or the
-                      ;;; serious error in SBCL?
                       ;;;
                       ;; #+SBCL
                       ;; (simple-type-error
@@ -747,6 +740,7 @@ hash tables grow large).")
   ;;
   ;; NB: Shared generalizations onto STELLA-SYSTEM/STELLA-SYSTEM-TEMPLATE
   ((component-source-prefix
+    ;; see also: #'SPLIT-LOGICAL-PATH
       :initarg :component-source-prefix
       :type (or simple-string simple-base-string pathname)
       :reader %system-component-source-prefix
@@ -841,7 +835,7 @@ suffixed with a semicolon character, \";\".")
 
 
 ;; NB: These might not be called until after the completion of the
-;; corresponding ASDF oprn. on all of the component files of the system defn.
+;; corresponding ASDF oprn on all of the component files of the system defn.
 ;; [FIXME]
 
 (defmethod asdf:perform :around ((o asdf:compile-op) (c stella-asdf-system))
@@ -858,30 +852,66 @@ suffixed with a semicolon character, \";\".")
 
 ;; -- STELLA-INIT System Definition
 
-(defmacro safe-fcall ((name &optional pkg) &rest args)
+(define-condition unbound-function (program-error cell-error)
+  ()
+  (:report
+   (lambda (c s)
+     (format s "No function definition for ~S"
+             (cell-error-name c)))))
+
+(define-condition namespace-condition ()
+  ((namespace
+    :initarg :namespace
+    :reader namespace-condition-namespace)))
+
+(define-condition symbol-not-found (program-error namespace-condition cell-error)
+  ()
+  (:report
+   (lambda (c s)
+     (format s "No symbol ~A found in ~S"
+             (cell-error-name c)
+             (namespace-condition-namespace c)))))
+
+(define-condition package-not-found (program-error cell-error)
+  ()
+  (:report
+   (lambda (c s)
+     (format s "No package definition for name ~A"
+             (cell-error-name c)))))
+
+
+(defmacro safe-fcall ((name &optional (pkg (make-symbol "unbound") pkg-p))
+                      &rest args)
   ;; NB Trivial macro for forward reference onto undefined functions.
   ;;    Used within :PERFORM methods, as defined in the following src
   (let ((s (make-symbol "%s"))
+        (%pkg (make-symbol "%pkg"))
         (vis (make-symbol "%vis"))
         (fdef (make-symbol "%fdef")))
-    `(multiple-value-bind (,s ,vis)
-         (find-symbol (symbol-name (quote ,name))
-                      (or (quote ,pkg) *package*))
-       (let ((,fdef (when (and ,vis (fboundp ,s))
-                      (fdefinition ,s))))
-       (cond
-         (,fdef (funcall (the function ,fdef)
-                         ,@args))
-         (,vis (error "No function definition found for symbol ~S" ,s))
-         (t (error "No symbol for ~A found in package ~A"
-                   (quote ,name)
-                   (or (quote ,pkg)
-                       *package*))))))))
+    `(let ((,%pkg (or (if ,pkg-p
+                          (or (find-package (quote ,pkg))
+                              (error 'package-not-found
+                                     :name (quote ,pkg)))
+                          *package*))))
+       (multiple-value-bind (,s ,vis)
+           (find-symbol (symbol-name (quote ,name)) ,%pkg)
+         (let ((,fdef (when (and ,vis (fboundp ,s))
+                        (fdefinition ,s))))
+           (cond
+             (,fdef (funcall (the function ,fdef) ,@args))
+             (,vis (error 'unbound-function :name ,s))
+             ;; FIXME Define & document a NAMESPACE-CONDITION (accessor: ...-NAME)
+             ;; FIXME Use a subtype of program-error, namespace-condition, cell-error
+             ;; namely a type SYMBOL-NOT-FOUND
+             (t (error 'symbol-not-found :name (quote ,name)
+                       :namespace ,%pkg))))))))
 
 
-;; (safe-fcall (#:startup-stella-system #:stella))
+;; (safe-fcall (#:identity #:cl-user) '#:s1243)
 
 ;; (safe-fcall (#:nop #:cl))
+
+;; (safe-fcall (#:identity #:nop))
 
 ;; (safe-fcall (#:*standard-output* #:cl))
 
