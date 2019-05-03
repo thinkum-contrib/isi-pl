@@ -399,7 +399,7 @@ hash tables grow large).")
                                     (warn ,cdn)))))
                       ;;; try a workaround for a certain bug in SBCL
                       ;;; versions 1.4.16 .. 1.5.2.8
-                      ;;; and not 1.3.12 .. 1.3.21
+                      ;;; and not 1.3.12 .. [1.3.21]
                       ;;;
                       ;;; DNW - perhaps the SIMPLE-STYLE-WARNING with non-string
                       ;;; format-control is not being caught soon enough, here
@@ -453,6 +453,7 @@ hash tables grow large).")
                       )
          ,@forms))))
 
+;; NB: SBCL 1.3.12 WORKS JUST FINE for this system.
 
 ;; Concerning the "certain bug" in SBCL, as denoted above:
 ;; #<SB-FORMAT::FMT-CONTROL "~@<Generic function ~/SB-EXT:PRINT-SYMBOL-WITH-PREFIX/ clobbers an earlier ~S proclamation ~/SB-IMPL:PRINT-TYPE/ for the same name with ~/SB-IMPL:PRINT-TYPE/.~:@>"> is not a string designator.
