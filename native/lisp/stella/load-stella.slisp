@@ -97,6 +97,20 @@ hash tables grow large).")
 ;;; If this is T, Stella will compile/load/startup verbosely:
 (defvar *stella-verbose?* *load-verbose*)
 
+(defvar *stella-default-external-format* ;; TL contrib [spchamp]
+  (cond
+    ;; ensure portability with SLIME/SWANK streams
+    ;; for interactive sessions within Emacs
+    ((find :swank *features* :test #'eq) (values :default))
+    (t
+     #+allegro
+     (CL:ignore-errors (excl::find-external-format :iso-8859-1))
+     #+sbcl :latin-1
+     #+ccl :iso-8859-1
+     #-(or allegro sbcl ccl)
+     (CL:stream-external-format CL:*standard-output*)))
+   "Initial value for STELLA-CHARSET")
+
 ;;; This loading scheme still tries to deal with Lisps that do not support
 ;;; logical pathnames.  But, are there still any "healthy" Lisps like that?
 

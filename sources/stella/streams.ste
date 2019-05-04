@@ -66,8 +66,7 @@ necessary to generate a newline."
 (defglobal STELLA-CHARSET NATIVE-CHARSET-ENCODING
            (verbatim
             :java "java.nio.charset.Charset.forName(\"ISO-8859-1\")"
-            :common-lisp "#+allegro (CL:ignore-errors (excl::find-external-format :iso-8859-1))
-                          #-allegro (CL:stream-external-format CL:*standard-output*)"
+            :common-lisp "CL-USER::*STELLA-DEFAULT-EXTERNAL-FORMAT*"
             :otherwise NULL)
   :documentation "For STELLA we always assume an 8-bit transparent mapping from bytes to STRING characters
 such as ISO-8859-1 (ISO-LATIN-1), since that's what C++ natively supports.  For Java and some Lisps, we have

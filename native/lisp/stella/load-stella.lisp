@@ -98,22 +98,18 @@ hash tables grow large).")
 (defvar *stella-verbose?* *load-verbose*)
 
 (defvar *stella-default-external-format* ;; TL contrib [spchamp]
-  ;; FIXME Ensure Unicode compat, per implementation
-  ;;
-  ;; - see also: STELLA-CHARSET, ./streams.lisp, pl:sources/stella/streams.ste
-  ;; -- note redefinition (??) of STELLA-CHARSET in streams.lisp
-  ;; --- initially in CL:DEFVAR STELLA-CHARSET
-  ;; --- subsq. in eval of DEFINE-STELLA-GLOBAL-VARIABLE-FROM-STRINGIFIED-SOURCE
-  ;;
-  #+allegro
-  (CL:ignore-errors (excl::find-external-format :iso-8859-1))
-  #-allegro
-  (cond
-    ;; ensure portability with SWANK streams
+ (cond
+    ;; ensure portability with SLIME/SWANK streams
+    ;; for interactive sessions within Emacs
     ((find :swank *features* :test #'eq) (values :default))
-    ;; NB This may break in some instances when *STANDARD-OUTPUT* is a
-    ;; stream of a type not recognized by the local implementation
-    (t (stream-external-format *standard-output*))))
+    (t
+     #+allegro
+     (CL:ignore-errors (excl::find-external-format :iso-8859-1))
+     #+sbcl :latin-1
+     #+ccl :iso-8859-1
+     #-(or allegro sbcl ccl)
+     (CL:stream-external-format CL:*standard-output*)))
+   "Initial value for STELLA-CHARSET")
 
 
 (defvar *stella-memoization-default* nil) ;; cf. STELLA::*MEMOIZATION-ENABLED*, memoize.lisp, memoize.ste
