@@ -880,6 +880,8 @@ suffixed with a semicolon character, \";\".")
              (cell-error-name c)))))
 
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
 (defmacro safe-fcall ((name &optional (pkg *package* pkg-p))
                       &rest args)
   ;; NB Trivial macro for forward reference onto undefined functions.
@@ -907,6 +909,7 @@ suffixed with a semicolon character, \";\".")
              (t (error 'symbol-not-found :name ,%name
                        :namespace ,%pkg))))))))
 
+) ;; eval-when
 
 ;; (safe-fcall (#:identity #:cl-user) '#:s1243)
 
