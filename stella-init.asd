@@ -73,6 +73,7 @@
           ;; ^ NB used in STELLA cl-translate-file
           ;;   /NB uiop/lisp-build:with-optimization-settings
           *stella-memoization-default* ;; T.D New (contrib)
+          *stella-default-external-format*
           *use-stella-hash-tables?* ;; NB! from pl:sources;stella;load-stella.lisp
           ;; ^ NB usage notes
           ;; - STELLA::CLSYS-TEST-SXHASH-SUPPORT & subsq.
@@ -175,11 +176,29 @@ hash tables grow large).")
 ;; contrib. cf. STELLA::*MEMOIZATION-ENABLED*, memoize.lisp, memoize.ste
 (defvar *stella-memoization-default* nil)
 
+;; NB contrib/change, affecting initialization of STELLA-CHARSET
+;;    added: cl-user::*stella-default-external-format*
+;;    also defined in load-stella.[s]lisp
+
+(defvar *stella-default-external-format*
+  ;; NB UIOP/STREAM:*UTF-8-EXTERNAL-FORMAT* [ASDF]
+  (cond
+    ;; ensure portability with SLIME/SWANK streams
+    ;; for interactive sessions within Emacs
+    ((find :swank *features* :test #'eq) (values :default))
+    (t
+     #+allegro
+     (CL:ignore-errors (excl::find-external-format :iso-8859-1))
+     #+sbcl :latin-1
+     #+ccl :iso-8859-1
+     #-(or allegro sbcl ccl)
+     (CL:stream-external-format CL:*standard-output*)))
+   "Initial value for STELLA-CHARSET")
 
 ;; -- Initialization forms for PL-ASDF
 
 (defmacro defconst (name value &optional docstr)
-  ;; NB utility macro
+  ;; NB utility macro - DEFCONSTANT like DEFVAR
   `(defconstant ,name
      ,@(when docstr (list docstr))
      (cond
@@ -207,12 +226,22 @@ hash tables grow large).")
 ;;    definitions, as such.
 ;;
 
+;; FIXME Do not rely on [XDG] for filesystem hierarchy specification
+;; - Provide option to produce output within prefix <LOCALBASE>/lib/<component>/<impl>/<build>/
+
 (defvar *pl-asdf-output-cache*
   ;; cache dir for outpit files, onto the ASDF output file translations API
   ;;
   ;; e.g used by:
   ;;  ensure-pathname-translations
   ;;
+
+  ;; NB UIOP/LISP-BUILD:*BASE-BUILD-DIRECTORY* [ASDF]
+
+  ;; NB UIOP/LISP-BUILD:COMPILE-FILE-TYPE [ASDF' [Function]
+
+  ;; NB UIOP/PATHNAME:*OUTPUT-TRANSLATION-FUNCTION* [ASDF]
+  ;; - usage in UIOP/LISP-BUILD:COMPILE-FILE-PATHNAME* (No Op/Component state provided)
 
  ;;; FIXME use in a method onto OUTPUT-FILES or similar
   (uiop/configuration:xdg-cache-home +pl-asdf-cache-name+ :implementation))
@@ -288,7 +317,7 @@ hash tables grow large).")
 ;; (probe-file "PL:stella-init.asd")
 
 
-(defun ensure-system-pathname-translations ()
+(defun initialize-system-pathname-translations ()
   (ensure-pathname-translations
    (asdf:component-pathname (asdf:find-system "stella-init"))))
 
@@ -451,7 +480,139 @@ hash tables grow large).")
 ;; Concerning the "certain bug" in SBCL, as denoted above:
 ;; #<SB-FORMAT::FMT-CONTROL "~@<Generic function ~/SB-EXT:PRINT-SYMBOL-WITH-PREFIX/ clobbers an earlier ~S proclamation ~/SB-IMPL:PRINT-TYPE/ for the same name with ~/SB-IMPL:PRINT-TYPE/.~:@>"> is not a string designator.
 
-;; ---- Generic Class Definitions, Method Specializations, API
+;; -- PL-ASDF System Definition Extensions
+
+(defclass stella-asdf-system (asdf:system)
+  ;; NB Representative of a STELLA implementation source system
+  ;;    onto Common Lisp, with a statically defined ASDF system
+  ;;
+  ;; NB: Shared generalizations onto STELLA-SYSTEM/STELLA-SYSTEM-TEMPLATE
+  ((component-source-prefix
+    ;; see also: #'SPLIT-LOGICAL-PATH
+      :initarg :component-source-prefix
+      :type (or simple-string simple-base-string pathname)
+      :reader %system-component-source-prefix
+      :writer (setf system-component-source-prefix)
+      ;; FIXME Consider integrating this with a STELLA-ASDF-MODULE
+      ;; class, and subsequently, inheriting the same in
+      ;; STELLA-ASDF-SYSTEM. Pathname resolution onto the
+      ;; COMPONENT-SOURCE-PREFIX value may then proceed recursively,
+      ;; beginning at the "Topmost" system definition's prefix, resolved
+      ;; (as presently) onto the system definition's own effective
+      ;; COMPONENT-PATHNAME. This could serve to support an arbitrary
+      ;; nesting of module/prefix specifications, juxtaposed to the
+      ;; essentially flat filesystem namespace, in this present
+      ;; implementation of STELLA-ASDF-SYSTEM.
+      :documentation
+      "Prefix path for resolving source file components in this system
+definition.
+
+If specifying a relative pathname, this pathname should be resolved as
+relative to the system definition's component pathname. If unbound, this
+slot's value may be interpreted as effectively NIL, as in the method
+SYSTEM-COMPONENT-SOURCE-PREFIX (STELLA-ASDF-SYSTEM) - in which case, the
+system definition's component pathname should be used, without prefix
+mapping, when resolving relative pathnames of system component source
+files.
+
+This value may be specified using a subset of logical pathname syntax,
+such as in \"PL:sources;\". Any element in this pathname may be
+interpreted as representing a filesystem directory, whether or not
+suffixed with a semicolon character, \";\".")
+   ))
+
+
+(defmethod system-component-source-prefix ((component stella-asdf-system))
+  ;; => <slot-value-if-bound>, <boundp>
+  (cond
+    ((slot-boundp component 'component-source-prefix)
+     (values (%system-component-source-prefix component)
+             t))
+    (t (values nil nil))))
+
+
+(defmethod shared-initialize :after ((instance stella-asdf-system)
+                                     slots &rest initargs
+                                     &key &allow-other-keys)
+  (declare (ignore initargs))
+  ;; NB Default slot-value initialization - slot initform in
+  ;; shared-initialize for COMPONENT-SOURCE-PREFIX
+
+  (when
+      (and (or (eq slots 't)
+               (and (consp slots)
+                    (find 'component-source-prefix (the cons slots)
+                          :test #'eq)))
+           (not (slot-boundp instance 'component-source-prefix)))
+    (setf (system-component-source-prefix instance)
+          ;; FIXME May break if system definition's relative-pathname was not set previously
+          ;;
+          ;; FIXME May break some calling functions if COMPONENT-PATHNAME returns NIL
+          #-SWANK
+          (component-pathname instance)
+          ;; NB Towards supporting interactive defsystem eval e.g w/ Emacs
+          #+SWANK
+          (let ((basep (component-pathname instance)))
+            (cond
+              ((null basep)
+               (warn "~<In SHARED-INITIALIZE :AFTER (STELLA-ASDF-SYSTEM ...)~> \
+~<: NULL COMPONENT-PATHNAME for ~s (Interactive Eval?)~> \
+~<- using *DEFAULT-PATHNAME-DEFAULTS* ~s~>"
+                     instance *default-pathname-defaults*)
+               (values *default-pathname-defaults*))
+              ;; else
+              (t (values basep)))))))
+
+;; (system-component-source-prefix (find-system "stella-init"))
+
+
+(defmethod asdf/component:module-default-component-class ((sys stella-asdf-system))
+  ;; NB Specialization
+  (find-class 'stella-lisp-source-file))
+
+
+(defmacro system-eval-main (op c)
+  (declare (ignore op c))
+  `(progn
+     ;; NB this applies impl-check to all system definitions using STELLA-ASDF-SYSTEM
+     (impl-check)
+     (ensure-feature :pl-asdf)
+     (unless (ignore-errors (logical-pathname-translations "PL"))
+       (initialize-system-pathname-translations))
+     #-(and) (set-global-unconditions ,op ,c)
+     (call-next-method)))
+
+
+;; NB: The following methods are defined onto OPERATE, such as to ensure
+;; that forms in SYSTEM-EVAL-MAIN may be evaluated previous to any
+;; evaluation of ASDF:PERFORM onto objects within the provided system
+;; definition.
+
+
+(defmethod asdf:operate :around ((o asdf:compile-op) (c stella-asdf-system)
+                                 &key &allow-other-keys)
+  #+PL-ASDF-DEBUG
+  (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:COMPILE-OP ~
+STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
+  (system-eval-main o c))
+
+(defmethod asdf:operate :around ((o asdf:load-op) (c stella-asdf-system)
+                                  &key &allow-other-keys)
+  #+PL-ASDF-DEBUG
+  (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:LOAD-OP ~
+STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
+  (system-eval-main o c))
+
+(defmethod asdf:operate :around ((o asdf:load-source-op) (c stella-asdf-system)
+                                  &key &allow-other-keys)
+  #+PL-ASDF-DEBUG
+  (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:LOAD-SOURCE-OP ~
+STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
+  (system-eval-main o c))
+
+
+
+;; -- Generic Component Class Definitions, PERFORM Specializations, API
 
 
 (defclass stella-component (asdf:component)
@@ -466,59 +627,6 @@ hash tables grow large).")
 
 (defclass stella-source-component (stella-component asdf:source-file)
   ())
-
-(defclass stella-lisp-source-component (stella-source-component asdf:cl-source-file)
-  ())
-
-
-(defmacro proclaim-for (op component)
-  ;; NB ASDF GET-OPTIMIZATION-SETTINGS
-  (let ((procls (make-symbol "%procls")))
-    `(let ((,procls (proclamations-for ,op ,component)))
-       (when ,procls
-         (proclaim ,procls)))))
-
-(defmacro operate-main (om-o om-c)
-  (let ((%om-o (make-symbol "%om-o"))
-        (%om-c (make-symbol "%om-c")))
-  `(with-compilation-unit ()
-     (let ((,%om-o ,om-o)
-           (,%om-c ,om-c))
-       (proclaim-for ,%om-o ,%om-c)
-       #+SBCL ;; FIXME - impl-specific workaround for a thing
-       (proclaim
-        (list* 'sb-ext:muffle-conditions
-               (muffle-conditions-list ,%om-o ,%om-c)))
-       (with-muffling (muffle-conditions-list ,om-o ,om-c)
-         (when (next-method-p) (call-next-method)))))))
-
-#-(AND)
-(defmacro set-global-unconditions (o c) ;; see previous NB
-  ;; NB: Earlier prototype for warnings-muffling during ASDF compile/load
-  ;;     onto STLELLA Lisp systems - unused, at present
-  (let ((%o (make-symbol "%o"))
-        (%c (make-symbol "%c")))
-    `(let ((,%o ,o)
-           (,%c ,c))
-       (uiop/utility:style-warn
-        "~<In (~A ~A)~>~< : set *uninteresting-conditions* globally~>"
-        ,%o ,%c)
-       (setq uiop/lisp-build:*uninteresting-conditions*
-             (muffle-conditions-list ,%o ,%c))
-
-       )))
-
-
-;; NB: asdf:perform != asdf:operate
-
-(defmethod asdf:perform ((o asdf:compile-op) (c stella-lisp-source-component))
-  (operate-main o c))
-
-(defmethod asdf:perform ((o asdf:load-op) (c stella-lisp-source-component))
-  (operate-main o c))
-
-(defmethod asdf:perform ((o asdf:load-source-op) (c stella-lisp-source-component))
-  (operate-main o c))
 
 
 ;; ---- Pathname Functions
@@ -659,22 +767,37 @@ hash tables grow large).")
 
 ;; --
 
-(eval-when () ;; TMP
-  (defclass stella-implementation-source-file (stella-source-component)
-    () ;; TBD: Mapping to original *.ste sys defn, *.ste source file
-    ;; FIXME: Integrate this class into the following
-    ;;  - STELLA-LISP-SOURCE-FILE
-    ;;  - ...
-    ;;
-    ;; NB: Generic class, disjunct to STELLA-SOURCE-FILE (*.ste)
-    ;;
-    ;; TD: Document this API, in class and method signatures, w/
-    ;; synopses (pl-asdf reference manual)
-    )
+
+(defclass stella-implementation-source-file (stella-source-component)
+  ;; NB In subclass STELLA-LISP-SOURCE-FILE this obsoletes STELLA-LISP-SOURCE-COMPONENT
+
+  () ;; TBD: Mapping to original *.ste sys defn, *.ste source file
+  ;; NB: Integrate this class into the following
+  ;;  - STELLA-LISP-SOURCE-FILE (TD: STELLA-SLISP-SOURCE-FILE)
+  ;;  - STELLA-C++-SOURCE-FILE (NB: CPP-CODE and CPP-HEADER files w/ STELLA)
+  ;;  - STELLA-JAVA-SOURCE-FILE (NB: Java Class defns)
+  ;;  - STELLA-IDL-SOURCE-FILE (TBD)
+  ;;
+  ;; NB: Generic class, disjunct to STELLA-SOURCE-FILE (*.ste)
+  ;;
+  ;; TD: Document this API, in class and method signatures, w/
+  ;; synopses (pl-asdf reference manual)
   )
 
-(defclass stella-lisp-source-file (stella-lisp-source-component)
+(defclass stella-lisp-source-file (stella-implementation-source-file asdf:cl-source-file)
   ())
+
+(defmethod asdf/component:source-file-type ((c stella-lisp-source-file)
+                                            (container stella-asdf-system))
+  (declare (ignore c container))
+  ;; FIXME STELLA-STRUCT build needs [QA] w/ and w/o Emacs
+  #+stella-struct
+  (values "slisp")
+  #-stella-struct
+  (values "lisp"))
+
+;; TD: output translations => fasl, sfasl (under impl subdir w/i output
+;; component lib prefix) (NB: XDG-dirs adoption in devo w/ ASDF)
 
 
 (defclass stella-cl-lib-source-file (stella-lisp-source-file)
@@ -712,6 +835,71 @@ hash tables grow large).")
                      notpath)))
 
 
+(defmacro proclaim-for (op component)
+  ;; NB ASDF GET-OPTIMIZATION-SETTINGS
+  (let ((procls (make-symbol "%procls")))
+    `(let ((,procls (proclamations-for ,op ,component)))
+       (when ,procls
+         (proclaim ,procls)))))
+
+(defmacro perform-main (om-o om-c)
+  (let ((%om-o (make-symbol "%om-o"))
+        (%om-c (make-symbol "%om-c")))
+  `(with-compilation-unit ()
+     (let ((,%om-o ,om-o)
+           (,%om-c ,om-c))
+       (proclaim-for ,%om-o ,%om-c)
+       #+SBCL ;; FIXME - impl-specific workaround for a thing
+       (proclaim
+        (list* 'sb-ext:muffle-conditions
+               (muffle-conditions-list ,%om-o ,%om-c)))
+       (with-muffling (muffle-conditions-list ,om-o ,om-c)
+         (call-next-method))))))
+
+#-(AND)
+(defmacro set-global-unconditions (o c) ;; see previous NB
+  ;; NB: Earlier prototype for warnings-muffling during ASDF compile/load
+  ;;     onto STLELLA Lisp systems - unused, at present
+  (let ((%o (make-symbol "%o"))
+        (%c (make-symbol "%c")))
+    `(let ((,%o ,o)
+           (,%c ,c))
+       (uiop/utility:style-warn
+        "~<In (~A ~A)~>~< : set *uninteresting-conditions* globally~>"
+        ,%o ,%c)
+       (setq uiop/lisp-build:*uninteresting-conditions*
+             (muffle-conditions-list ,%o ,%c))
+
+       )))
+
+
+(defmethod asdf:perform ((o asdf:compile-op) (c stella-lisp-source-file))
+  #+PL-ASDF-DEBUG
+  (format *debug-io* "~%ASDF:PERFORM~< (ASDF:COMPILE-OP ~
+STELLA-LISP-SOURCE-COMPONENT)~>~< : (~A ~A)~>" o c)
+  (perform-main o c))
+
+(defmethod asdf:perform ((o asdf:load-op) (c stella-lisp-source-file))
+  #+PL-ASDF-DEBUG
+  (format *debug-io* "~%ASDF:PERFORM~< (ASDF:LOAD-OP ~
+STELLA-LISP-SOURCE-COMPONENT)~>~< : (~A ~A)~>" o c)
+  (perform-main o c))
+
+(defmethod asdf:perform ((o asdf:load-source-op) (c stella-lisp-source-file))
+  #+PL-ASDF-DEBUG
+  (format *debug-io* "~%ASDF:PERFORM~< (ASDF:LOAD-SOURCE-OP ~
+STELLA-LISP-SOURCE-COMPONENT)~>~< : (~A ~A)~>" o c)
+  (perform-main o c))
+
+
+;; --
+
+;; NB
+;; STELLA::*LISP-SPLITTER-PATH*
+;; STELLA::*JAVA-SPLITTER-PATH*
+;; STELLA::*CPP-SPLITTER-PATH*
+;; - these may be folded into PL-ASDF pathname handling
+
 (defclass stella-c++-header-file (stella-source-component asdf:c-source-file) ;; FIXME
   ;; NB C++ preprocessors & source linkage; toolchains
   ;; TBD Component model for makefile synthesis (bmake, GNU make, others)
@@ -731,124 +919,6 @@ hash tables grow large).")
 
 ;; TBD: FOSS toolchains for IDL language - STELLA source translation & testing
 ;; NB STELLA-IDL-SYSTEM, stella.asd
-
-;; -- PL-ASDF System Definition Extensions
-
-(defclass stella-asdf-system (asdf:system)
-  ;; NB Representative of a STELLA implementation source system
-  ;;    onto Common Lisp, with a statically defined ASDF system
-  ;;
-  ;; NB: Shared generalizations onto STELLA-SYSTEM/STELLA-SYSTEM-TEMPLATE
-  ((component-source-prefix
-    ;; see also: #'SPLIT-LOGICAL-PATH
-      :initarg :component-source-prefix
-      :type (or simple-string simple-base-string pathname)
-      :reader %system-component-source-prefix
-      :writer (setf system-component-source-prefix)
-      ;; FIXME Consider integrating this with a STELLA-ASDF-MODULE
-      ;; class, and subsequently, inheriting the same in
-      ;; STELLA-ASDF-SYSTEM. Pathname resolution onto the
-      ;; COMPONENT-SOURCE-PREFIX value may then proceed recursively,
-      ;; beginning at the "Topmost" system definition's prefix, resolved
-      ;; (as presently) onto the system definition's own effective
-      ;; COMPONENT-PATHNAME. This could serve to support an arbitrary
-      ;; nesting of module/prefix specifications, juxtaposed to the
-      ;; essentially flat filesystem namespace, in this present
-      ;; implementation of STELLA-ASDF-SYSTEM.
-      :documentation
-      "Prefix path for resolving source file components in this system
-definition.
-
-If specifying a relative pathname, this pathname should be resolved as
-relative to the system definition's component pathname. If unbound, this
-slot's value may be interpreted as effectively NIL, as in the method
-SYSTEM-COMPONENT-SOURCE-PREFIX (STELLA-ASDF-SYSTEM) - in which case, the
-system definition's component pathname should be used, without prefix
-mapping, when resolving relative pathnames of system component source
-files.
-
-This value may be specified using a subset of logical pathname syntax,
-such as in \"PL:sources;\". Any element in this pathname may be
-interpreted as representing a filesystem directory, whether or not
-suffixed with a semicolon character, \";\".")
-   ))
-
-
-(defmethod system-component-source-prefix ((component stella-asdf-system))
-  ;; => <slot-value-if-bound>, <boundp>
-  (cond
-    ((slot-boundp component 'component-source-prefix)
-     (values (%system-component-source-prefix component)
-             t))
-    (t (values nil nil))))
-
-
-(defmethod shared-initialize :after ((instance stella-asdf-system)
-                                     slots &rest initargs
-                                     &key &allow-other-keys)
-  (declare (ignore initargs))
-  ;; NB Default slot-value initialization - slot initform in
-  ;; shared-initialize for COMPONENT-SOURCE-PREFIX
-
-  (when
-      (and (or (eq slots 't)
-               (and (consp slots)
-                    (find 'component-source-prefix (the cons slots)
-                          :test #'eq)))
-           (not (slot-boundp instance 'component-source-prefix)))
-    (setf (system-component-source-prefix instance)
-          ;; FIXME May break if system definition's relative-pathname was not set previously
-          ;;
-          ;; FIXME May break some calling functions if COMPONENT-PATHNAME returns NIL
-          #-SWANK
-          (component-pathname instance)
-          ;; NB Towards supporting interactive defsystem eval e.g w/ Emacs
-          #+SWANK
-          (let ((basep (component-pathname instance)))
-            (cond
-              ((null basep)
-               (warn "~<In SHARED-INITIALIZE :AFTER (STELLA-ASDF-SYSTEM ...)~> \
-~<: NULL COMPONENT-PATHNAME for ~s (Interactive Eval?)~> \
-~<- using *DEFAULT-PATHNAME-DEFAULTS* ~s~>"
-                     instance *default-pathname-defaults*)
-               (values *default-pathname-defaults*))
-              ;; else
-              (t (values basep)))))))
-
-;; (system-component-source-prefix (find-system "stella-init"))
-
-
-(defmethod asdf/component:module-default-component-class ((sys stella-asdf-system))
-  ;; NB Specialization
-  (find-class 'stella-lisp-source-file))
-
-
-(defmacro system-eval-main (op c)
-  (declare (ignore op c))
-  `(progn
-     ;; NB this applies impl-check to all system definitions using STELLA-ASDF-SYSTEM
-     (impl-check)
-     (ensure-feature :pl-asdf)
-     (ensure-system-pathname-translations)
-     #-(and) (set-global-unconditions ,op ,c)
-     (when (next-method-p) (call-next-method))))
-
-
-;; NB: These might not be called until after the completion of the
-;; corresponding ASDF oprn on all of the component files of the system defn.
-;; [FIXME]
-
-(defmethod asdf:perform :around ((o asdf:compile-op) (c stella-asdf-system))
-  (system-eval-main o c))
-
-
-(defmethod asdf:perform :around ((o asdf:load-op) (c stella-asdf-system))
-  ;; (format t "~%PERFORM :AROUND (LOAD-OP STELLA-ASDF-SYSTEM)")
-  (system-eval-main o c))
-
-(defmethod asdf:perform :around ((o asdf:load-source-op) (c stella-asdf-system))
-  (system-eval-main o c))
-
 
 ;; -- STELLA-INIT System Definition
 
@@ -880,7 +950,6 @@ suffixed with a semicolon character, \";\".")
              (cell-error-name c)))))
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
 
 (defmacro safe-fcall ((name &optional (pkg *package* pkg-p))
                       &rest args)
@@ -891,14 +960,14 @@ suffixed with a semicolon character, \";\".")
         (%pkg (make-symbol "%pkg"))
         (vis (make-symbol "%vis"))
         (fdef (make-symbol "%fdef")))
-    `(let ((,%pkg (or (if ,pkg-p
-                          (or (find-package (quote ,pkg))
-                              (error 'package-not-found
-                                     :name (quote ,pkg)))
-                          *package*)))
-           (,%name (etypecase (quote ,name)
-                     (symbol (symbol-name (quote ,name)))
-                     (string ,name))))
+    `(let ((,%pkg ,(if pkg-p
+                       `(or (find-package (quote ,pkg))
+                            (error 'package-not-found
+                                   :name (quote ,pkg)))
+                       (quote *package*)))
+           (,%name ,(etypecase name
+                     (symbol `(symbol-name (quote ,name)))
+                     (string name))))
        (multiple-value-bind (,s ,vis)
            (find-symbol ,%name ,%pkg)
          (let ((,fdef (when (and ,vis (fboundp ,s))
@@ -908,8 +977,6 @@ suffixed with a semicolon character, \";\".")
              (,vis (error 'unbound-function :name ,s))
              (t (error 'symbol-not-found :name ,%name
                        :namespace ,%pkg))))))))
-
-) ;; eval-when
 
 ;; (safe-fcall (#:identity #:cl-user) '#:s1243)
 
@@ -990,15 +1057,15 @@ suffixed with a semicolon character, \";\".")
 
   ;; :perform (compile-op :before (op c)
   ;;                      (ensure-feature :pl-asdf)
-  ;;                      (ensure-system-pathname-translations)
+  ;;                      (initialize-system-pathname-translations)
   ;;                      (set-global-unconditions op c))
   ;; :perform (load-op :before (op c)
   ;;                   (ensure-feature :pl-asdf)
-  ;;                   (ensure-system-pathname-translations)
+  ;;                   (initialize-system-pathname-translations)
   ;;                   (set-global-unconditions op c))
   ;; :perform (load-source-op :before (op c)
   ;;                          (ensure-feature :pl-asdf)
-  ;;                          (ensure-system-pathname-translations)
+  ;;                          (initialize-system-pathname-translations)
   ;;                          (set-global-unconditions op c))
 
   ;; NB call STELLA system startup functions after system load
@@ -1027,6 +1094,9 @@ suffixed with a semicolon character, \";\".")
   ;; - Also "Synchronization Support" in cl-setup.lisp
   :depends-on
   (#+SBCL :SB-BSD-SOCKETS)
+
+  ;; NB: load-stella is not used in this system
+  ;; but will be declared during eval of stella-system.ste
 
   :components
   ((stella-cl-lib-source-file "cl-setup")
