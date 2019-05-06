@@ -338,7 +338,13 @@ hash tables grow large).")
     (values
      (append
       #+sbcl '(sb-ext:compiler-note
-               ;; sb-c:inlining-dependency-failure
+
+               sb-c:inlining-dependency-failure
+               ;; ^ FIXME: Try not to muffle this.
+               ;; Ensure those functions are declared as inline, at top
+               ;; level. Meanwhile, this serves to work around a certain
+               ;; low-level bug.
+
                ;; sb-ext:early-deprecation-warning
                )
       (let (s)
@@ -366,14 +372,6 @@ hash tables grow large).")
   ;;     though not towards specializing on a condition type designator, T
   ;;     and not with accessing any format-control objects of the
   ;;     respective conditions.
-  ;;
-  ;; Unfortunately, it does not seem to be of use for working around a
-  ;;     certain bug in SBCL 1.4.16.655, SBCL 1.4.16.debian (??) etc
-  ;; e.g when
-  ;;   Generic function STELLA::ARITY clobbers an earlier COMMON-LISP:FTYPE
-  ;;   proclamation (FUNCTION (T) (VALUES FIXNUM &REST T)) for the same name with
-  ;;   (FUNCTION (T) *).
-  ;; (Not resulting in error w/ SBCL tagged sbcl-1.4.0)
 
   (let ((cdn (make-symbol "%cdn"))
         (typ (make-symbol "%typ"))
@@ -386,76 +384,34 @@ hash tables grow large).")
                                       (when (typep ,cdn ,typ) (return ,typ)))
                                     ;; (format *debug-io* "~%Muffle ~S" ,cdn)
                                     (muffle-warning ,cdn))
-                                   ;; #+SBCL ;; see below - DNW here, either
-                                   ;; ((and (typep ,cdn 'sb-int:simple-style-warning)
-                                   ;;       (not (typep (simple-condition-format-control ,cdn)
-                                   ;;                   'string)))
-                                   ;;  (format *debug-io* "~%Muffle (II) ~S" ,cdn)
-                                   ;;  (muffle-warning ,cdn))
                                    (t
                                     ;;; NB: Does not always display the condition class:
                                     ;; (format *debug-io* "~%Do not muffle ~S" ,cdn)
-                                    (warn ,cdn)))))
-                      ;;; try a workaround for a certain bug in SBCL
-                      ;;; versions 1.4.16 .. 1.5.2.8
-                      ;;; and not 1.3.12 .. [1.3.21]
-                      ;;;
-                      ;;; DNW - perhaps the SIMPLE-STYLE-WARNING with non-string
-                      ;;; format-control is not being caught soon enough, here
-                      ;;;
-                      ;;: NB: It's being passed to a lexically scoped SB-KERNEL::%WARN
-                      ;;;
-                      ;; #+SBCL
-                      ;; (sb-int:simple-style-warning
-                      ;;  (lambda (,cdn)
-                      ;;    (when (and (typep ,cdn 'simple-condition)
-                      ;;               (not (typep (simple-condition-format-control ,cdn)
-                      ;;                           'string)))
-                      ;;      (format *debug-io* "~%Muffle (II) ~S" ,cdn)
-                      ;;      (muffle-warning ,cdn))
-                      ;;    ;; (format *debug-io* "~%Do not muffle (II) ~S" ,cdn)
-                      ;;    ))
-                      ;;;
-                      ;;;
-                      ;;; NB: This error began sometime after SBCL 1.3.21
-                      ;;; - NB in SBCL 1.3.21 SB-FORMAT::FMT-CONTROL does not exist
-                      ;;;
-                      ;;; and still, there is a <serious error> there,
-                      ;;; when compiling under SLIME, on that SBCL platform.
-                      ;;; It also occurs during console sessions, though
-                      ;;; expressed differently at then (and **can be**
-                      ;;; muffled) when loading cl-primal.fasl ... in
-                      ;;; which, it's more or less from same origin as
-                      ;;; the  SB-FORMAT::FMT-CONTROL (is not a string)
-                      ;;; error in later SBCL. Not an apparent issue w/
-                      ;;; SBCL 1.3.12
-                      ;;;
-                      ;;;
-                      ;; #+SBCL
-                      ;; (simple-type-error
-                      ;;  ;; DNW anyway - this is not catching it
-                      ;;  (lambda (,cdn)
-                      ;;    (when (and (typep (type-error-datum ,cdn)
-                      ;;                      'sb-format::fmt-control)
-                      ;;               (eq (type-error-expected-type ,cdn)
-                      ;;                   'sb-kernel:string-designator))
-                      ;;      (format *debug-io* "~%Skip peculiar error ~S" ,cdn)
-                      ;;      ;; FIXME - may not work out (by default), to
-                      ;;      ;; call this restart on a non-warning
-                      ;;      ;; condition, even if this was able to catch
-                      ;;      ;; the error in SBCL
-                      ;;      (muffle-warning ,cdn))))
-
-                      )
+                                    (warn ,cdn))))))
          ,@forms))))
 
-;; NB: SBCL 1.3.12 WORKS JUST FINE for this system.
-;; BUT CAN'T BE BUILT WITH GLIBC >= 2.26 (??)
-;; cf. https://lore.kernel.org/patchwork/patch/851352/
-;; (WORKS OK ON BSD)
+;; Concerning a "certain bug" in SBCL - with SBCL 1.5.x and other versions -
+;; part of the error outcome:
+;;
+;; #<SB-FORMAT::FMT-CONTROL "~@<Generic function
+;; ~/SB-EXT:PRINT-SYMBOL-WITH-PREFIX/
+;; clobbers an earlier ~S proclamation ~/SB-IMPL:PRINT-TYPE/ for the
+;; same name with ~/SB-IMPL:PRINT-TYPE/.~:@>"> is not a string
+;; designator.
+;; ... during %WARN
+;; ..... during SB-PCL::NOTE-GF-SIGNATURE
+;; ....... during SB-PCL::REAL-ENSURE-GF-USING-CLASS--NULL
+;;
+;; So, perhaps something from SB-PCL DEFMETHOD is resulting in the
+;; FMT-CONTROL being packed into that slot, mistakenly?
+;;
+;; .. at which, note "FORMAT control string best-effort sanity checker
+;; and compactor" in SBCL sys:src;compiler;srctran.lisp
+;;
+;; NB: The error still occurs, even with SBCL built with
+;;     (setq SB-C::*OPTIMIZE-FORMAT-STRINGS* nil)
+;; in SBCL sys:src;compiler;srctran.lisp
 
-;; Concerning the "certain bug" in SBCL, as denoted above:
-;; #<SB-FORMAT::FMT-CONTROL "~@<Generic function ~/SB-EXT:PRINT-SYMBOL-WITH-PREFIX/ clobbers an earlier ~S proclamation ~/SB-IMPL:PRINT-TYPE/ for the same name with ~/SB-IMPL:PRINT-TYPE/.~:@>"> is not a string designator.
 
 ;; ---- Generic Class Definitions, Method Specializations, API
 
