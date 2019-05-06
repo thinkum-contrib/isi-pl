@@ -177,6 +177,8 @@
 ;;       are defined and they will generate warnings.  But they help
 ;;       in other places.
 
+#-SBCL
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (CL:declaim (CL:FTYPE (CL:FUNCTION (CL:T) CL:FIXNUM) arity))
 (CL:declaim (CL:FTYPE (CL:FUNCTION (CL:T) CL:FIXNUM) buffered-input-length))
 (CL:declaim (CL:FTYPE (CL:FUNCTION (CL:T) CL:FIXNUM) compute-depth))
@@ -187,7 +189,7 @@
 (CL:declaim (CL:FTYPE (CL:FUNCTION (CL:T) CL:FIXNUM) length))
 (CL:declaim (CL:FTYPE (CL:FUNCTION (CL:T) CL:FIXNUM) method-argument-count))
 (CL:declaim (CL:FTYPE (CL:FUNCTION (CL:T CL:T CL:FIXNUM) CL:FIXNUM) position))
-
+)
 
   ;;
 ;;;;;; Low-level support for CLOS and CL-struct slot value access

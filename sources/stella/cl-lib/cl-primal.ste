@@ -303,7 +303,7 @@ in the string 'self'."
 ;; Need to do the type declaration explicitly, because this is
 ;;   a method and would otherwise not get one for the generic function.
 (verbatim :common-lisp
-  " (CL:DECLAIM (CL:FTYPE (CL:FUNCTION (CL:T CL:T CL:FIXNUM) CL:FIXNUM) 
+  "#-SBCL (CL:DECLAIM (CL:FTYPE (CL:FUNCTION (CL:T CL:T CL:FIXNUM) CL:FIXNUM) 
 		POSITION))")
 (defmethod (position INTEGER)
     ((string STRING) (character CHARACTER) (start INTEGER))
@@ -322,7 +322,7 @@ entire string."
 
 
 (verbatim :common-lisp
-  " (CL:DECLAIM (CL:FTYPE (CL:FUNCTION (CL:T CL:T CL:FIXNUM) CL:FIXNUM) 
+  "#-SBCL (CL:DECLAIM (CL:FTYPE (CL:FUNCTION (CL:T CL:T CL:FIXNUM) CL:FIXNUM) 
 		LAST-POSITION))")
 (defmethod (last-position INTEGER)
     ((string STRING) (character CHARACTER) (end INTEGER))
