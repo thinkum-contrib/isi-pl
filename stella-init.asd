@@ -371,10 +371,11 @@ hash tables grow large).")
   ;;
   ;; Unfortunately, it does not seem to be of use for working around a
   ;;     certain bug in SBCL 1.4.16.655, SBCL 1.4.16.debian (??) etc
-
-  ;; NB: The nasty bug of {TBD - SBCL} ... still showing up in SBCL 1.5.28
-  ;;     when compiling this "Heavily involved" system
-  ;;    ... but poss. only when compiling w/i slime/swank i.e  'slime-load-system'
+  ;; e.g when
+  ;;   Generic function STELLA::ARITY clobbers an earlier COMMON-LISP:FTYPE
+  ;;   proclamation (FUNCTION (T) (VALUES FIXNUM &REST T)) for the same name with
+  ;;   (FUNCTION (T) *).
+  ;; (Not resulting in error w/ SBCL tagged sbcl-1.4.0)
 
   (let ((cdn (make-symbol "%cdn"))
         (typ (make-symbol "%typ"))
@@ -454,6 +455,9 @@ hash tables grow large).")
          ,@forms))))
 
 ;; NB: SBCL 1.3.12 WORKS JUST FINE for this system.
+;; BUT CAN'T BE BUILT WITH GLIBC >= 2.26 (??)
+;; cf. https://lore.kernel.org/patchwork/patch/851352/
+;; (WORKS OK ON BSD)
 
 ;; Concerning the "certain bug" in SBCL, as denoted above:
 ;; #<SB-FORMAT::FMT-CONTROL "~@<Generic function ~/SB-EXT:PRINT-SYMBOL-WITH-PREFIX/ clobbers an earlier ~S proclamation ~/SB-IMPL:PRINT-TYPE/ for the same name with ~/SB-IMPL:PRINT-TYPE/.~:@>"> is not a string designator.
