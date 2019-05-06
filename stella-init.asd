@@ -369,8 +369,11 @@ hash tables grow large).")
   ;;
   ;; Unfortunately, it does not seem to be of use for working around a
   ;;     certain bug in SBCL 1.4.16.655, SBCL 1.4.16.debian (??) etc
-  ;;
-  ;; NB Some of a bug showing up during system eval w/ Emacs (SLIME/SWANK)
+  ;; e.g when
+  ;;   Generic function STELLA::ARITY clobbers an earlier COMMON-LISP:FTYPE
+  ;;   proclamation (FUNCTION (T) (VALUES FIXNUM &REST T)) for the same name with
+  ;;   (FUNCTION (T) *).
+  ;; (Not resulting in error w/ SBCL tagged sbcl-1.4.0)
 
   (let ((cdn (make-symbol "%cdn"))
         (typ (make-symbol "%typ"))
@@ -415,7 +418,7 @@ hash tables grow large).")
                       ;;;
                       ;;;
                       ;;; NB: This error began sometime after SBCL 1.3.21
-                      ;;; whence SB-FORMAT::FMT-CONTROL does not exist
+                      ;;; - NB in SBCL 1.3.21 SB-FORMAT::FMT-CONTROL does not exist
                       ;;;
                       ;;; and still, there is a <serious error> there,
                       ;;; when compiling under SLIME, on that SBCL platform.
@@ -447,6 +450,9 @@ hash tables grow large).")
          ,@forms))))
 
 ;; NB: SBCL 1.3.12 WORKS JUST FINE for this system.
+;; BUT CAN'T BE BUILT WITH GLIBC >= 2.26 (??)
+;; cf. https://lore.kernel.org/patchwork/patch/851352/
+;; (WORKS OK ON BSD)
 
 ;; Concerning the "certain bug" in SBCL, as denoted above:
 ;; #<SB-FORMAT::FMT-CONTROL "~@<Generic function ~/SB-EXT:PRINT-SYMBOL-WITH-PREFIX/ clobbers an earlier ~S proclamation ~/SB-IMPL:PRINT-TYPE/ for the same name with ~/SB-IMPL:PRINT-TYPE/.~:@>"> is not a string designator.
