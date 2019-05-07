@@ -269,19 +269,19 @@
        (when ,procls
          (proclaim ,procls)))))
 
-(defmacro perform-main (om-o om-c)
+(defmacro perform-main (pm-o pm-c)
   ;; NB - SBCL - Note remarks in MUFFLE-CONDITIONS-LIST src
-  (let ((%om-o (make-symbol "%om-o"))
-        (%om-c (make-symbol "%om-c")))
+  (let ((%pm-o (make-symbol "%pm-o"))
+        (%pm-c (make-symbol "%pm-c")))
   `(with-compilation-unit ()
-     (let ((,%om-o ,om-o)
-           (,%om-c ,om-c))
-       (proclaim-for ,%om-o ,%om-c)
+     (let ((,%pm-o ,pm-o)
+           (,%pm-c ,pm-c))
+       (proclaim-for ,%pm-o ,%pm-c)
        #+SBCL ;; FIXME - impl-specific workaround for some things
        (proclaim
         (list* 'sb-ext:muffle-conditions
-               (muffle-conditions-list ,%om-o ,%om-c)))
-       (with-muffling (muffle-conditions-list ,om-o ,om-c)
+               (muffle-conditions-list ,%pm-o ,%pm-c)))
+       (with-muffling (muffle-conditions-list ,pm-o ,pm-c)
          (call-next-method))))))
 
 
