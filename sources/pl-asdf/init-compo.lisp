@@ -82,7 +82,7 @@
                ;; shadows an FTYPE declaration. Seen with SBCL 1.5.2.8
                ;; and other versions not including 1.3.12
 
-               ;;: NB Available in SBCL - unused since the source has
+               ;;; NB Available in SBCL - unused since the source has
                ;;; been updated for the newer PRINT-BACKTRACE
                ;; sb-ext:early-deprecation-warning
                )
@@ -207,7 +207,7 @@
   ;; synopses (pl-asdf reference manual)
   )
 
-(defclass stella-lisp-source-file (stella-implementation-source-file asdf:cl-source-file)
+(defclass stella-lisp-source-file (asdf:cl-source-file stella-implementation-source-file)
   ())
 
 (defmethod asdf/component:source-file-type ((c stella-lisp-source-file)
