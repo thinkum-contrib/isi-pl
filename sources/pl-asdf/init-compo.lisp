@@ -305,5 +305,3 @@ STELLA-LISP-SOURCE-FILE)~>~< : (~A ~A)~>" o c)
 STELLA-LISP-SOURCE-FILE)~>~< : (~A ~A)~>" o c)
   (perform-main o c))
 
-
-;; -- Components for Other STELLA Implementations (Unused at present)
