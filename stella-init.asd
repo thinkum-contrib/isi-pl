@@ -67,14 +67,15 @@
        (symbol-value (quote +stella-user-symbols+)))
       (t
         '(*load-cl-struct-stella?* ;; NB (Needs tests)
-          *stella-verbose?* ;; FIXME ASDF integr
+          *stella-verbose?*
           ;; ^ NB used in STELLA cl-translate-file
-          *stella-compiler-optimization* ;;  FIXME ASDF integr. Note corresp. decls in STELLA system defs
+          *stella-compiler-optimization*
           ;; ^ NB used in STELLA cl-translate-file
-          ;;   /NB uiop/lisp-build:with-optimization-settings
-          *stella-memoization-default* ;; T.D New (contrib)
-          *stella-default-external-format*
-          *use-stella-hash-tables?* ;; NB! from pl:sources;stella;load-stella.lisp
+          ;;   - NB macro (ASDF) UIOP/LISP-BUILD:WITH-OPTIMIZATION-SETTINGS
+          ;;   - NB GF (PL-ASDF) PROCLAMATIONS-FOR
+          *stella-memoization-default* ;; NB New (contrib) (Needs testing)
+          *stella-default-external-format*  ;; NB New (contrib)
+          *use-stella-hash-tables?* ;; cf. pl:sources;stella;load-stella.lisp
           ;; ^ NB usage notes
           ;; - STELLA::CLSYS-TEST-SXHASH-SUPPORT & subsq.
           ;; - STELLA collections src
@@ -243,11 +244,21 @@ hash tables grow large).")
   ;; NB UIOP/PATHNAME:*OUTPUT-TRANSLATION-FUNCTION* [ASDF]
   ;; - usage in UIOP/LISP-BUILD:COMPILE-FILE-PATHNAME* (No Op/Component state provided)
 
- ;;; FIXME use in a method onto OUTPUT-FILES or similar
+  ;; FIXME use in a method onto OUTPUT-FILES or similar
   (uiop/configuration:xdg-cache-home +pl-asdf-cache-name+ :implementation))
 
 
 (defun ensure-pathname-translations (src-prefix)
+  ;; FIXME Also write pathname translations as configuration data
+  ;; under
+  ;;   (A) COMPILE-OP - some subdir of [XDG CONFIG DIR] or
+  ;;   (B) SYS-COMPILE-OP - some subdir of [SYSTEM CONFIG PREFIX] or
+  ;;   (C) STAGE-COMPILE-OP - some subdir of [SYSTEM STAGING PREFIX]
+
+  ;; Note also
+  ;; ASDF/OUTPUT-TRANSLATIONS::*OUTPUT-TRANSLATIONS-FILE*
+  ;; (can be lexically/specially bound w/i specialized OPERATE mtd)
+
   ;; define a set of logical pathanme translations in a manner that
   ;; should retain portability onto upstream PowerLOOM(r)
   ;;
@@ -362,25 +373,35 @@ hash tables grow large).")
   ;; muffle in an environment of OP on COMPONENT
   ;;
   (:method ((op t) (component asdf:cl-source-file))
-    ;; FIXME may have to set uiop/lisp-build:*uninteresting-conditions*
-    ;; lexically, to prevent these from being shadowed? [DNW]
+    ;; FIXME This list of conditions may seem to have been shadowed,
+    ;; under some source configurations in SBCL, such as in which the
+    ;; list is used within a HANDLER-BIND form in WITH-MUFFLING
+    ;;
+    ;; When using a PROCLAIM form specifying SB-EXT:MUFFLE-CONDITIONS
+    ;; for this list of conditions, within PERFORM -- as below -- then
+    ;; it does not seem to have been shadowed as such. Of course, then
+    ;; the usage of WITH-MUFFLING is simply redundant.
     (values
      (append
       #+sbcl '(sb-ext:compiler-note
 
                sb-c:inlining-dependency-failure
-               ;; ^ FIXME: Try not to muffle this.
+               ;; ^ FIXME: Try not to muffle that style-warning
+               ;;
                ;; Ensure those functions are declared as inline, at top
                ;; level. Meanwhile, this serves to work around a certain
-               ;; low-level bug.
+               ;; low-level issue as when a warning would be produced
+               ;; about the inline issue in the src, when using SBCL
 
+               ;;: NB Available in SBCL - unused since the source has
+               ;;; been updated for the newer PRINT-BACKTRACE
                ;; sb-ext:early-deprecation-warning
                )
       (let (s)
         (dolist (spec uiop/lisp-build:*usual-uninteresting-conditions* s)
           (when (symbolp spec)
             (setq s (cons spec s))))))))
-  ;; TO DO ^ also specialize onto LOAD-OP, COMPILE-OP
+  ;; TO DO ^ specialize onto LOAD-OP, COMPILE-OP
   ;; cf. ASDF *uninteresting-loader-conditions*, *uninteresting-compiler-conditions*
 
   (:method ((op t) (component asdf:system))
@@ -440,6 +461,8 @@ hash tables grow large).")
 ;; NB: The error still occurs, even with SBCL built with
 ;;     (setq SB-C::*OPTIMIZE-FORMAT-STRINGS* nil)
 ;; in SBCL sys:src;compiler;srctran.lisp
+;;
+;; [Needs QA]
 
 
 ;; -- PL-ASDF System Definition Extensions
@@ -457,14 +480,25 @@ hash tables grow large).")
       :writer (setf system-component-source-prefix)
       ;; FIXME Consider integrating this with a STELLA-ASDF-MODULE
       ;; class, and subsequently, inheriting the same in
-      ;; STELLA-ASDF-SYSTEM. Pathname resolution onto the
-      ;; COMPONENT-SOURCE-PREFIX value may then proceed recursively,
-      ;; beginning at the "Topmost" system definition's prefix, resolved
-      ;; (as presently) onto the system definition's own effective
-      ;; COMPONENT-PATHNAME. This could serve to support an arbitrary
-      ;; nesting of module/prefix specifications, juxtaposed to the
-      ;; essentially flat filesystem namespace, in this present
-      ;; implementation of STELLA-ASDF-SYSTEM.
+      ;; STELLA-ASDF-SYSTEM.
+      ;;
+      ;; Pathname resolution onto the COMPONENT-SOURCE-PREFIX value may
+      ;; then proceed up-recursively, ending at the "Topmost" system
+      ;; definition's prefix, in a merge onto (like as presently) the
+      ;; system definition's own effective COMPONENT-PATHNAME.
+      ;;
+      ;; Pathname resolution for arbitrary output files - in some
+      ;; instances, FASL files - may be implemented with a similar
+      ;; component/pathname prefix/template/filename mechanism, pending
+      ;; further consideration of the design of appropriate user,
+      ;; system, and staging install oprns. In the user instance, it may
+      ;; reuse the existing filename translation methods in ASDF,
+      ;; without much specialization.
+      ;;
+      ;; This could serve to support an arbitrary nesting of
+      ;; module/prefix specifications, juxtaposed to the essentially
+      ;; flat filesystem namespace in this present implementation of
+      ;; STELLA-ASDF-SYSTEM.
       :documentation
       "Prefix path for resolving source file components in this system
 definition.
@@ -507,12 +541,14 @@ suffixed with a semicolon character, \";\".")
                           :test #'eq)))
            (not (slot-boundp instance 'component-source-prefix)))
     (setf (system-component-source-prefix instance)
-          ;; FIXME May break if system definition's relative-pathname was not set previously
+          ;; NB May break if the system definition's relative-pathname
+          ;; was not set previously
           ;;
-          ;; FIXME May break some calling functions if COMPONENT-PATHNAME returns NIL
+          ;; NB May break some calling functions if COMPONENT-PATHNAME
+          ;; returns NIL
           #-SWANK
           (component-pathname instance)
-          ;; NB Towards supporting interactive defsystem eval e.g w/ Emacs
+          ;; So, towards supporting interactive defsystem eval e.g w/ Emacs
           #+SWANK
           (let ((basep (component-pathname instance)))
             (cond
@@ -752,7 +788,7 @@ STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
 (defmethod asdf/component:source-file-type ((c stella-lisp-source-file)
                                             (container stella-asdf-system))
   (declare (ignore c container))
-  ;; FIXME STELLA-STRUCT build needs [QA] w/ and w/o Emacs
+  ;; FIXME STELLA-STRUCT builds - needs [QA] w/ and w/o Emacs
   #+stella-struct
   (values "slisp")
   #-stella-struct
@@ -763,9 +799,10 @@ STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
 
 
 (defclass stella-cl-lib-source-file (stella-lisp-source-file)
-  ;; FIXME suffix "cl-lib" dirname to system prefix path dir
+  ;; FIXME suffix "cl-lib" dirname to an appropriate xdg/staging/system
+  ;; prefix path dir, when calculating source files and output files
   ;;
-  ;; FIXME also address STELLA cpp-lib. javalib sources.
+  ;; FIXME also address STELLA cpp-lib. javalib sources (non-CL STELLA Impls)
   ;;
   ;; Note specifications in stella-system.ste for language-specific
   ;; source files, and STELLA::VERBATIM for inline specification of
@@ -805,13 +842,14 @@ STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
          (proclaim ,procls)))))
 
 (defmacro perform-main (om-o om-c)
+  ;; NB - SBCL - Note remarks in MUFFLE-CONDITIONS-LIST src
   (let ((%om-o (make-symbol "%om-o"))
         (%om-c (make-symbol "%om-c")))
   `(with-compilation-unit ()
      (let ((,%om-o ,om-o)
            (,%om-c ,om-c))
        (proclaim-for ,%om-o ,%om-c)
-       #+SBCL ;; FIXME - impl-specific workaround for a thing
+       #+SBCL ;; FIXME - impl-specific workaround for some things
        (proclaim
         (list* 'sb-ext:muffle-conditions
                (muffle-conditions-list ,%om-o ,%om-c)))
@@ -983,6 +1021,8 @@ STELLA-LISP-SOURCE-COMPONENT)~>~< : (~A ~A)~>" o c)
 (defsystem #:stella-init
   :class stella-asdf-system
 
+  ;; :defsystem-depends-on (#:PL-ASDF)
+
   ;; NB The following ordered set of filenames, under :components
   ;; locally, is retained from the file -- in STELLA cl-lib src --
   ;; pl:sources;stella;cl-lib;make-stella.lisp
@@ -1014,22 +1054,6 @@ STELLA-LISP-SOURCE-COMPONENT)~>~< : (~A ~A)~>" o c)
   ;; STELA Common Lisp implementation source code, original STELLA
   ;; source code, and corresponding STELLA cl-lib forms.
 
-  ;; FIXME Are these :perform :before methods being called, when defined?
-  ;;       If so, called at what instance during the build?
-
-  ;; :perform (compile-op :before (op c)
-  ;;                      (ensure-feature :pl-asdf)
-  ;;                      (initialize-system-pathname-translations)
-  ;;                      (set-global-unconditions op c))
-  ;; :perform (load-op :before (op c)
-  ;;                   (ensure-feature :pl-asdf)
-  ;;                   (initialize-system-pathname-translations)
-  ;;                   (set-global-unconditions op c))
-  ;; :perform (load-source-op :before (op c)
-  ;;                          (ensure-feature :pl-asdf)
-  ;;                          (initialize-system-pathname-translations)
-  ;;                          (set-global-unconditions op c))
-
   ;; NB call STELLA system startup functions after system load
   ;; cf. source files
   ;;       pl:sources;stella;cl-lib;make-stella.lisp
@@ -1051,9 +1075,9 @@ STELLA-LISP-SOURCE-COMPONENT)~>~< : (~A ~A)~>" o c)
   ;; FIXME note the section in sources/stella/cl-lib/cl-setup.lisp
   ;; where "Load support libraries for TCP/IP"
   ;;
-  ;; Update this system for portability.
-  ;; - STELLA::%%OPEN-NETWORK-STREAM
-  ;; - Also "Synchronization Support" in cl-setup.lisp
+  ;; - Update this system for portability @ TCP/IP - STELLA::%%OPEN-NETWORK-STREAM
+  ;; - Also note the section, "Synchronization Support," in cl-setup.lisp
+  ;; - Furthermore, the local addition of CL-USER::*STELLA-DEFAULT-EXTERNAL-FORMAT*
   :depends-on
   (#+SBCL :SB-BSD-SOCKETS)
 
