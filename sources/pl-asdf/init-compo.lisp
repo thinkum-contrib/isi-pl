@@ -290,19 +290,19 @@
 (defmethod asdf:perform ((o asdf:compile-op) (c stella-lisp-source-file))
   #+PL-ASDF-DEBUG
   (format *debug-io* "~%ASDF:PERFORM~< (ASDF:COMPILE-OP ~
-STELLA-LISP-SOURCE-COMPONENT)~>~< : (~A ~A)~>" o c)
+STELLA-LISP-SOURCE-FILE)~>~< : (~A ~A)~>" o c)
   (perform-main o c))
 
 (defmethod asdf:perform ((o asdf:load-op) (c stella-lisp-source-file))
   #+PL-ASDF-DEBUG
   (format *debug-io* "~%ASDF:PERFORM~< (ASDF:LOAD-OP ~
-STELLA-LISP-SOURCE-COMPONENT)~>~< : (~A ~A)~>" o c)
+STELLA-LISP-SOURCE-FILE)~>~< : (~A ~A)~>" o c)
   (perform-main o c))
 
 (defmethod asdf:perform ((o asdf:load-source-op) (c stella-lisp-source-file))
   #+PL-ASDF-DEBUG
   (format *debug-io* "~%ASDF:PERFORM~< (ASDF:LOAD-SOURCE-OP ~
-STELLA-LISP-SOURCE-COMPONENT)~>~< : (~A ~A)~>" o c)
+STELLA-LISP-SOURCE-FILE)~>~< : (~A ~A)~>" o c)
   (perform-main o c))
 
 
