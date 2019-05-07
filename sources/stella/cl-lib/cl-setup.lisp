@@ -808,7 +808,7 @@
     #+:MCL   (ccl:print-call-history)
     #+:OpenMCL (ccl:print-call-history :stream stream)
     #+:CMU   (debug:backtrace)
-    #+:SBCL  (sb-debug:backtrace)
+    #+:SBCL  (sb-debug:print-backtrace :stream stream)
     #+:CLISP (system::print-backtrace :out stream)
     #+:LISPWORKS (dbg:output-backtrace :stream stream)
     ))
