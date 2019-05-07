@@ -73,19 +73,26 @@
                sb-c:inlining-dependency-failure
                ;; ^ FIXME: Try not to muffle that style-warning
                ;;
-               ;; Ensure those functions are declared as inline, at top
-               ;; level. Meanwhile, this serves to work around a certain
-               ;; low-level issue as when a warning would be produced
-               ;; about the inline issue in the src, when using SBCL
+               ;; Ensure that those functions are declared as inline, at
+               ;; top level. Meanwhile, this serves to work around a
+               ;; certain low-level bug as when a warning would be
+               ;; produced about the unusable inline decl the sources,
+               ;; when using SBCL. This bug may also occur when some
+               ;; other warnings are produced, e.g when DEFGENERIC
+               ;; shadows an FTYPE declaration. Seen with SBCL 1.5.2.8
+               ;; and other versions not including 1.3.12
 
                ;;: NB Available in SBCL - unused since the source has
                ;;; been updated for the newer PRINT-BACKTRACE
                ;; sb-ext:early-deprecation-warning
                )
-      (let (s)
-        (dolist (spec uiop/lisp-build:*usual-uninteresting-conditions* s)
+      (let* ((s (list (quote #:conditions)))
+             (%s s))
+        (dolist (spec uiop/lisp-build:*usual-uninteresting-conditions*
+                 (cdr %s))
           (when (symbolp spec)
-            (setq s (cons spec s))))))))
+            (setf (cdr s) (list spec))
+            (setq s (cdr s))))))))
   ;; TO DO ^ specialize onto LOAD-OP, COMPILE-OP
   ;; cf. ASDF *uninteresting-loader-conditions*, *uninteresting-compiler-conditions*
 
