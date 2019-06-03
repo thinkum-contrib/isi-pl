@@ -49,6 +49,10 @@
 ;; -- More Protocol functions
 
 (defgeneric proclamations-for (op component)
+  ;; NB: Methods defined on this generic function may - in effect - be
+  ;;     evaluated within the compilation environment.
+  ;;
+  ;; Usage: Used in PROCLAIM-FOR, subsequently in PERFORM-MAIN
   (:method ((op operation) (component source-file))
     (values nil)))
 
@@ -274,10 +278,20 @@
   (let ((%pm-o (make-symbol "%pm-o"))
         (%pm-c (make-symbol "%pm-c")))
   `(with-compilation-unit ()
+     ;; NB: This uses WITH-COMPILATION-UNIT and PROCLAIM in something of
+     ;;     a runtime-dispatched analogy to LOCALLY - such that, albeit,
+     ;;     may not be evaluated in exactly the same way as a LOCALLY
+     ;;     form.
+     ;;
+     ;;    This extent of compiler tooling may not be, per se, well
+     ;;    supported in CLtL2.
      (let ((,%pm-o ,pm-o)
            (,%pm-c ,pm-c))
        (proclaim-for ,%pm-o ,%pm-c)
-       #+SBCL ;; FIXME - impl-specific workaround for some things
+       #+SBCL
+       ;; FIXME - impl-specific workaround, for a purpose of ensuring
+       ;; that the list of warning conditions may actually be muffled in
+       ;; the compiler environment.
        (proclaim
         (list* 'sb-ext:muffle-conditions
                (muffle-conditions-list ,%pm-o ,%pm-c)))
