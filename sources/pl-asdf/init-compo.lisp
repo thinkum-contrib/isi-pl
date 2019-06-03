@@ -48,11 +48,11 @@
 
 ;; -- More Protocol functions
 
-(defgeneric proclamations-for (op component)
+(defgeneric declarations-for (op component)
   ;; NB: Methods defined on this generic function may - in effect - be
   ;;     evaluated within the compilation environment.
   ;;
-  ;; Usage: Used in PROCLAIM-FOR, subsequently in PERFORM-MAIN
+  ;; Usage: Used in DECLARE-FOR, subsequently in PERFORM-MAIN
   (:method ((op operation) (component source-file))
     (values nil)))
 
@@ -169,7 +169,7 @@
   ())
 
 
-(defmethod proclamations-for ((op asdf:operation)
+(defmethod declarations-for ((op asdf:operation)
                               (component stella-component))
   (declare (ignore op component))
   (values *stella-compiler-optimization*))
@@ -268,35 +268,32 @@
 
 (defmacro proclaim-for (op component)
   ;; NB ASDF GET-OPTIMIZATION-SETTINGS
-  (let ((procls (make-symbol "%procls")))
-    `(let ((,procls (proclamations-for ,op ,component)))
-       (when ,procls
-         (proclaim ,procls)))))
+  (let ((decls (make-symbol "%decls")))
+    `(let ((,decls (declarations-for ,op ,component)))
+       (when ,decls
+         ;; NB: This assumes that the implementation will contain the
+         ;; declarations to any calling LOCALLY form, although the
+         ;; macroexpansion must be evaluated as to reach the contained
+         ;; PROCLAIM form
+         (proclaim ,decls)))))
 
 (defmacro perform-main (pm-o pm-c)
   ;; NB - SBCL - Note remarks in MUFFLE-CONDITIONS-LIST src
   (let ((%pm-o (make-symbol "%pm-o"))
         (%pm-c (make-symbol "%pm-c")))
-  `(with-compilation-unit ()
-     ;; NB: This uses WITH-COMPILATION-UNIT and PROCLAIM in something of
-     ;;     a runtime-dispatched analogy to LOCALLY - such that, albeit,
-     ;;     may not be evaluated in exactly the same way as a LOCALLY
-     ;;     form.
-     ;;
-     ;;    This extent of compiler tooling may not be, per se, well
-     ;;    supported in CLtL2.
-     (let ((,%pm-o ,pm-o)
+    `(let ((,%pm-o ,pm-o)
            (,%pm-c ,pm-c))
-       (proclaim-for ,%pm-o ,%pm-c)
-       #+SBCL
-       ;; FIXME - impl-specific workaround, for a purpose of ensuring
-       ;; that the list of warning conditions may actually be muffled in
-       ;; the compiler environment.
-       (proclaim
-        (list* 'sb-ext:muffle-conditions
-               (muffle-conditions-list ,%pm-o ,%pm-c)))
-       (with-muffling (muffle-conditions-list ,pm-o ,pm-c)
-         (call-next-method))))))
+       (locally
+           (proclaim-for ,%pm-o ,%pm-c)
+         #+SBCL
+         ;; FIXME - impl-specific workaround, for a purpose of ensuring
+         ;; that the list of warning conditions may actually be muffled in
+         ;; the compiler environment
+         (proclaim
+          (list* 'sb-ext:muffle-conditions
+                 (muffle-conditions-list ,%pm-o ,%pm-c)))
+         (with-muffling (muffle-conditions-list ,pm-o ,pm-c)
+           (call-next-method))))))
 
 
 ;; - Perform methods
