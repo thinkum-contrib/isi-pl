@@ -187,4 +187,28 @@
    (asdf:component-pathname (asdf:find-system "stella-init"))))
 
 
+;; --
 
+;; FIXME The function CL-USER::STELLA-NEED-TO-COMPILE?
+;; is referenced in STELLA implementation source files
+;; pl:**;cl-translate-file.lisp
+;;
+;; This function may need a portable implementation for PL-ASDF.
+;;
+;; The function is referenced within the STELLA implementation source
+;; for the Common Lisp function, STELLA::CL-COMPILE-AND-LOAD-FILES
+;; such that is used, in turn, from STELLA::COMPILE-AND-LOAD-FILES
+;; such that, in itself, is used from within a number of STELLA
+;; functions for STELLA system management, e.g
+;; STELLA::LOAD-PREPROCESSED-FILES, STELLA::%LOAD-SYSTEM, ...
+;;
+;; Note that both of a source pathname and bytecode pathnme are provided
+;; to STELLA-NEED-TO-COMPILE?
+;;
+;; Ideally, the function may be left undefined and unreferenced, for
+;; STELLA sources evaluated using PL-ASDF
+
+;; FIXME: This system definition extension needs to provide suitable
+;; output translations, at least insofar as for supporting STELLA
+;; implementation synthesis via PL-ASDF. This facility must be made to
+;; interopate, somehow, towards a definition of STELLA-NEED-TO-COMPILE?
