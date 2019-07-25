@@ -45,6 +45,71 @@
 
 (in-package #:cl-user)
 
+;; NB: This system definition, in effect, is defined for a purpose of
+;; loading PL STELLA in a Common Lisp implementation, using ASDF. This
+;; does not assume that any PL STELLA implementation would be, as yet,
+;; available in the running Common Lisp implementation.
+;;
+;;
+;; At present, this system definition supports only the set of STELLA
+;; Common Lisp implementation source files produced for the usage case
+;; of CL-USER::*LOAD-VECTOR-STRUCT-STELLA?* and
+;; CL-USER::*LOAD-CL-STRUCT-STELLA?* both NIL - as per the behaviors
+;; of the original load-stella.lisp.
+;;
+;; As such, a couple of further caveats:
+;;
+;; - This system - in effect - uses the CLOS implementation of STELLA
+;;   in Common Lisp.
+;;
+;; - This assumes that a set of STELLA implementation source files have
+;;   been generated such as to be locally available for the CLOS
+;;   implementation of STELLA in Common Lisp. Such source files would be
+;;   available with the orginal PL source distribution.
+;;
+;;
+;; This system definition, in effect, represents the STELLA system
+;; defined in pl:sources;systems;stella-system.ste  i.e the STELLA
+;; system definition represenging the STELLA system.
+;;
+;; This system definition, as well as the stella-init-system system
+;; definition used in this system definition, were both defined after
+;; the behaviors of the original load-stella.lisp, subsequently adapted
+;; for intepoerability with ASDF. Although this is believed to reprsent
+;; the original stella-system.ste STELLA system, it has not yet been
+;; tested with any STELLA implementation system locally generated from
+;; that STELLA source system definition.
+;;
+;; Pursuant towards supporting development with other STELLA
+;; implemetnations, this systeam definition simply uses the
+;; STELLA CLOS implementation source files -- as available with the
+;; original ISI PL source distribution, subsequently patched for
+;; purposes of interoperability, testing, and general development, in
+;; the contrib source repository.
+;;
+;;
+;; Pursuant to successfully loading the stella-init system with ASDF,
+;; it should be possible to locally produce any updated STELLA
+;; implementation source system -- i.e in any of the Common Lisp, C++,
+;; or Java STELLA implementation kinds -- using a locally available
+;; STELLA system definition such as in stella-system.ste. Ideally, ASDF
+;; may be used throughout this generalized process, in a manner
+;; principally beginning with the STELLA CLOS Common Lisp implementation.
+;;
+;;
+;; This system definition, together with the dependent system definition
+;; in stella-init-system.asd, may serve to represent a manner of a
+;; bootstrap component for development with STELLA in Common Lisp
+;; environments. This, in a manner, reuses the portable Common Lisp
+;; source and bytecode  management facilities provided with ASDF.
+;;
+;; As well as supporting generalized development processes with PL
+;; STELLA, itself, this system definition should also serve towards the
+;; specific usage case of loading the PL PowerLoom system, for
+;; development with ISI PowerLoom(R)+
+;;
+
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   ;; Load the STELLA-INIT-SYSTEM support code, so as to permit evaluation
   ;; of the subsequent system definition
