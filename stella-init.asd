@@ -88,7 +88,7 @@
 ;; the contrib source repository.
 ;;
 ;;
-;; Pursuant to successfully loading the stella-init system with ASDF,
+;; Pursuant of successfully loading the stella-init system with ASDF,
 ;; it should be possible to locally produce any updated STELLA
 ;; implementation source system -- i.e in any of the Common Lisp, C++,
 ;; or Java STELLA implementation kinds -- using a locally available
@@ -106,7 +106,7 @@
 ;; As well as supporting generalized development processes with PL
 ;; STELLA, itself, this system definition should also serve towards the
 ;; specific usage case of loading the PL PowerLoom system, for
-;; development with ISI PowerLoom(R)+
+;; development with ISI PowerLoom(R)
 ;;
 
 
