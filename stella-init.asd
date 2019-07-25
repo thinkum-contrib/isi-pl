@@ -56,18 +56,12 @@
                      :format-control msg
                      :format-arguments args)))
 
-      ;; FIXME: This will need some adjusting, for system/staging installation
+      ;; FIXME: This will need some adjusting, for installation to host
+      ;; system and staging pathnames
 
-      ;; NB: This does not check whether the reverse-dependent system
-      ;; definition source file has been updated since last eval.
-      ;;
-      ;; It's assumed, here, that it should be sufficient to evaluate
-      ;; the system defintiion source file once, at the time when the
-      ;; present system definition source file is initially evaluated.
-      ;;
       ;; The PL-ASDF source code has been moved out of this system
       ;; definition file and into the following source subtree, in the
-      ;; interest of ensuring modulrity of the source code for this
+      ;; interest of ensuring modularity of the source code for this
       ;; system definition extension.
       (let* ((pfx (or *load-truename*
                       *compile-file-pathname*
@@ -108,14 +102,6 @@
 ;; but should be usable, portably, onto ASDF
 
 
-;; FIXME The function #'CL-USER::STELLA-NEED-TO-COMPILE?
-;; is referenced in STELLA implementation source files
-;; pl:**;cl-translate-file.lisp
-;;
-;; This function may need a portable implementation for PL-ASDF.
-;;
-;; The function is referenced within the STELLA implementation source
-;; for the Common Lisp function, STELLA::CL-COMPILE-AND-LOAD-FILES
 
 
 ;; -- STELLA-INIT System Definition
