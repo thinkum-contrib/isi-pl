@@ -43,6 +43,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; END LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; NB: This system definition presents a portion of source code used by
+;; the stella-init.asd system definition.
+;;
+;; The latter system definition is defined as to emulate some
+;; characteristics of the original STELLA system definition, defined in
+;; pl:sources;systems;stella-system.ste
+;;
+;; More directly, the stella-init system emulates the original
+;; load-stella source forms, as defined in
+;; pl:sources;stella;load-stella.lisp
+;;
+;; This source code has been patched for purpose of interoperability
+;; with ASDF.
+
+
+
 (in-package #:cl-user)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
