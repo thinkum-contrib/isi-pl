@@ -126,16 +126,51 @@
   ;;   the STELLA source translation API.
   ;;
 
-  ;; NB These logical pathname translations may be used internally, in
-  ;; STELLA systems, pursuant to software source code synthesis with
-  ;; STELLA system definitions.
+  ;; NB, Topic: STELLA Systems -- STELLA System Definitions --
+  ;; Pathnames in STELLA Systems // These logical pathname translations
+  ;; may be used internally, in STELLA systems, pursuant to software
+  ;; source code synthesis with STELLA system definitions (e.g
+  ;; STELLA::MAKE-SYSTEM)
   ;;
   ;; See also, in translate-file.ste and subsq. implementation sources:
   ;;   stella::*rootSourceDirectory* - default, "PL:sources;"
   ;;   stella::*rootNativeDirectory* - default, "PL:native;"
   ;;   stella::*rootBinaryDirectory* - default, "PL:bin;"
-  ;;   furthermore, STELLA function stella::system-definitions-directory
-  ;;   such that uses, by default, the pathname "PL:sources;systems;"
+  ;;
+  ;;   ... such that may need to be set or mapped to a "non-default"
+  ;;   value, for general purposes of source isolation (using e.g an
+  ;;   INSTALL-OP onto ASDF) .. with such isolation being developed as
+  ;;   to prevent unintended modification of local source changes, in
+  ;;   local "native" sources, e.g by side effect of STELLA::MAKE-SYSTEM
+  ;;
+  ;;   furthermore, note STELLA function STELLA::SYSTEM-DEFINITIONS-DIRECTORY
+  ;;   such -- in its Common Lisp implementation -- uses, by default,
+  ;;   the logical pathname translation ofthe pathname "PL:sources;"
+  ;;   suffixed with the namestring element "systems" as to represent -
+  ;;   intrinsically - a filesystem directory, in local filesystem
+  ;;   namestring syntax (assuming the value returned from
+  ;;   TRANSLATE-LOGICAL-PATHNAME is suffixed with a pathname directory
+  ;;   indicator)
+  ;;   ... and is used in STELLA::MAKE-SYSTEM-DEFINITION-FILE-NAME
+  ;;       ... which is used in STELLA::GET-SYSTEM-DEFINITION
+  ;;
+  ;; TBD, Topic: STELLA Systems -- General Concepts (STELLA System
+  ;; Definitions and STELLA System Implementations; ...)
+  ;;
+  ;; TBD: Topic, STELLA Systems -- STELLA System Definitions (Note
+  ;; subheading, denoted above)
+  ;;
+  ;; TBD, Topic: STELLA Systems -- STELLA System Implementations
+  ;; - NB Topic, Generating STELLA Implementation Source
+  ;;   - NB cf. MAKE-SYSTEM - source generation
+  ;; - NB Topic, Evalutaing STELLA System Implementations - Common Lisp
+  ;;   (with PL-ASDF), C++, Java(R)
+  ;;   - NB cf. MAKE-SYSTEM - compilation/loading for generated sources
+  ;;   - NB: Makefiles in STELLA C++
+  ;;   - NB: Class files in STELLA Java(R)
+
+
+
   (assert (probe-file src-prefix) (src-prefix))
   (let ((src-prefix-path (pathname src-prefix)))
     (declare (dynamic-extent src-prefix-path))
