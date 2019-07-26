@@ -1,6 +1,4 @@
-;; stella.asd - Extending ASDF onto PowerLOOM(r), STELLA runtime   -*- lisp -*-
-
-;; NB May be renamed to stella-template.asd
+;; stella-stella.asd - ASDF interop for PowerLoom(r) STELLA        -*- lisp -*-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; BEGIN LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                                                                            ;
@@ -45,6 +43,40 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; END LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; NB: This system definition should provide support for evaluating the
+;; PL STELLA system in a manner beginning from evaluation of the STELLA
+;; system definition provided in pl:sources;systems;stella-system.ste
+;;
+;; This may, albeit, result in a STELLA system somewhat differing to
+;; that provided in Common Lisp source form, in the original, public
+;; PowerLoom(r) distribution (FIXME QA) assuming that the Common Lisp
+;; implementation produced from the STELLA source files for STELLA may
+;; not exactly match -- in file form, at least -- the Common Lisp
+;; implementation for STELLA provided in the original PowerLoom(r)
+;; distribution, or that with updates provided in this
+;; contrib. repository
+;;
+;; ----
+;;
+;; This system definition may be developed in parallel to the support
+;; for ASDF interoperability insofar as concerning the STELLA system
+;; definitions representing the principal kernel and interactive forms
+;; of the PowerLoom environment i.e
+;;   pl:sources;systems;logic-system.ste
+;; and
+;;   pl:sources;systems;powerloom-system.ste
+;;
+;; Such support may be provided to the user as, in effect, emulating
+;; load-powerloom.lisp using the contributed PL ASDF systems.
+;;
+;; ----
+;;
+;; This assumes that the STELLA system has already been loaded into the
+;; Common Lisp implementation - as vis a vis the ASDF system definition
+;; stella-init.asd
+;;
+
+
 (in-package #:cl-user)
 
 ;; NB in lieu of a system definition lib, extensional to ASDF,
@@ -56,7 +88,7 @@
 
 (in-package #:stella-system)
 
-;; NB some stella-init.asd code may be reused in stella.asd
+;; NB some stella-init.asd code may be reused in stella-stella.asd
 
 (defclass stella-system (stella-asdf-system)
   ;; FIXME: Generalize STELLA-ASDF-SYSTEM
