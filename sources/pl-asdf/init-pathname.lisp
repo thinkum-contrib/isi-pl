@@ -284,7 +284,6 @@
     (values nil)))
 
 (defgeneric ensure-system-pathname-translations (operation system)
-
   ;; FIXME/DOCU - note where this is used
   ;; - refer to source file ./init-sys.lisp
   ;;   macro, SYSTEM-EVAL-MAIN, and methods onto ASDF:OPERATE in which
@@ -299,7 +298,8 @@
     ;; NB: This method will not destructively modify any existing
     ;; logical pathname translations onto the system logical pathname host.
     (let ((host (system-logical-pathname-host system)))
-      (unless (ignore-errors (logical-pathname-translations host))
+      (when (and host
+                 (null (ignore-errors (logical-pathname-translations host))))
         (setf (logical-pathname-translations host)
               (append
                (compute-source-pathname-translations operation system)

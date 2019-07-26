@@ -123,7 +123,8 @@ suffixed with a semicolon character, \";\".")
    (logical-pathname-host
     :initarg :logical-pathname-host
     :type simple-string
-    :accessor system-logical-pathname-host
+    :reader %system-logical-pathname-host
+    :writer (setf system-logical-pathname-host)
     :documentation
     "If bound, a simple string denoting a logical pathname host to be defined
 for source and bytecode operations on the system definition.
@@ -145,7 +146,6 @@ COMPUTE-DATA-PATHNAME-TRANSLATIONS
     )
   ))
 
-
 (defmethod system-component-source-prefix ((component stella-asdf-system))
   ;; => <slot-value-if-bound>, <boundp>
   (cond
@@ -154,6 +154,14 @@ COMPUTE-DATA-PATHNAME-TRANSLATIONS
              t))
     (t (values nil nil))))
 
+(defmethod system-logical-pathname-host ((component stella-asdf-system))
+  (cond
+    ((slot-boundp component 'logical-pathname-host)
+     (values (%system-logical-pathname-host component)
+             t))
+    (t (values nil nil))))
+
+;; --
 
 (defmethod shared-initialize :after ((instance stella-asdf-system)
                                      slots &rest initargs
