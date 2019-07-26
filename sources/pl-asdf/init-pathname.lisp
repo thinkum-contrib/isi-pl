@@ -101,6 +101,7 @@
 
 (defun compute-pathname-translations (src-prefix &optional subdirs)
   (declare  (type (or simple-string pathname) src-prefix))
+
   ;; FIXME Also write pathname translations as configuration data
   ;; storing the data in a trivially formatted file under
   ;;   (A) COMPILE-OP - some subdir of [XDG CONFIG DIR] or
@@ -167,11 +168,24 @@
   ;;   - NB cf. MAKE-SYSTEM - source generation
   ;; - NB Topic, Evalutaing STELLA System Implementations - Common Lisp
   ;;   (with PL-ASDF), C++, Java(R)
-  ;;   - NB cf. MAKE-SYSTEM - compilation/loading for generated sources
+  ;;   - NB cf. STELLA::LOAD-SYSTEM
+  ;;   - NB cf. STELLA::MAKE-SYSTEM - compilation/loading for generated sources
   ;;   - NB: Makefiles in STELLA C++
   ;;   - NB: Class files in STELLA Java(R)
-
-
+  ;;
+  ;;   - NB: Compleat list of options accepted vis. STELLA::DEFSYSTEM
+  ;;         - Refer to STELLA source code for STELLA::DEFINE-SYSTEM
+  ;;         - :banner, ...
+  ;;         - pathnames
+  ;;         - language-specific source files (Common Lisp, C++, Java)
+  ;;         - :data-files
+  ;;         - :preprocessed-files (e.g in CL, C++ w/ STELLA logic-system.ste)
+  ;;
+  ;;   - NB: Sytnax of STELLA::DEFUN, and examples vis a vis CL:DEFMACRO
+  ;;         - Refer to STELLA source code for STELLA::DEFSYSTEM
+  ;;           -  i.e ':command? TRUE :evaluate-arguments? FALSE :public? TRUE'
+  ;;           - juxtaposed to the STELLA source form definition of
+  ;;             STELLA::DEFINE-SYSTEM
 
   (assert (probe-file src-prefix) (src-prefix)
           ;; NB: This does not test whether each of SUBDIRS exists
