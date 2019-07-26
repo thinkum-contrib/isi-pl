@@ -99,7 +99,7 @@
 
 
 
-(defun compute-pathname-translations (src-prefix &optional subdirs)
+(defun compute-source-subpath-translations (src-prefix &optional subdirs)
   (declare  (type (or simple-string pathname) src-prefix))
 
   ;; FIXME Also write pathname translations as configuration data
@@ -245,7 +245,7 @@
                       :type uiop/pathname:*wild*
                       :version wild-version
                       :defaults src-prefix-path))
-       #+NIL
+       #+NIL ;; NB Something of a "Design Artifact," by now
        (list (mk-subdir-logical-pathname "bin") (mk-asdf-bin-translate))
        (when subdirs
          (mapcar #'(lambda (subdir)
@@ -254,11 +254,36 @@
                  subdirs))))))
 
 
-(defun ensure-pl-pathname-translations ()
-  ;; NB: This could be defined in a more generalized manner, such as in
-  ;; at least to parameterize the pathname host, system definition name,
-  ;; and list of subdirs. Here it's been used as a simple utility form
-  ;; for one system definition.
+(defgeneric compute-source-pathname-translations (operation system)
+  (:method ((operation operation) (system system))
+    (declare (ignore operation system))
+    (values nil))
+  (:method ((operation operation) (system stella-asdf-system))
+    (compute-source-subpath-translations
+     (system-logical-source-root system)
+     ;; NB This does not handle any install-source oprn [FIXME]
+     ;;
+     ;; NB This does not include mappings onto the 'htdocs',
+     ;; contrib 'doc' or load-stella.lisp 'bin' pathname
+     ;;
+     ;; FIXME: Update to provide a translation for pl:bin;
+     ;; as interoperable with ASDF output pathname
+     ;; translations
+     (system-logical-source-subdirs system))))
+
+(defgeneric compute-bytecode-pathname-translations (operation system)
+  ;; NB See also, ENSURE-SYSTEM-PATHNAME-TRANSLATIONS
+  (:method ((operation operation) (system system))
+    (declare (ignore operation system))
+    (values nil)))
+
+(defgeneric compute-data-pathname-translations (operation system)
+  ;; NB See also, ENSURE-SYSTEM-PATHNAME-TRANSLATIONS
+  (:method ((operation operation) (system system))
+    (declare (ignore operation system))
+    (values nil)))
+
+(defgeneric ensure-system-pathname-translations (operation system)
 
   ;; FIXME/DOCU - note where this is used
   ;; - refer to source file ./init-sys.lisp
@@ -269,44 +294,34 @@
   ;; STELLA-ASDF-SYSTEM during any LOAD-OP, LOAD-SOURCE-OP or
   ;; COMPILE-OP with ASDF - as per definitions in init-sys.lisp
   ;;
-  ;; NB: This function will not destructively modify any existing
-  ;; logical pathname translations onto the "PL" logical pathname host.
-  ;;
-  (let ((host "PL"))
-    (declare (dynamic-extent host))
-    (unless (ignore-errors (logical-pathname-translations host))
-      (setf (logical-pathname-translations host)
-            (compute-pathname-translations
-             ;; FIXME: This hard-coded COMPONENT-PATHNAME behavior
-             ;; needs to be paramterized, "Somehow". Presently, it
-             ;; provides a simple manner of convenience for determining
-             ;; the pathname of the STELLA source repository, when
-             ;; stella-init.asd is located at the root directory of
-             ;; that source repository.
-             (asdf:component-pathname (asdf:find-system "stella-init"))
-             ;; NB This does not handle any install-source oprn [FIXME]
-             ;;
-             ;; NB This does not include mappings onto the 'htdocs',
-             ;; contrib 'doc' or load-stella.lisp 'bin' pathname
-             ;;
-             ;; FIXME: Update to provide a translation for pl:bin;
-             ;; as interoperable with ASDF output pathname translations
-             '("sources" "native" "kbs"))))))
+
+  (:method ((operation operation) (system stella-asdf-system))
+    ;; NB: This method will not destructively modify any existing
+    ;; logical pathname translations onto the system logical pathname host.
+    (let ((host (system-logical-pathname-host system)))
+      (unless (ignore-errors (logical-pathname-translations host))
+        (setf (logical-pathname-translations host)
+              (append
+               (compute-source-pathname-translations operation system)
+               (compute-bytecode-pathname-translations operation system)
+               (compute-data-pathname-translations operation system)
+               )))
+      )))
 
 
 ;;; Inline test forms
 #+NIL
 (eval-when ()
-  (compute-pathname-translations
+  (compute-source-pathname-translations
    (component-pathname (find-system "stella-init-system"))
    '("frob"))
 
-  (compute-pathname-translations "DNW")
+  (compute-source-pathname-translations "DNW")
 
 
   (setf (logical-pathname-translations "PL") nil)
 
-  (ensure-pl-pathname-translations)
+  (asdf:operarte 'asdf:load-op '#:stella-init)
   (probe-file "PL:sources;")
   (probe-file "PL:sources;systems;stella-system.ste")
   (probe-file "PL:stella-init.asd")

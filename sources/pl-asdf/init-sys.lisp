@@ -53,6 +53,18 @@
 
 (defgeneric (setf system-component-source-prefix) (new-value component))
 
+(defgeneric system-logical-pathname-host (component))
+(defgeneric (setf system-logical-pathname-host) (new-value component))
+
+(defgeneric system-logical-source-subdirs (component))
+(defgeneric (setf system-logical-source-subdirs) (new-value component))
+
+;; --
+
+(defgeneric system-logical-source-root (component)
+  (:method ((component system))
+    (component-pathname component)))
+
 ;; -- System definition class & initialization
 
 ;; TBD: Define a more generalized class, such that STELLA-ASDF-SYSTEM
@@ -108,7 +120,30 @@ This value may be specified using a subset of logical pathname syntax,
 such as in \"PL:sources;\". Any element in this pathname may be
 interpreted as representing a filesystem directory, whether or not
 suffixed with a semicolon character, \";\".")
-   ))
+   (logical-pathname-host
+    :initarg :logical-pathname-host
+    :type simple-string
+    :accessor system-logical-pathname-host
+    :documentation
+    "If bound, a simple string denoting a logical pathname host to be defined
+for source and bytecode operations on the system definition.
+
+See also:
+ENSURE-SYSTEM-PATHNAME-TRANSLATIONS
+COMPUTE-SOURCE-PATHNAME-TRANSLATIONS
+COMPUTE-BYTECODE-PATHNAME-TRANSLATIONS
+COMPUTE-DATA-PATHNAME-TRANSLATIONS
+"
+    )
+   (logical-source-subdirs
+    :initarg :logical-source-subdirs
+    :type list
+    :initform nil
+    :accessor system-logical-source-subdirs
+    ;; NB Somewhat a convenience, for the implementation of
+    ;; COMPUTE-SOURCE-PATHNAME-TRANSLATIONS onto STELLA-ASDF-SYSTEM
+    )
+  ))
 
 
 (defmethod system-component-source-prefix ((component stella-asdf-system))
@@ -157,67 +192,7 @@ suffixed with a semicolon character, \";\".")
 ;; (system-component-source-prefix (find-system "stella-init"))
 
 
-
 (defmethod asdf/component:module-default-component-class ((sys stella-asdf-system))
   ;; NB Specialization
   (find-class 'stella-lisp-source-file))
-
-
-#-(AND)
-(defmacro set-global-unconditions (o c) ;; see previous NB
-  ;; NB: Earlier prototype for warnings-muffling during ASDF compile/load
-  ;;     onto STLELLA Lisp systems - unused, at present
-  ;;
-  ;; NB: Uses a function presently defined in init-compo.lisp
-  (let ((%o (make-symbol "%o"))
-        (%c (make-symbol "%c")))
-    `(let ((,%o ,o)
-           (,%c ,c))
-       (uiop/utility:style-warn
-        "~<In (~A ~A)~>~< : set *uninteresting-conditions* globally~>"
-        ,%o ,%c)
-       (setq uiop/lisp-build:*uninteresting-conditions*
-             (muffle-conditions-list ,%o ,%c)))))
-
-
-(defmacro system-eval-main (op c)
-  (declare (ignore op c))
-  `(progn
-     ;; NB This applies the following forms to all system definitions
-     ;; of a type STELLA-ASDF-SYSTEM, for which the following OPERATE
-     ;; methods would represent the primary methods
-     (impl-check)
-     (ensure-feature :pl-asdf)
-     (ensure-pl-pathname-translations)
-     #-(and) (set-global-unconditions ,op ,c)
-     (call-next-method)))
-
-
-;; NB: The following methods are defined onto OPERATE, such as to ensure
-;; that forms in SYSTEM-EVAL-MAIN may be evaluated previous to any
-;; evaluation of ASDF:PERFORM onto objects within the provided system
-;; definition.
-
-(defmethod asdf:operate :around ((o asdf:compile-op) (c stella-asdf-system)
-                                 &key &allow-other-keys)
-  #+PL-ASDF-DEBUG
-  (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:COMPILE-OP ~
-STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
-  (system-eval-main o c))
-
-
-(defmethod asdf:operate :around ((o asdf:load-op) (c stella-asdf-system)
-                                  &key &allow-other-keys)
-  #+PL-ASDF-DEBUG
-  (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:LOAD-OP ~
-STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
-  (system-eval-main o c))
-
-
-(defmethod asdf:operate :around ((o asdf:load-source-op) (c stella-asdf-system)
-                                  &key &allow-other-keys)
-  #+PL-ASDF-DEBUG
-  (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:LOAD-SOURCE-OP ~
-STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
-  (system-eval-main o c))
 

@@ -201,6 +201,7 @@
   :class stella-asdf-system
 
   :defsystem-depends-on (#:stella-init-system)
+  ;; ^ NB: Also note the top-level form at the beginning of this source fike
 
   ;; NB The following ordered set of filenames is retained from the file
   ;; pl:sources;stella;cl-lib;make-stella.lisp
@@ -264,6 +265,10 @@
   ;;; NB use all of the following files as under native/lisp/stella/
   ;;; using a portable pathname syntax in the system definition
   :component-source-prefix "native;lisp;stella;"
+
+  ;; configuration for ENSURE-SYSTEM-PATHNAME-TRANSLATIONS
+  :logical-pathname-host "PL"
+  :logical-source-subdirs ("sources" "native" "kbs")
 
   ;; FIXME note the section in sources/stella/cl-lib/cl-setup.lisp
   ;; where "Load support libraries for TCP/IP"

@@ -1,4 +1,4 @@
-;; stella-init.asd - System definition support for STELLA-INIT     -*- lisp -*-
+;; init-oprn.lisp - Operations onto ASDF components for stella-init-system
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; BEGIN LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                                                                            ;
@@ -42,99 +42,64 @@
 ;;                                                                            ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; END LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-;; NB: This system definition presents a portion of source code used by
-;; the stella-init.asd system definition.
-;;
-;; The latter system definition is defined as to emulate some
-;; characteristics of the original STELLA system definition, defined in
-;; pl:sources;systems;stella-system.ste
-;;
-;; More directly, the stella-init system emulates the original
-;; load-stella source forms, as defined in
-;; pl:sources;stella;load-stella.lisp
-;;
-;; This source code has been patched for purpose of interoperability
-;; with ASDF.
-
-
-
-(in-package #:cl-user)
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defconstant +stella-user-symbols+
-    ;; NB: Convenience variables, principally serving as build/runtime
-    ;; configuration parameters, defined in the original source files
-    ;;   pl:sources;stella;load-stella.lisp
-    ;; and
-    ;;   pl:sources;stella;cl-lib;make-stella.lisp
-    (cond
-      ((boundp (quote +stella-user-symbols+))
-       (symbol-value (quote +stella-user-symbols+)))
-      (t
-        '(*load-cl-struct-stella?* ;; NB (Needs tests)
-          *stella-verbose?*
-          ;; ^ NB used in STELLA cl-translate-file
-          *stella-compiler-optimization*
-          ;; ^ NB used in STELLA cl-translate-file
-          ;;   - NB macro (ASDF) UIOP/LISP-BUILD:WITH-OPTIMIZATION-SETTINGS
-          ;;   - NB GF (PL-ASDF) PROCLAMATIONS-FOR
-          *stella-memoization-default* ;; NB New (contrib) (Needs testing)
-          *stella-default-external-format*  ;; NB New (contrib)
-          *use-stella-hash-tables?* ;; cf. pl:sources;stella;load-stella.lisp
-          ;; ^ NB usage notes
-          ;; - STELLA::CLSYS-TEST-SXHASH-SUPPORT & subsq.
-          ;; - STELLA collections src
-          ;;   - STELLA source forms: sources/stella/collections.ste
-          ;;   - Implementation source (non-struct STELLA):
-          ;;     native/lisp/stella/collections.lisp
-          )))))
-
-
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defpackage #:stella-system
-    (:use #:asdf #:cl)
-    #.(list* :shadowing-import-from
-             (quote #:cl-user)
-             +stella-user-symbols+)))
-
-
 (in-package #:stella-system)
 
-#+NIL
-(defmacro defconst (name value &optional docstr)
-  ;; NB utility macro - DEFCONSTANT like DEFVAR
-  ;; TBD - move into an init-macros source file, if used
-  `(defconstant ,name
-     ,@(when docstr (list docstr))
-     (cond
-       ((boundp (quote ,name))
-        (symbol-value (quote ,name)))
-,       (t ,value))))
+
+#-(AND)
+(defmacro set-global-unconditions (o c) ;; see previous NB
+  ;; NB: Earlier prototype for warnings-muffling during ASDF compile/load
+  ;;     onto STLELLA Lisp systems - unused, at present
+  ;;
+  ;; NB: Uses a function presently defined in init-compo.lisp
+  (let ((%o (make-symbol "%o"))
+        (%c (make-symbol "%c")))
+    `(let ((,%o ,o)
+           (,%c ,c))
+       (uiop/utility:style-warn
+        "~<In (~A ~A)~>~< : set *uninteresting-conditions* globally~>"
+        ,%o ,%c)
+       (setq uiop/lisp-build:*uninteresting-conditions*
+             (muffle-conditions-list ,%o ,%c)))))
 
 
-(defsystem #:stella-init-system
-  :components
-  ((:file "init-user")
-   (:file "init-parse-path")
-   (:file "init-features")
-   (:file "init-sys"
-          :depends-on ("init-features"
-                       #+NIL "init-parse-path" ;; not used in this file [FIXME]
-                       ))
-   (:file "init-compo"
-          :depends-on ("init-user"
-                       "init-sys"
-                       "init-parse-path"
-                       ))
-   (:file "init-pathname"
-          :depends-on ("init-sys"
-                       ))
-   (:file "init-oprn"
-          :depends-on ("init-compo"
-                       "init-pathname"
-                       "init-features"
-                       ))
-   (:file "init-fcall")
-   ))
+(defmacro system-eval-main (op c)
+  `(progn
+     ;; NB This applies the following forms to all system definitions
+     ;; of a type STELLA-ASDF-SYSTEM, for which the following OPERATE
+     ;; methods would represent the primary methods
+     (impl-check)
+     (ensure-feature :pl-asdf)
+     (ensure-system-pathname-translations ,op ,c)
+     #-(and) (set-global-unconditions ,op ,c)
+     (call-next-method)))
+
+
+;; NB: The following methods are defined onto OPERATE, such as to ensure
+;; that forms in SYSTEM-EVAL-MAIN may be evaluated previous to any
+;; evaluation of ASDF:PERFORM onto objects within the provided system
+;; definition.
+
+(defmethod asdf:operate :around ((o asdf:compile-op) (c stella-asdf-system)
+                                 &key &allow-other-keys)
+  #+PL-ASDF-DEBUG
+  (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:COMPILE-OP ~
+STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
+  (system-eval-main o c))
+
+
+(defmethod asdf:operate :around ((o asdf:load-op) (c stella-asdf-system)
+                                  &key &allow-other-keys)
+  #+PL-ASDF-DEBUG
+  (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:LOAD-OP ~
+STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
+  (system-eval-main o c))
+
+
+(defmethod asdf:operate :around ((o asdf:load-source-op) (c stella-asdf-system)
+                                  &key &allow-other-keys)
+  #+PL-ASDF-DEBUG
+  (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:LOAD-SOURCE-OP ~
+STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
+  (system-eval-main o c))
+
+
