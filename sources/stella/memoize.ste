@@ -481,7 +481,7 @@ cached NULL.")
         (setf (value bucket) timeStamp)
         (setf (rest bucket) NIL))))
     ;(++ *failed-memoization-lookups*)
-    
+
     ;; build a new entry with a value slot initialized to NULL:
     (setq entry (make-memoized-value-entry NULL arg1 arg2 arg3 arg4))
     (if (defined? bucket)
@@ -507,7 +507,7 @@ cached NULL.")
     (setq timeStamp (current-timestamp memoTable))
 
     (setq hashCode (hash-memoized-argumentsN args eqVector))
-    
+
     ;; lookup a memoized value:
     ;(++ *total-memoization-lookups*)
     (setq bucket (lookup hashTable hashCode))
@@ -582,7 +582,7 @@ cached NULL.")
         (hashCode 0)
         (bucketIndex 0)
         (entry CONS NULL))
-    
+
     (when (null? mruBuckets)
       (initialize-MRU-bucket-tables memoTable)
       (setq mruBuckets (mru-buckets memoTable)))
@@ -597,7 +597,7 @@ cached NULL.")
       (setf (free-entries memoTable) (max-entries memoTable)))
 
     (setq hashCode (hash-memoized-arguments arg1 arg2 arg3 arg4 eqVector))
-    
+
     ;; lookup a memoized value - try most recently used entries first
     ;;    (any valid entry on the MRU side has been used more recently
     ;;    than any valid entry on the LRU side):
@@ -640,7 +640,7 @@ cached NULL.")
         (setf (rest mruBucket) (cons entry (rest mruBucket)))
       (setf (nth mruBuckets bucketIndex)
         (cons mruTimeStamp (cons entry NIL))))
-    
+
     (when (= (-- (free-entries memoTable)) 0)
       ;; We've accumulated `max-entries' on the MRU side; discard the LRU
       ;;    side (by bumping the timestamp) and switch bucket tables:
@@ -664,7 +664,7 @@ cached NULL.")
         (hashCode 0)
         (bucketIndex 0)
         (entry CONS NULL))
-    
+
     (when (null? mruBuckets)
       (initialize-MRU-bucket-tables memoTable)
       (setq mruBuckets (mru-buckets memoTable)))
@@ -679,7 +679,7 @@ cached NULL.")
       (setf (free-entries memoTable) (max-entries memoTable)))
 
     (setq hashCode (hash-memoized-argumentsN args eqVector))
-    
+
     ;; lookup a memoized value - try most recently used entries first
     ;;    (any valid entry on the MRU side has been used more recently
     ;;    than any valid entry on the LRU side):
@@ -719,7 +719,7 @@ cached NULL.")
         (setf (rest mruBucket) (cons entry (rest mruBucket)))
       (setf (nth mruBuckets bucketIndex)
         (cons mruTimeStamp (cons entry NIL))))
-    
+
     (when (= (-- (free-entries memoTable)) 0)
       ;; We've accumulated `max-entries' on the MRU side; discard the LRU
       ;;    side (by bumping the timestamp) and switch bucket tables:
@@ -902,7 +902,7 @@ wrapped literals (with the exception of BOOLEANs)."
                ;; at least one argument needs to be tested with EQL?:
                (setq allEq? FALSE)))
              (setf (value it) (sys-tree walkedArg type))))
-    
+
     ;; Assemble the appropriate lookup form:
     (setq lookupFunction
       (choose (null? (lookup options :max-values))
@@ -998,12 +998,12 @@ wrapped literals (with the exception of BOOLEANs)."
 memoized iterator needs to be cloned to allow multiple iterations over
 the collection represented by the memoized iterator.  Use the following
 idiom to memoize some arbitrary iterator and return a properly cloned value:
-	 
+
  (clone-memoized-iterator
    (memoize (...) <options>*
             (new MEMOIZABLE-ITERATOR
                  :base-iterator <base-iterator>)))
-	
+
 This will ensure that <base-iterator> is exhausted exactly once even if
 there are multiple clones for the same memoized value, and that each value
 is generated as late as absolutely possible.  THIS IS NOT YET THREAD SAFE!"
@@ -1119,7 +1119,7 @@ generating and saving the next value of the `base-iterator'."
 ;; We are alreay memoizing `test-property?', but we could conceivably memoize
 ;;    this too and have it depend on the less volatile :meta-kb-update timestamp:
 
-(defun (test-total? BOOLEAN) ((self DESCRIPTION)) 
+(defun (test-total? BOOLEAN) ((self DESCRIPTION))
   (return
    (memoize (self *context*)
             :timestamps :meta-kb-update
