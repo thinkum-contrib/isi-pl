@@ -99,22 +99,24 @@
 
 
 
-(defun ensure-pathname-translations (src-prefix)
+(defun compute-pathname-translations (src-prefix &optional subdirs)
+  (declare  (type (or simple-string pathname) src-prefix))
   ;; FIXME Also write pathname translations as configuration data
-  ;; under
+  ;; storing the data in a trivially formatted file under
   ;;   (A) COMPILE-OP - some subdir of [XDG CONFIG DIR] or
-  ;;   (B) SYS-COMPILE-OP - some subdir of [SYSTEM CONFIG PREFIX] or
-  ;;   (C) STAGE-COMPILE-OP - some subdir of [SYSTEM STAGING PREFIX]
+  ;;   (B) SYS-COMPILE-OP (??) - some subdir of [SYSTEM CONFIG PREFIX] or
+  ;;   (C) STAGE-COMPILE-OP (??) - some subdir of [SYSTEM STAGING PREFIX]
 
   ;; Note also
   ;; ASDF/OUTPUT-TRANSLATIONS::*OUTPUT-TRANSLATIONS-FILE*
   ;; (can be lexically/specially bound w/i specialized OPERATE mtd)
 
-  ;; define a set of logical pathanme translations in a manner that
-  ;; should retain portability onto upstream PowerLOOM(r)
+  ;; This function: Define a set of logical pathanme translations in a
+  ;; manner that should retain portability onto upstream PowerLOOM(r)
   ;;
-  ;; referencing PL:translations.lisp,- NB `wild-version-value'
-  ;; (May be addressed portably onto ASDF)
+  ;; Referencing:
+  ;; - PL:translations.lisp
+  ;;   - NB `wild-version-value' may be addressed portably onto ASDF
   ;;
   ;; NB:
   ;; - [FIXME] This, as yet, does not support any INSTALL-SOURCE-OP
@@ -171,25 +173,31 @@
 
 
 
-  (assert (probe-file src-prefix) (src-prefix))
-  (let ((src-prefix-path (pathname src-prefix)))
-    (declare (dynamic-extent src-prefix-path))
-    (labels ((mk-subwild-logname (tok)
-               (format nil "~a;**;*.*.*" tok))
-             (mk-template-translate (tok base)
-               ;; NB: Using portable pathname API from ASDF, at runtime,
+  (assert (probe-file src-prefix) (src-prefix)
+          ;; NB: This does not test whether each of SUBDIRS exists
+          "Prefix pathname does not exist: ~s" src-prefix)
+
+  (let ((src-prefix-path (pathname src-prefix))
+        (wild-version (pathname-version uiop/pathname:*wild-file*)))
+    (labels ((mk-subdir-logical-pathname (subdir)
+               (format nil "~a;**;*.*.*" subdir))
+             (mk-template-translate (subdir base)
+               ;; NB: Using portable pathname forms from ASDF, at runtime,
                ;;     to ensure portability across CLtL2 implementations
                (let ((stub (make-pathname
-                            :directory (list :relative tok
+                            :directory (list :relative subdir
                                              uiop/pathname::*wild-inferiors-component*)
-                            :name uiop/pathname:*wild* :type uiop/pathname:*wild*
-                            :version (pathname-version uiop/pathname:*wild-file*)
+                            :name uiop/pathname:*wild*
+                            :type uiop/pathname:*wild*
+                            :version wild-version
                             :defaults base)))
                  (merge-pathnames stub base)))
-             (mk-src-translate (tok)
-               (mk-template-translate tok src-prefix-path))
+             (mk-subdir-translation (subdir)
+               (mk-template-translate subdir src-prefix-path))
 
              #+NIL ;; FIXME - This design choice needs further consideration
+             ;; as to define a pathname translation for "pl:bin;"
+             ;; in a manner interoperable with ASDF ouptut pathname translations
              (mk-asdf-bin-translate ()
                ;; NB ASDF UIOP/PATHNAME:*OUTPUT-TRANSLATION-FUNCTION*
                ;;    local value ASDF/OUTPUT-TRANSLATIONS:APPLY-OUTPUT-TRANSLATIONS
@@ -198,28 +206,99 @@
                ;;       and sometimes by UIOP/LISP-BUILD:COMPILE-FILE*
                ;;           used by ASDF/LISP-ACTION:PERFORM-LISP-COMPILATION
                ;;                used by ASDF/ACTION:PERFORM (COMPILE-OP CL-SOURCE-FILE)
-               ;; NB: Uses ASDF Class definitions insofar as pathname propertiess and dispatching for PERFORM
+               ;;                and presumably, elsewhere in ASDF
+               ;;
+               ;; TBD: FASL staging prefix - configuration during
+               ;; OPERATE for COMPILE-OP, LOAD-OP and PL ASDF INSTALL-OP 
+               ;; w/ interop. for ASDF output pathname translation, "there."
+               ;; - Classess STAGED-COMPILE-OP, STAGED-LOAD-OP,
+               ;;   and method specialization for PERFORM
+               ;; - Class INSTALL-OP and subsq.xs
+               ;; - Application management tooling (LTP)
+               ;;
+               ;; See also [DOCU]:
+               ;; - SYSTEM-COMPONENT-SOURCE-PREFIX
+               ;;   specialized onto STELLA-ADSF-SYSTEM
+               ;; - STELLA-ASDF-SYSTEM [Class]
+               ;;   slot COMPONENT-SOURCE-PREFIX
+               ;; - stella-init.asd (Usage)
+               ;;
                (mk-template-translate "bin" *pl-asdf-output-cache*)))
-  (setf (logical-pathname-translations "PL")
-        (append
-         (list
-          (list "*.*.*" src-prefix-path) ;; ensure files in top src dir are accessible
-          #+NIL
-          (list (mk-subwild-logname "bin") (mk-asdf-bin-translate)))
-         (mapcar #'(lambda (tok)
-                          (list (mk-subwild-logname tok) (mk-src-translate tok)))
-                 ;; NB This does not handle any install-source oprn [FIXME]
-                 '("sources" "native" "kbs")))))))
+
+      (cons
+       (list "*.*.*" (make-pathname
+                      :name uiop/pathname:*wild*
+                      :type uiop/pathname:*wild*
+                      :version wild-version
+                      :defaults src-prefix-path))
+       #+NIL
+       (list (mk-subdir-logical-pathname "bin") (mk-asdf-bin-translate))
+       (when subdirs
+         (mapcar #'(lambda (subdir)
+                     (list (mk-subdir-logical-pathname subdir)
+                           (mk-subdir-translation subdir)))
+                 subdirs))))))
+
+
+(defun ensure-pl-pathname-translations ()
+  ;; NB: This could be defined in a more generalized manner, such as in
+  ;; at least to parameterize the pathname host, system definition name,
+  ;; and list of subdirs. Here it's been used as a simple utility form
+  ;; for one system definition.
+
+  ;; FIXME/DOCU - note where this is used
+  ;; - refer to source file ./init-sys.lisp
+  ;;   macro, SYSTEM-EVAL-MAIN, and methods onto ASDF:OPERATE in which
+  ;;   that macro is evaluated
+  ;;
+  ;; NB: As such, this will be evaluated for every instance of a
+  ;; STELLA-ASDF-SYSTEM during any LOAD-OP, LOAD-SOURCE-OP or
+  ;; COMPILE-OP with ASDF - as per definitions in init-sys.lisp
+  ;;
+  ;; NB: This function will not destructively modify any existing
+  ;; logical pathname translations onto the "PL" logical pathname host.
+  ;;
+  (let ((host "PL"))
+    (declare (dynamic-extent host))
+    (unless (ignore-errors (logical-pathname-translations host))
+      (setf (logical-pathname-translations host)
+            (compute-pathname-translations
+             ;; FIXME: This hard-coded COMPONENT-PATHNAME behavior
+             ;; needs to be paramterized, "Somehow". Presently, it
+             ;; provides a simple manner of convenience for determining
+             ;; the pathname of the STELLA source repository, when
+             ;; stella-init.asd is located at the root directory of
+             ;; that source repository.
+             (asdf:component-pathname (asdf:find-system "stella-init"))
+             ;; NB This does not handle any install-source oprn [FIXME]
+             ;;
+             ;; NB This does not include mappings onto the 'htdocs',
+             ;; contrib 'doc' or load-stella.lisp 'bin' pathname
+             ;;
+             ;; FIXME: Update to provide a translation for pl:bin;
+             ;; as interoperable with ASDF output pathname translations
+             '("sources" "native" "kbs"))))))
+
 
 ;;; Inline test forms
-;; (ensure-pathname-translations (component-pathname (find-system "stella-init")))
-;; (probe-file "PL:sources;")
-;; (probe-file "PL:stella-init.asd")
+#+NIL
+(eval-when ()
+  (compute-pathname-translations
+   (component-pathname (find-system "stella-init-system"))
+   '("frob"))
+
+  (compute-pathname-translations "DNW")
 
 
-(defun initialize-system-pathname-translations ()
-  (ensure-pathname-translations
-   (asdf:component-pathname (asdf:find-system "stella-init"))))
+  (setf (logical-pathname-translations "PL") nil)
+
+  (ensure-pl-pathname-translations)
+  (probe-file "PL:sources;")
+  (probe-file "PL:sources;systems;stella-system.ste")
+  (probe-file "PL:stella-init.asd")
+  (probe-file "PL:")
+  (probe-file "PL:doc;") ;; DNW NB
+  )
 
 
 ;; --

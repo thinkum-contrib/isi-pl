@@ -48,10 +48,17 @@
 ;; -- Accessor functions
 
 (defgeneric system-component-source-prefix (component))
+;; NB: See also STELLA-ASDF-SYSTEM [Class]
+;;     slot COMPONENT-SOURCE-PREFIX
 
 (defgeneric (setf system-component-source-prefix) (new-value component))
 
 ;; -- System definition class & initialization
+
+;; TBD: Define a more generalized class, such that STELLA-ASDF-SYSTEM
+;; would be defined as inheriting from, or define a more specialized
+;; subclass of STELLA-ASDF-SYSTEM singularly for purposes of STELLA-INIT
+;; vis a vis, usage of ENSURE-PATHNAME-TRANSLATIONS
 
 (defclass stella-asdf-system (asdf:system)
   ;; NB Representative of a STELLA implementation source system
@@ -176,11 +183,12 @@ suffixed with a semicolon character, \";\".")
 (defmacro system-eval-main (op c)
   (declare (ignore op c))
   `(progn
-     ;; NB this applies impl-check to all system definitions using STELLA-ASDF-SYSTEM
+     ;; NB This applies the following forms to all system definitions
+     ;; of a type STELLA-ASDF-SYSTEM, for which the following OPERATE
+     ;; methods would represent the primary methods
      (impl-check)
      (ensure-feature :pl-asdf)
-     (unless (ignore-errors (logical-pathname-translations "PL"))
-       (initialize-system-pathname-translations))
+     (ensure-pl-pathname-translations)
      #-(and) (set-global-unconditions ,op ,c)
      (call-next-method)))
 
