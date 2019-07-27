@@ -97,7 +97,18 @@ hash tables grow large).")
 ;;; If this is T, Stella will compile/load/startup verbosely:
 (defvar *stella-verbose?* *load-verbose*)
 
-(defvar *stella-default-external-format* ;; TL contrib [spchamp]
+(defvar *stella-default-external-format*
+  ;; NB: STELLA-CHARSET was introduced in PowerLoom(r) 4.0.10
+  ;;
+  ;; NB: This may need QA for PL SDBC and XML suppport, in the PL and
+  ;; STELLA Common Lisp implementations for STELLA systems providing
+  ;; such support.
+  ;;
+  ;; One might assume it should not pose any concern for strings within
+  ;; a single Common Lisp implementation, when using a "Well known"
+  ;; external format denoting a UTF-8 encoding.
+  #+asdf uiop/stream:*utf-8-external-format*
+  #-asdf
   (cond
     ;; ensure portability with SLIME/SWANK streams
     ;; for interactive sessions within Emacs
@@ -109,7 +120,9 @@ hash tables grow large).")
      #+ccl :iso-8859-1
      #-(or allegro sbcl ccl)
      (CL:stream-external-format CL:*standard-output*)))
-   "Initial value for STELLA-CHARSET")
+   "Initial value for STELLA::STELLA-CHARSET")
+
+(defvar *stella-memoization-default? nil)
 
 ;;; This loading scheme still tries to deal with Lisps that do not support
 ;;; logical pathnames.  But, are there still any "healthy" Lisps like that?

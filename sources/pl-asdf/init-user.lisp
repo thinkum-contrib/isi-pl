@@ -1,4 +1,4 @@
-;; init-user.lisp -- user configuration forms for PL STELLA
+;; init-user.lisp -- cl-user configuration forms for PL STELLA
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; BEGIN LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                                                                            ;
@@ -42,7 +42,26 @@
 ;;                                                                            ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; END LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; sourcing root load-stella.lisp and impl load-stella.lisp
+;; sourcing:
+;; - pl:load-stella.lisp
+;; - pl:sources;stella;load-stella.lisp
+;;
+;; NB patched files:
+;; - for added *STELLA-MEMOIZATION-DEFAULT?*
+;;   - pl:native;lisp;stella;memoize.lisp
+;;   - pl:native;lisp;stella;memoize.slisp
+;;   - pl:sources;stella;memoize.ste
+;;   - Note remarks, below, concerning usage.
+;; - for added *STELLA-DEFAULT-EXTERNAL-FORMAT*
+;;   - pl:native;lisp;stella;streams.lisp
+;;   - pl:native;lisp;stella;streams.slisp
+;;   - pl:sources;stella;streams.ste
+;;   - Note remarks, below, concerning QA.
+;; - for both of the above
+;;   - pl:native;lisp;stella;load-stella.lisp
+;;   - pl:native;lisp;stella;load-stella.slisp
+;;   - pl:sources;stella;load-stella.lisp
+
 
 (in-package #:cl-user)
 
@@ -83,7 +102,7 @@ hash tables grow large).")
            ))
        (setq *compile-verbose* nil
              *compile-print* nil)
-       #+cmu
+      #+cmu
        (setq *gc-verbose* nil))
 
 ;; NB: SBCL compiler w/ (speed 3)
@@ -100,24 +119,45 @@ hash tables grow large).")
     '(optimize (speed 3) (safety 1) (space 0) (debug 1)))
 
 
-;; contrib. cf. STELLA::*MEMOIZATION-ENABLED*, memoize.lisp, memoize.ste
-(defvar *stella-memoization-default* nil)
+;; contrib. cf. STELLA::*MEMOIZATION-ENABLED*, memoize.[s]lisp, memoize.ste
+(defvar *stella-memoization-default?* nil)
+;;  ^ NB: STELLA::*MEMOIZATION-ENABLED* will be set to 'T' at some time
+;;        during STELLA init -- for STELLA Common Lisp implementations --
+;;        referring to the :classes scoped startup-time-progn setting
+;;        this value in STELLA memoize.ste. Presumably, this denotes a
+;;        well tested feature in these STELLA implementations.
+
 
 ;; NB contrib/change, affecting initialization of STELLA-CHARSET
-;;    added: cl-user::*stella-default-external-format*
-;;    also defined in load-stella.[s]lisp
+;;    added: CL-USER::*STELLA-DEFAULT-EXTERNAL-FORMAT*
+;;    also defined in contrib-patched load-stella.[s]lisp
+;;
+;;    This corresponds with patches onto STELLA streams.ste and
+;;    implementation sources, as to initialize STELLA::STELLA-CHARSET to
+;;    the following, in STELLA Common Lisp implementations.
 
 (defvar *stella-default-external-format*
-  ;; NB UIOP/STREAM:*UTF-8-EXTERNAL-FORMAT* [ASDF]
+  ;; NB: STELLA-CHARSET was introduced in PowerLoom(r) 4.0.10
+  ;;
+  ;; NB: This may need QA for PL SDBC and XML suppport, in the PL and
+  ;; STELLA Common Lisp implementations for STELLA systems providing
+  ;; such support.
+  ;;
+  ;; One might assume it should not pose any concern for strings within
+  ;; a single Common Lisp implementation, when using a "Well known"
+  ;; external format denoting a UTF-8 encoding.
+  #+asdf uiop/stream:*utf-8-external-format*
+  #-asdf
   (cond
     ;; ensure portability with SLIME/SWANK streams
     ;; for interactive sessions within Emacs
     ((find :swank *features* :test #'eq) (values :default))
     (t
+     ;; Original initforms
      #+allegro
      (CL:ignore-errors (excl::find-external-format :iso-8859-1))
      #+sbcl :latin-1
      #+ccl :iso-8859-1
      #-(or allegro sbcl ccl)
      (CL:stream-external-format CL:*standard-output*)))
-   "Initial value for STELLA-CHARSET")
+   "Initial value for STELLA::STELLA-CHARSET")

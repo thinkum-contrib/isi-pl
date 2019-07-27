@@ -82,8 +82,11 @@ memoized entries when they get bumped.")))
   :documentation "Holds all currently active memoization tables for timestamp
 maintenance and clearance purposes.")
 
-;; switch for debugging and benchmarking (SHOULD THIS BE AN ENVIRONMENT FEATURE?):
-(defglobal *memoization-enabled?* BOOLEAN FALSE)
+;; switch for debugging and benchmarking
+(defglobal *memoization-enabled?* BOOLEAN
+  (verbatim
+    :common-lisp "CL-USER::*STELLA-MEMOIZATION-DEFAULT?*"
+    :otherwise FALSE))
 
 (startup-time-progn :classes
   ;; delay memoization until we are far enough along in the STELLA bootstrap:

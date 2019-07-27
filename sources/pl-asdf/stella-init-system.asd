@@ -79,8 +79,8 @@
           ;; ^ NB used in STELLA cl-translate-file
           ;;   - NB macro (ASDF) UIOP/LISP-BUILD:WITH-OPTIMIZATION-SETTINGS
           ;;   - NB GF (PL-ASDF) PROCLAMATIONS-FOR
-          *stella-memoization-default* ;; NB New (contrib) (Needs testing)
-          *stella-default-external-format*  ;; NB New (contrib)
+          *stella-memoization-default?* ;; NB New (contrib) (Needs QA)
+          *stella-default-external-format*  ;; NB New (contrib) onto PL 4.0.10
           *use-stella-hash-tables?* ;; cf. pl:sources;stella;load-stella.lisp
           ;; ^ NB usage notes
           ;; - STELLA::CLSYS-TEST-SXHASH-SUPPORT & subsq.
