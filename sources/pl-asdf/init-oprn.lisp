@@ -79,24 +79,24 @@
 ;; evaluation of ASDF:PERFORM onto objects within the provided system
 ;; definition.
 
-(defmethod asdf:operate :around ((o asdf:compile-op) (c stella-asdf-system)
-                                 &key &allow-other-keys)
+(defmethod asdf:operate ((o asdf:compile-op) (c stella-asdf-system)
+                         &key &allow-other-keys)
   #+PL-ASDF-DEBUG
   (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:COMPILE-OP ~
 STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
   (system-eval-main o c))
 
 
-(defmethod asdf:operate :around ((o asdf:load-op) (c stella-asdf-system)
-                                  &key &allow-other-keys)
+(defmethod asdf:operate ((o asdf:load-op) (c stella-asdf-system)
+                         &key &allow-other-keys)
   #+PL-ASDF-DEBUG
   (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:LOAD-OP ~
 STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
   (system-eval-main o c))
 
 
-(defmethod asdf:operate :around ((o asdf:load-source-op) (c stella-asdf-system)
-                                  &key &allow-other-keys)
+(defmethod asdf:operate ((o asdf:load-source-op) (c stella-asdf-system)
+                         &key &allow-other-keys)
   #+PL-ASDF-DEBUG
   (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:LOAD-SOURCE-OP ~
 STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
