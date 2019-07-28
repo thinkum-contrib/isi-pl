@@ -55,20 +55,38 @@
 ;; STELLA::*CPP-SPLITTER-PATH*
 ;; - these may be folded into PL-ASDF pathname handling
 
-(defclass stella-c++-header-file (stella-source-component asdf:c-source-file) ;; FIXME
+(defclass stella-c++-header-file (stella-implementation-source-file asdf:c-source-file) ;; FIXME
   ;; NB C++ preprocessors & source linkage; toolchains
   ;; TBD Component model for makefile synthesis (bmake, GNU make, others)
 
-  ;; NB STELLA-C++-SYSTEM, stella.asd
+  ;; TBD STELLA-C++-SYSTEM, stella.asd
   ())
 
-(defclass stella-c++-source-file (stella-source-component asdf:c-source-file) ;; FIXME
+(defclass stella-makefile (stella-implementation-source-file asdf:file-component) ;; FIXME
+  ;; TBD : GNU make only? or compatible with bmake?
 
-  ;; NB STELLA-C++-SYSTEM, stella.asd
+  ;; TBD: C++ toolchain? LLVM? GCC? Other?
+
+  ;; TBD: Build support for Boehm GC in system components (pkgsrc ports, deb pkg, other)
+
+  ;; NB STELLA cpp-lib
+
+  ;; TBD STELLA-C++-SYSTEM, stella.asd
   ())
 
-(defclass stella-java-source-file (stella-source-component asdf:c-source-file) ;; FIXME
-
-  ;; NB STELLA-JAVA-SYSTEM, stella.asd
+(defclass stella-c++-source-file (stella-implementation-source-file asdf:c-source-file) ;; FIXME
+  ;; TBD STELLA-C++-SYSTEM, stella.asd
   ())
 
+(defclass stella-java-source-file (stella-implementation-source-file asdf:c-source-file) ;; FIXME
+  ;; TBD STELLA-JAVA-SYSTEM, stella.asd
+
+  ;; TBD: STELLA Java impl - build support - Ant? Maven, Ivy, Gradle?
+  ;; NB: Eclipse IDE and OSGi
+
+  ;; NB STELLA javalib
+  ())
+
+(defclass stella-idl-source-file (stella-implementation-source-file asdf:source-file) ;; FIXME
+  ;; TBD GNOME ORBit (??)
+  ())

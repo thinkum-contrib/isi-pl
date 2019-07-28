@@ -73,6 +73,11 @@
 ;; vis a vis, usage of ENSURE-PATHNAME-TRANSLATIONS
 
 (defclass stella-asdf-system (asdf:system)
+  ;;  FIXME Rename => STELLA-LISP-BOOTSTRAP-SYSTEM
+
+  ;; FIXME Subclass =>
+  ;; STELLA-LISP-CLOS-BOOTSTRAP-SYSTEM, STELLA-LISP-STRUCT-BOOTSTRAP-SYSTEM
+
   ;; NB Representative of a STELLA implementation source system
   ;;    onto Common Lisp, with a statically defined ASDF system
   ;;
@@ -201,6 +206,7 @@ COMPUTE-DATA-PATHNAME-TRANSLATIONS
 
 
 (defmethod asdf/component:module-default-component-class ((sys stella-asdf-system))
-  ;; NB Specialization
+  ;; NB Specialization - Note annotations on the definition of
+  ;;    STELLA-LISP-SOURCE-FILE
   (find-class 'stella-lisp-source-file))
 

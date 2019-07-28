@@ -1,4 +1,5 @@
-;; seval-sys.lisp -
+;; impl-stella.lisp
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; BEGIN LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                                                                            ;
@@ -42,55 +43,74 @@
 ;;                                                                            ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; END LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; NB: Some source forms originally defined in ./stella-stella.asd
 
-(in-package #:stella-system)
+(defclass stella-system (stella-asdf-system)
+  ;; FIXME: Generalize STELLA-ASDF-SYSTEM
+  ;; particularly, concerning handling for component-source-prefix,
+  ;; ASDF output pathname translation, and STELLA pathname composition
+  ())
 
-;; --
+(defgeneric stella-system-name (sysdef)
+  ;; NB: Providing a manner of abstraction with regards to
+  ;; representation of STELLA source systems in ASDF
+  ;;
+  ;; NB Usage of the STELLA system name of a STELLA system, in this API,
+  ;; should remain consistent across changes in revision to this API
+  (:method ((sysdef stella-system))
+    (component-name sysdef)))
 
-(declaim (ftype (function (stella::system-definition)
-                          (values asdf/system:system &optional))
-                wrap-stella-system))
-
-(defun wrap-stella-system (sys)
-  (let ((deps (mapcar #'find-stella-asdf-system
-                      (error "TBD"))))
-    ))
-
-;; --
-
-(define-condition stella-system-not-found (cell-error)
-  ()
-  (:report
-   (lambda (c s)
-     (format s "STELLA system not found: ~s"
-             (cell-error-name c)))))
-
-
-(defun find-stella-asdf-system (name)
-  (let ((sys-file (stella::make-system-definition-file-name name)))
-    (unless (probe-file sys-file)
-      (error 'stella-system-not-found
-             :name name))
-    (wrap-stella-system
-     (process-with-no-deps-side-effects sys-file)))
-
-;; (stella::get-system-definition "logic")
-;; => |SYSTEM|logic
-;; ^ NB Side effects (system deps)
+(defgeneric find-implementation (language component))
+;; LANGUAGE - trivial classifiers e.g
+;;   :lisp :slisp :java :c++ :idl
+;;   NB Variations in language definitions - C++11, ... Java subsq. of Generics, Annotations, ...
+;;      ... and configuration specifiers for arbitrary build environments
+;; COMPONENT - specialization e.g
+;;  STELLA-SYSTEM
+;;  STELLA-LISP-SYSTEM [TD]
+;;  STELLA-SLISP-SYSTEM [TD] NB :slisp language classifier, stella-struct feature; STELLA uaage of *LOAD-CL-STRUCT-STELLA?*
+;;  STELLA-C++-SYSTEM [TD
+;;  STELLA-JAVA-SYSTEM [TD]
+;;  STELLA-IDL-SYSTEM [TD]
 ;;
-;; (stella::get-system-definition "dnw")
-;; => null
+;;  STELLA-SOURCE-FILE
+;;  STELLA-LISP-SOURCE-FILE
+;;  STELLA-C++-SOURCE-FILE
+;;  STELLA-JAVA-SOURCE-FILE
+;;  STELLA-IDL-SOURCE-FILE
+;;  * NB: STELLA cpp-lib. javalib files; STELLA cl-lib files & pathname inference
 ;;
-;; (stella::make-system-definition-file-name "logic")
-;; (stella::make-system-definition-file-name "sealing-wax")
-;; (stella::make-system-definition-file-name "cabbage-system-system")
+;; TBD: sysdef configuration specifiers
+;;  - feature specifiers
+;;  - param/variable specifiers
+;;  - 'NIX environment specifiers (insofar as entailing discrete build-time side effects)
+;;
+;; TD: SLIME/SWANK ext libs (Emacs & subsq)
+;;
+;;
+;; (defgeneric find-implementations (component))
+;; ^ for all of a well-known set of language classifiers
+;; => various components
+;;
+;; (defgeneric find-implementation-source (component))
+;; => *.ste component or stella system/template
 
-;; (load (stella::make-system-definition-file-name "powerloom"))
-;; ^ NB Side effects (system deps) [FIXME - Side-Effect-Free Wrappers ??]
-;;   - i.e STELLA::LOAD-SYSTEM xor STELLA::MAKE-SYSTEM is evaluated for
-;;     each dependency system, while the specified system itself is
-;;     not processed with either -- as per the behaviors of
-;;     STELLA::DEFINE-SYSTEM, referring to systems.ste
-;;   - This behavior cannot be changed except by redefining
-;;     STELLA::DEFINE-SYSTEM or -- more indirectly -- redefining
-;;     STELLA::DEFSYSTEM within the null lexical environment.
+(defmethod asdf/component:module-default-component-class ((sys stella-system))
+  ;; NB Specialization of MODULE-DEFAULT-COMPONENT-CLASS
+  ;;    juxtaposed to adding :DEFAULT-INITARGS to the class
+  ;;    definition for STELLA-SYSTEM
+  (find-class 'stella-source-file))
+
+(defclass stella-source-file (stella-source-component)
+  ;; i.e *.ste file
+  ;;
+  ;; NB juxtapose to *.plm files subsq. - e.g w/ powerloom-init.asd
+  ;; and the PLI interpreter (as provided by the STELLA logic system
+  ;; and extensionally, the powerloom system)
+  ())
+
+(defmethod asdf/component:source-file-type ((c stella-source-file)
+                                            (container stella-system))
+  (declare (ignore c container))
+  (values "ste"))
+

@@ -196,14 +196,7 @@
 ;; -- Components for the STELLA Lisp Implementation
 
 (defclass stella-implementation-source-file (stella-source-component)
-  ;; NB In subclass STELLA-LISP-SOURCE-FILE this obsoletes STELLA-LISP-SOURCE-COMPONENT
-
   () ;; TBD: Mapping to original *.ste sys defn, *.ste source file
-  ;; NB: Integrate this class into the following
-  ;;  - STELLA-LISP-SOURCE-FILE (TD: STELLA-SLISP-SOURCE-FILE)
-  ;;  - STELLA-C++-SOURCE-FILE (NB: CPP-CODE and CPP-HEADER files w/ STELLA)
-  ;;  - STELLA-JAVA-SOURCE-FILE (NB: Java Class defns)
-  ;;  - STELLA-IDL-SOURCE-FILE (TBD)
   ;;
   ;; NB: Generic class, disjunct to STELLA-SOURCE-FILE (*.ste)
   ;;
@@ -211,7 +204,13 @@
   ;; synopses (pl-asdf reference manual)
   )
 
-(defclass stella-lisp-source-file (asdf:cl-source-file stella-implementation-source-file)
+(defclass stella-lisp-source-file (stella-implementation-source-file asdf:cl-source-file)
+  ;; FIXME: For purposes of QA and general application support, define a
+  ;; subclass of STELLA-LISP-SOURCE-FILE specifically for stella-struct
+  ;; implementation source files. This may be accompanied with a
+  ;; subclass specifically for STELLA standard-class implementation
+  ;; source files.
+  ;;
   ())
 
 (defmethod asdf/component:source-file-type ((c stella-lisp-source-file)

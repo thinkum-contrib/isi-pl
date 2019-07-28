@@ -1,4 +1,4 @@
-;; stella-stella.asd - ASDF interop for PowerLoom(r) STELLA        -*- lisp -*-
+;; seval-sys.lisp -
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; BEGIN LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                                                                            ;
@@ -43,49 +43,63 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; END LICENSE BLOCK ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; NB: This system definition should provide support for evaluating the
-;; PL STELLA system in a manner beginning from evaluation of the STELLA
-;; system definition provided in pl:sources;systems;stella-system.ste
-;;
-;; This may, albeit, result in a STELLA system somewhat differing to
-;; that provided in Common Lisp source form, in the original, public
-;; PowerLoom(r) distribution (FIXME QA) assuming that the Common Lisp
-;; implementation produced from the STELLA source files for STELLA may
-;; not exactly match -- in file form, at least -- the Common Lisp
-;; implementation for STELLA provided in the original PowerLoom(r)
-;; distribution, or that with updates provided in this
-;; contrib. repository
-;;
-;; ----
-;;
-;; This system definition may be developed in parallel to the support
-;; for ASDF interoperability insofar as concerning the STELLA system
-;; definitions representing the principal kernel and interactive forms
-;; of the PowerLoom environment i.e
-;;   pl:sources;systems;logic-system.ste
-;; and
-;;   pl:sources;systems;powerloom-system.ste
-;;
-;; Such support may be provided to the user as, in effect, emulating
-;; load-powerloom.lisp using the contributed PL ASDF systems.
-;;
-;; ----
-;;
-;; This assumes that the STELLA system has already been loaded into the
-;; Common Lisp implementation - as vis a vis the ASDF system definition
-;; stella-init.asd
-;;
-
-
-(in-package #:cl-user)
-
-;; NB in lieu of a system definition lib, extensional to ASDF,
-;; the following should result in stella-init.asd being evaluated
-;; as a Lisp source file
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (asdf:find-system "stella-init")
-  )
-
 (in-package #:stella-system)
 
-;; NB some stella-init.asd code may be reused in stella-stella.asd
+;; --
+
+(declaim (ftype (function (stella::system-definition)
+                          (values asdf/system:system &optional))
+                wrap-stella-system))
+
+(defun wrap-stella-system (sys)
+  (let ((deps (mapcar #'find-stella-asdf-system
+                      (error "TBD"))))
+    ))
+
+;; --
+
+(define-condition stella-system-not-found (cell-error)
+  ()
+  (:report
+   (lambda (c s)
+     (format s "STELLA system not found: ~s"
+             (cell-error-name c)))))
+
+
+(defun find-stella-asdf-system (name)
+  (let ((sys-file (stella::make-system-definition-file-name name)))
+    (unless (probe-file sys-file)
+      (error 'stella-system-not-found
+             :name name))
+    (wrap-stella-system
+     (process-with-no-deps-side-effects sys-file)))
+
+;; (stella::get-system-definition "logic")
+;; => |SYSTEM|logic
+;; ^ NB Side effects (system deps)
+;;
+;; (stella::get-system-definition "dnw")
+;; => null
+;;
+;; (stella::make-system-definition-file-name "logic")
+;; (stella::make-system-definition-file-name "sealing-wax")
+;; (stella::make-system-definition-file-name "cabbage-system-system")
+
+;; (load (stella::make-system-definition-file-name "powerloom"))
+;; ^ NB Side effects (system deps) [FIXME - Side-Effect-Free Wrappers ??]
+;;   - i.e STELLA::LOAD-SYSTEM xor STELLA::MAKE-SYSTEM is evaluated for
+;;     each dependency system, while the specified system itself is
+;;     not processed with either -- as per the behaviors of
+;;     STELLA::DEFINE-SYSTEM, referring to systems.ste
+;;   - This behavior cannot be changed except by redefining
+;;     STELLA::DEFINE-SYSTEM or -- more indirectly -- redefining
+;;     STELLA::DEFSYSTEM within the null lexical environment.
+;;
+;; STELLA system definitions can be parsed specificially for eval in
+;; PL-ASDF, such as to provide for special handling for STELLA::DEFSYSTEM
+;; expressions in a manner that would permit each system definition and
+;; its dependent system definitions to be initialized as an instance of
+;; a subclass of ASDF:SYSTEM. Although this, in effect, may serve to
+;; obviate many of the source forms defined in STELLA systems.ste,
+;; insofar as for STELLA implementations in Common Lisp, it should not
+;; have any side effect on the STELLA system itself.
