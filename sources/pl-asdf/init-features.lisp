@@ -56,7 +56,7 @@
   ;; sourcing <PL:native;lisp;stella;cl-lib;cl-setup.lisp>
   ;;
   ;; Below, this is applied onto COMPILE-OP and LOAD-OP for any
-  ;; STELLA-ASDF-SYSTEM
+  ;; STELLA-LISP-BOOTSTRAP-SYSTEM
   (let ((len (integer-length most-positive-fixnum)))
     (unless (>= (eval '(integer-length most-positive-fixnum)) 24)
       ;; use `eval' to avoid unreachable code warns

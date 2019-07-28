@@ -45,10 +45,7 @@
 
 ;; NB: Some source forms originally defined in ./stella-stella.asd
 
-(defclass stella-system (stella-asdf-system)
-  ;; FIXME: Generalize STELLA-ASDF-SYSTEM
-  ;; particularly, concerning handling for component-source-prefix,
-  ;; ASDF output pathname translation, and STELLA pathname composition
+(defclass stella-system (stella-lisp-bootstrap-system)
   ())
 
 (defgeneric stella-system-name (sysdef)

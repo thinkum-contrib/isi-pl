@@ -198,7 +198,17 @@
 
 
 (defsystem #:stella-init
-  :class stella-asdf-system
+  :class
+  #-stella-struct stella-lisp-clos-bootstrap-system
+  #+stella-struct stella-lisp-struct-bootstrap-system
+  ;; FIXME ensure that other system definitions onto PL-ASDF will use a
+  ;; similar conditional selection of the system definition class.
+  ;;
+  ;; Alternately, provide some defaulting behaviors in ALLOCATE-INSTANCE (??)
+  ;; onto STELLA-LISP-BOOTSTRAP-SYSTEM albeit sucb tbat may return an
+  ;; instance of a class other than that provided to the generic function.
+  ;;
+  ;; TBD: Default system definition class selection in ASDF
 
   :defsystem-depends-on (#:stella-init-system)
   ;; ^ NB: Also note the top-level form at the beginning of this source fike

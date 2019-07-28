@@ -233,7 +233,7 @@
                ;; See also [DOCU]:
                ;; - SYSTEM-COMPONENT-SOURCE-PREFIX
                ;;   specialized onto STELLA-ADSF-SYSTEM
-               ;; - STELLA-ASDF-SYSTEM [Class]
+               ;; - STELLA-LISP-BOOTSTRAP-SYSTEM [Class]
                ;;   slot COMPONENT-SOURCE-PREFIX
                ;; - stella-init.asd (Usage)
                ;;
@@ -258,7 +258,7 @@
   (:method ((operation operation) (system system))
     (declare (ignore operation system))
     (values nil))
-  (:method ((operation operation) (system stella-asdf-system))
+  (:method ((operation operation) (system stella-lisp-bootstrap-system))
     (compute-source-subpath-translations
      (system-logical-source-root system)
      ;; NB This does not handle any install-source oprn [FIXME]
@@ -290,11 +290,11 @@
   ;;   that macro is evaluated
   ;;
   ;; NB: As such, this will be evaluated for every instance of a
-  ;; STELLA-ASDF-SYSTEM during any LOAD-OP, LOAD-SOURCE-OP or
+  ;; STELLA-LISP-BOOTSTRAP-SYSTEM during any LOAD-OP, LOAD-SOURCE-OP or
   ;; COMPILE-OP with ASDF - as per definitions in init-sys.lisp
   ;;
 
-  (:method ((operation operation) (system stella-asdf-system))
+  (:method ((operation operation) (system stella-lisp-bootstrap-system))
     ;; NB: This method will not destructively modify any existing
     ;; logical pathname translations onto the system logical pathname host.
     (let ((host (system-logical-pathname-host system)))

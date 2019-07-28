@@ -65,7 +65,7 @@
 (defmacro system-eval-main (op c)
   `(progn
      ;; NB This applies the following forms to all system definitions
-     ;; of a type STELLA-ASDF-SYSTEM, for which the following OPERATE
+     ;; of a type STELLA-LISP-BOOTSTRAP-SYSTEM, for which the following OPERATE
      ;; methods would represent the primary methods
      (impl-check)
      (ensure-feature :pl-asdf)
@@ -79,27 +79,27 @@
 ;; evaluation of ASDF:PERFORM onto objects within the provided system
 ;; definition.
 
-(defmethod asdf:operate ((o asdf:compile-op) (c stella-asdf-system)
+(defmethod asdf:operate ((o asdf:compile-op) (c stella-lisp-bootstrap-system)
                          &key &allow-other-keys)
   #+PL-ASDF-DEBUG
   (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:COMPILE-OP ~
-STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
+STELLA-LISP-BOOTSTRAP-SYSTEM)~>~< : (~A ~A)~>" o c)
   (system-eval-main o c))
 
 
-(defmethod asdf:operate ((o asdf:load-op) (c stella-asdf-system)
+(defmethod asdf:operate ((o asdf:load-op) (c stella-lisp-bootstrap-system)
                          &key &allow-other-keys)
   #+PL-ASDF-DEBUG
   (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:LOAD-OP ~
-STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
+STELLA-LISP-BOOTSTRAP-SYSTEM)~>~< : (~A ~A)~>" o c)
   (system-eval-main o c))
 
 
-(defmethod asdf:operate ((o asdf:load-source-op) (c stella-asdf-system)
+(defmethod asdf:operate ((o asdf:load-source-op) (c stella-lisp-bootstrap-system)
                          &key &allow-other-keys)
   #+PL-ASDF-DEBUG
   (format *debug-io* "~%ASDF:OPERATE :AROUND~< (ASDF:LOAD-SOURCE-OP ~
-STELLA-ASDF-SYSTEM)~>~< : (~A ~A)~>" o c)
+STELLA-LISP-BOOTSTRAP-SYSTEM)~>~< : (~A ~A)~>" o c)
   (system-eval-main o c))
 
 

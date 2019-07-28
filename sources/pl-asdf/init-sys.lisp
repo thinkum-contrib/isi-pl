@@ -47,9 +47,13 @@
 
 ;; -- Accessor functions
 
-(defgeneric system-component-source-prefix (component))
-;; NB: See also STELLA-ASDF-SYSTEM [Class]
-;;     slot COMPONENT-SOURCE-PREFIX
+(defgeneric system-component-source-prefix (component)
+  (:method ((component asdf:module))
+    ;; Default method for non-PL ASDF modules and system definitions
+    ;; Usage:
+    ;; cf. ASDF/COMPONENT:COMPONENT-PATHNAME (STELLA-SOURCE-COMPONENT)
+    ;; cf. STELLA-LISP-BOOTSTRAP-SYSTEM
+    (component-pathname component)))
 
 (defgeneric (setf system-component-source-prefix) (new-value component))
 
@@ -67,59 +71,49 @@
 
 ;; -- System definition class & initialization
 
-;; TBD: Define a more generalized class, such that STELLA-ASDF-SYSTEM
+;; TBD: Define a more generalized class, such that STELLA-LISP-BOOTSTRAP-SYSTEM
 ;; would be defined as inheriting from, or define a more specialized
-;; subclass of STELLA-ASDF-SYSTEM singularly for purposes of STELLA-INIT
+;; subclass of STELLA-LISP-BOOTSTRAP-SYSTEM singularly for purposes of STELLA-INIT
 ;; vis a vis, usage of ENSURE-PATHNAME-TRANSLATIONS
 
-(defclass stella-asdf-system (asdf:system)
-  ;;  FIXME Rename => STELLA-LISP-BOOTSTRAP-SYSTEM
-
-  ;; FIXME Subclass =>
-  ;; STELLA-LISP-CLOS-BOOTSTRAP-SYSTEM, STELLA-LISP-STRUCT-BOOTSTRAP-SYSTEM
-
+(defclass stella-lisp-bootstrap-system (asdf:system)
   ;; NB Representative of a STELLA implementation source system
   ;;    onto Common Lisp, with a statically defined ASDF system
   ;;
-  ;; NB: Shared generalizations onto STELLA-SYSTEM/STELLA-SYSTEM-TEMPLATE
+  ;; NB This represents, in effect, an abstract class.
+  ;;    For usage in system definitions, refer to:
+  ;;    - STELLA-LISP-CLOS-BOOTSTRAP-SYSTEM
+  ;;    - STELLA-LISP-STRUCT-BOOTSTRAP-SYSTEM
   ((component-source-prefix
-    ;; see also: #'SPLIT-LOGICAL-PATH
-      :initarg :component-source-prefix
-      :type (or simple-string simple-base-string pathname)
-      :reader %system-component-source-prefix
-      :writer (setf system-component-source-prefix)
-      ;; FIXME Consider integrating this with a STELLA-ASDF-MODULE
-      ;; class, and subsequently, inheriting the same in
-      ;; STELLA-ASDF-SYSTEM.
-      ;;
-      ;; Pathname resolution onto the COMPONENT-SOURCE-PREFIX value may
-      ;; then proceed up-recursively, ending at the "Topmost" system
-      ;; definition's prefix, in a merge onto (like as presently) the
-      ;; system definition's own effective COMPONENT-PATHNAME.
-      ;;
-      ;; Pathname resolution for arbitrary output files - in some
-      ;; instances, FASL files - may be implemented with a similar
-      ;; component/pathname prefix/template/filename mechanism, pending
-      ;; further consideration of the design of appropriate user,
-      ;; system, and staging install oprns. In the user instance, it may
-      ;; reuse the existing filename translation methods in ASDF,
-      ;; without much specialization.
-      ;;
-      ;; This could serve to support an arbitrary nesting of
-      ;; module/prefix specifications, juxtaposed to the essentially
-      ;; flat filesystem namespace in this present implementation of
-      ;; STELLA-ASDF-SYSTEM.
-      :documentation
-      "Prefix path for resolving source file components in this system
+    ;; NB Note default initialization (effective initform) defined in
+    ;; SHARED-INITIALIZE :AFTER (STELLA-LISP-BOOTSTRAP-SYSTEM T)
+    ;;
+    ;; This semantics could serve to support an arbitrary nesting of
+    ;; prefix pathnames, across module specifications, if adopted in
+    ;; an implememtation of a subclass of ASDF:MODULE. At present, this
+    ;; has been used simply for locating the system definition's source
+    ;; files in stella-init.asd
+    ;;
+    ;; See also:
+    ;; ASDF/COMPONENT:COMPONENT-PATHNAME (STELLA-SOURCE-COMPONENT)
+    ;; ASDF/COMPONENT:COMPONENT-PATHNAME (STELLA-CL-LIB-SOURCE-FILE)
+    ;; #'PARSE-PREFIX-PATH
+    ;;
+    :initarg :component-source-prefix
+    :type (or simple-string simple-base-string pathname)
+    :reader %system-component-source-prefix
+    :writer (setf system-component-source-prefix)
+    :documentation
+    "Prefix path for resolving source file components in this system
 definition.
 
 If specifying a relative pathname, this pathname should be resolved as
-relative to the system definition's component pathname. If unbound, this
+relative to the system definition's source directory. If unbound, this
 slot's value may be interpreted as effectively NIL, as in the method
-SYSTEM-COMPONENT-SOURCE-PREFIX (STELLA-ASDF-SYSTEM) - in which case, the
-system definition's component pathname should be used, without prefix
-mapping, when resolving relative pathnames of system component source
-files.
+SYSTEM-COMPONENT-SOURCE-PREFIX (STELLA-LISP-BOOTSTRAP-SYSTEM) in which
+case, the system definition's source directory may be used, without
+prefix mapping, when resolving relative pathnames of system component
+source files.
 
 This value may be specified using a subset of logical pathname syntax,
 such as in \"PL:sources;\". Any element in this pathname may be
@@ -147,11 +141,38 @@ COMPUTE-DATA-PATHNAME-TRANSLATIONS
     :initform nil
     :accessor system-logical-source-subdirs
     ;; NB Somewhat a convenience, for the implementation of
-    ;; COMPUTE-SOURCE-PATHNAME-TRANSLATIONS onto STELLA-ASDF-SYSTEM
+    ;; COMPUTE-SOURCE-PATHNAME-TRANSLATIONS onto STELLA-LISP-BOOTSTRAP-SYSTEM
     )
   ))
 
-(defmethod system-component-source-prefix ((component stella-asdf-system))
+;; TBD: Suitability of STELLA-LISP-BOOTSTRAP-SYSTEM for representing
+;; STELLA systems subsequent of the initial STELLA eval. If directly
+;; suitable as such, the class and subclasses should be renamed as to
+;; remove the "bootstrap" infix token from the class' names.
+
+(defclass stella-lisp-clos-bootstrap-system (stella-lisp-bootstrap-system)
+  ;; FIXME: Before PERFORM, err if any system dependency
+  ;;        is of type STELLA-LISP-STRUCT-BOOTSTRAP-SYSTEM
+  ;;        - generalize as VALIDATE-DEPENDENT-SYSTEM (DEP SYSTEM)
+  ;;
+  ;; FIXME: During PERFORM, warn (style-warning) if #+stella-struct t
+  ())
+
+(defclass stella-lisp-struct-bootstrap-system (stella-lisp-bootstrap-system)
+  ;; FIXME: Before PERFORM, err if any system dependency
+  ;;        is of type STELLA-LISP-CLOS-BOOTSTRAP-SYSTEM
+  ;;        - generalize as VALIDATE-DEPENDENT-SYSTEM (DEP SYSTEM)
+  ;;
+  ;; FIXME: During PERFORM, warn (style-warning) if #-stella-struct t
+  ())
+
+;; NB: Note methods onto ASDF/COMPONENT:MODULE-DEFAULT-COMPONENT-CLASS
+;; defined in init-compo.lisp, specialized onto subclasses of
+;; STELLA-LISP-BOOTSTRAP-SYSTEM
+
+;; --
+
+(defmethod system-component-source-prefix ((component stella-lisp-bootstrap-system))
   ;; => <slot-value-if-bound>, <boundp>
   (cond
     ((slot-boundp component 'component-source-prefix)
@@ -159,7 +180,7 @@ COMPUTE-DATA-PATHNAME-TRANSLATIONS
              t))
     (t (values nil nil))))
 
-(defmethod system-logical-pathname-host ((component stella-asdf-system))
+(defmethod system-logical-pathname-host ((component stella-lisp-bootstrap-system))
   (cond
     ((slot-boundp component 'logical-pathname-host)
      (values (%system-logical-pathname-host component)
@@ -168,12 +189,13 @@ COMPUTE-DATA-PATHNAME-TRANSLATIONS
 
 ;; --
 
-(defmethod shared-initialize :after ((instance stella-asdf-system)
+(defmethod shared-initialize :after ((instance stella-lisp-bootstrap-system)
                                      slots &rest initargs
                                      &key &allow-other-keys)
   (declare (ignore initargs))
-  ;; NB Default slot-value initialization - slot initform in
-  ;; shared-initialize for COMPONENT-SOURCE-PREFIX
+  ;; NB Default slot-value initialization - effective slot initform in
+  ;; shared-initialize for COMPONENT-SOURCE-PREFIX, initializing the
+  ;; value by default from (SYSTEM-SOURCE-DIRECTORY INSTANCE) when non-nil
 
   (when
       (and (or (eq slots 't)
@@ -182,31 +204,29 @@ COMPUTE-DATA-PATHNAME-TRANSLATIONS
                           :test #'eq)))
            (not (slot-boundp instance 'component-source-prefix)))
     (setf (system-component-source-prefix instance)
-          ;; NB May break if the system definition's relative-pathname
-          ;; was not set previously
+          ;; NB May break if the system definition's source directory
+          ;; was not set previously, or if SYSTEM-SOURCE-DIRECTORY
+          ;; otherwise returns NIL for the INSTANCE
           ;;
-          ;; NB May break some calling functions if COMPONENT-PATHNAME
-          ;; returns NIL
+          ;; FIXME Somewhat less than optimal if this system is compiled
+          ;; while #+SWANK t and subsequently loaded while #-SWANK t
+          ;;
+          ;; FIXME May not function as intended if this system is compiled
+          ;; while #-SWANK t and subsequently loaded while #+SWANK t
           #-SWANK
-          (component-pathname instance)
-          ;; So, towards supporting interactive defsystem eval e.g w/ Emacs
+          (asdf/system:system-source-directory instance)
           #+SWANK
-          (let ((basep (component-pathname instance)))
+          ;; Generalized usage case: System compiled or loaded from
+          ;; source, within an interactive evaluation environment
+          (let ((basep (asdf/system:system-source-directory instance)))
             (cond
               ((null basep)
-               (warn "~<In SHARED-INITIALIZE :AFTER (STELLA-ASDF-SYSTEM ...)~> \
-~<: NULL COMPONENT-PATHNAME for ~s (Interactive Eval?)~> \
-~<- using *DEFAULT-PATHNAME-DEFAULTS* ~s~>"
+               (warn "~<In SHARED-INITIALIZE :AFTER (STELLA-LISP-BOOTSTRAP-SYSTEM ...)~>~
+~< : NULL SYSTEM-SOURCE-DIRECTORY for ~s (Interactive Eval?)~>~
+~< - using *DEFAULT-PATHNAME-DEFAULTS* ~s~>"
                      instance *default-pathname-defaults*)
                (values *default-pathname-defaults*))
               ;; else
               (t (values basep)))))))
 
 ;; (system-component-source-prefix (find-system "stella-init"))
-
-
-(defmethod asdf/component:module-default-component-class ((sys stella-asdf-system))
-  ;; NB Specialization - Note annotations on the definition of
-  ;;    STELLA-LISP-SOURCE-FILE
-  (find-class 'stella-lisp-source-file))
-

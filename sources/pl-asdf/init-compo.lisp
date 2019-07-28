@@ -183,13 +183,12 @@
   ;; NB Integrate SYSTEM-COMPONENT-SOURCE-PREFIX
   (let* ((container (asdf/component:component-parent component))
          (cpath (component-pathname container))
-         ;; NB Assumption: CONTAINER is a STELLA-ASDF-SYSTEM
-         ;; (This feature of the API may be revised at a later time)
          (prefix (system-component-source-prefix container)))
     (cond
       (prefix
        (merge-pathnames (asdf/component:component-relative-pathname component)
                         (parse-prefix-path prefix cpath)))
+      ;; Else, dipatch to next method
       (t (call-next-method)))))
 
 
@@ -213,17 +212,35 @@
   ;;
   ())
 
-(defmethod asdf/component:source-file-type ((c stella-lisp-source-file)
-                                            (container stella-asdf-system))
+(defclass stella-lisp-clos-source-file (stella-lisp-source-file)
+  ())
+
+(defclass stella-lisp-struct-source-file (stella-lisp-source-file)
+  ())
+
+
+(defmethod asdf/component:source-file-type ((c stella-lisp-clos-source-file)
+                                            (container asdf:module))
   (declare (ignore c container))
-  ;; FIXME STELLA-STRUCT builds - needs [QA] w/ and w/o Emacs
-  #+stella-struct
-  (values "slisp")
-  #-stella-struct
-  (values "lisp"))
+  (load-time-value "lisp" t))
+
+(defmethod asdf/component:source-file-type ((c stella-lisp-struct-source-file)
+                                            (container asdf:module))
+  (declare (ignore c container))
+  (load-time-value "slisp" t))
 
 ;; TD: output translations => fasl, sfasl (under impl subdir w/i output
 ;; component lib prefix) (NB: XDG-dirs adoption in devo w/ ASDF)
+
+(defmethod asdf/component:module-default-component-class
+    ((sys stella-lisp-clos-bootstrap-system))
+  (load-time-value (find-class 'stella-lisp-clos-source-file)
+                   t))
+
+(defmethod asdf/component:module-default-component-class
+    ((sys stella-lisp-struct-bootstrap-system))
+  (load-time-value (find-class 'stella-lisp-struct-source-file)
+                   t))
 
 
 (defclass stella-cl-lib-source-file (stella-lisp-source-file)
@@ -248,7 +265,7 @@
   ;; ASDF system definitions from STELLA system specifications)
 
   (let* ((container (asdf/component:component-parent component))
-         ;; NB Assumption: CONTAINER is a STELLA-ASDF-SYSTEM
+         ;; NB Assumption: CONTAINER is a STELLA-LISP-BOOTSTRAP-SYSTEM
          ;; (This feature of the API may be revised at a later time)
          (src-type (asdf/component:source-file-type component container))
          ;; NB Assumption: Next-method is
@@ -282,7 +299,7 @@
         (%pm-c (make-symbol "%pm-c")))
     `(let ((,%pm-o ,pm-o)
            (,%pm-c ,pm-c))
-       (locally
+       (locally ;; FIXME/QA This section needs review and documentation
            (proclaim-for ,%pm-o ,%pm-c)
          #+SBCL
          ;; FIXME - impl-specific workaround, for a purpose of ensuring
