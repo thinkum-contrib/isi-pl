@@ -71,7 +71,8 @@
     (unless (probe-file sys-file)
       (error 'stella-system-not-found
              :name name))
-    (wrap-stella-system stella-sys)))
+    (wrap-stella-system
+     (process-with-no-deps-side-effects sys-file)))
 
 ;; (stella::get-system-definition "logic")
 ;; => |SYSTEM|logic
@@ -85,5 +86,11 @@
 ;; (stella::make-system-definition-file-name "cabbage-system-system")
 
 ;; (load (stella::make-system-definition-file-name "powerloom"))
-;; ^ NB Side effects (system deps) [FIXME - Side-Effect-Free Wrappers]
-
+;; ^ NB Side effects (system deps) [FIXME - Side-Effect-Free Wrappers ??]
+;;   - i.e STELLA::LOAD-SYSTEM xor STELLA::MAKE-SYSTEM is evaluated for
+;;     each dependency system, while the specified system itself is
+;;     not processed with either -- as per the behaviors of
+;;     STELLA::DEFINE-SYSTEM, referring to systems.ste
+;;   - This behavior cannot be changed except by redefining
+;;     STELLA::DEFINE-SYSTEM or -- more indirectly -- redefining
+;;     STELLA::DEFSYSTEM within the null lexical environment.
